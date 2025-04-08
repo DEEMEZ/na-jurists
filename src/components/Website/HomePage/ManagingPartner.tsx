@@ -70,6 +70,15 @@ const ManagingPartner = () => {
                 Mr. Naqvi is founding father of N & A Jurists and renowned corporate lawyer in the town. An energetic, commercially minded and self-motivated individual from a proven business law background who has significant expertise in delivering commercial solutions. He has been the legal advisor and in-house attorney of several domestic and international corporate entities including Securities & Exchange Commission of Pakistan (SECP) and Federal Board of Revenue. He has represented FBR and SECP in hundreds of cases before Islamabad High Court. Mr. Naqvi's area of specialty is Corporate, Taxation, Energy and Power Sector, and in addition thereof, he also possess ample experience in dealing with company / corporate matters including finance and banking.
                 </p>
               </div>
+
+              {/* Meet Our Team Button */}
+              <Link
+                href="/about#our-team"
+                prefetch={true} // Prefetch the About Us page
+                className="mt-6 inline-block rounded-full bg-[#2c415e] px-6 py-2 text-white font-medium transition-all duration-300 hover:bg-[#1a2a3e] hover:shadow-lg flex items-center"
+              >
+                Meet Our Team <span className="ml-1">→</span>
+              </Link>
             </div>
           </div>
         </div>

@@ -19,6 +19,7 @@ export default function Home() {
         <CaseStudies2 />
         <Spacer height={1} />
         <ManagingPartner />
+        <Spacer height={1} />
       </div>
       <Footer />
     </main>
