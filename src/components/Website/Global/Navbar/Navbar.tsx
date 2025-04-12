@@ -53,7 +53,7 @@ const Navbar = () => {
             Expertise
           </Link>
           <Link href="/services" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
-            Services
+            Our Services
           </Link>
           <Link href="/partners" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Partners
