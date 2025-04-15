@@ -7,51 +7,57 @@ import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import { LegalCase } from '@/types/LegalCase';
 import { useEffect, useState } from 'react';
 
-
-// Add this to tell Next.js this is a dynamic page
 export const dynamic = 'force-dynamic';
 
-// Type matches Next.js expectations
-export interface PageProps {
-  params: { id: string }; // Remove '?' since id will always exist in [id] route
-  searchParams?: { [key: string]: string | string[] | undefined };
+interface PageProps {
+  params?: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[]>>;
 }
 
-export default function CaseDetailPage({ params }: PageProps) {
-  const decodedId = decodeURIComponent(params.id);
-
+export default function CaseDetailPage({ params: paramsPromise }: PageProps) {
+  const [decodedId, setDecodedId] = useState<string | null>(null);
   const [casesData, setCasesData] = useState<LegalCase[]>([]);
   const [currentCase, setCurrentCase] = useState<LegalCase | null>(null);
   const [relatedCases, setRelatedCases] = useState<LegalCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Load params and case data
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
+        // 1. Resolve the params promise
+        if (!paramsPromise) {
+          throw new Error('Route parameters not available');
+        }
+        const params = await paramsPromise;
+        const id = decodeURIComponent(params.id);
+        setDecodedId(id);
+
+        // 2. Fetch case data
         const response = await fetch(`/data/cases.json?t=${new Date().getTime()}`);
-        
         if (!response.ok) {
           throw new Error(`Failed to load data (HTTP ${response.status})`);
         }
 
         const data = await response.json();
-        
         if (!Array.isArray(data)) {
           throw new Error('Invalid data format: expected array');
         }
 
         setCasesData(data);
         
-        const foundCase = data.find((c: LegalCase) => c.id === decodedId);
+        // 3. Find current case
+        const foundCase = data.find((c: LegalCase) => c.id === id);
         if (!foundCase) {
           throw new Error('Case not found');
         }
         setCurrentCase(foundCase);
         
+        // 4. Find related cases
         const related = data.filter((c: LegalCase) => 
           c.category === foundCase.category && c.id !== foundCase.id
         ).slice(0, 3);
@@ -65,7 +71,7 @@ export default function CaseDetailPage({ params }: PageProps) {
     };
 
     loadData();
-  }, [decodedId]);
+  }, [paramsPromise]);
 
   if (isLoading) {
     return (
@@ -82,7 +88,7 @@ export default function CaseDetailPage({ params }: PageProps) {
     );
   }
 
-  if (error || !currentCase) {
+  if (error || !currentCase || !decodedId) {
     return (
       <main className="min-h-screen flex flex-col">
         <Navbar />
