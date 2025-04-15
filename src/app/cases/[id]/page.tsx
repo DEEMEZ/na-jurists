@@ -7,16 +7,17 @@ import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import { LegalCase } from '@/types/LegalCase';
 import { useEffect, useState } from 'react';
 
+
 // Add this to tell Next.js this is a dynamic page
 export const dynamic = 'force-dynamic';
 
 // Type matches Next.js expectations
-type PageProps = {
-  params: { id: string };
+export interface PageProps {
+  params: { id: string }; // Remove '?' since id will always exist in [id] route
   searchParams?: { [key: string]: string | string[] | undefined };
-};
+}
 
-export default function CaseDetailPage({ params, searchParams }: PageProps) {
+export default function CaseDetailPage({ params }: PageProps) {
   const decodedId = decodeURIComponent(params.id);
 
   const [casesData, setCasesData] = useState<LegalCase[]>([]);
