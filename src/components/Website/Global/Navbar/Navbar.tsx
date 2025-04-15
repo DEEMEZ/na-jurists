@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import logo from '@/assets/images/text-logo.png';
 import Image from 'next/image';
 import Link from 'next/link';
-import logo from '@/assets/images/text-logo.png'; 
+import { useEffect, useState } from 'react';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -49,14 +49,14 @@ const Navbar = () => {
           <Link href="/about" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             About Us
           </Link>
-          <Link href="/expertise" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
-            Expertise
+          <Link href="/cases" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
+            Cases
           </Link>
           <Link href="/services" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Services
           </Link>
-          <Link href="/partners" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
-            Partners
+          <Link href="/contact" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
+            Contact Us
           </Link>
         </div>
         
@@ -78,15 +78,6 @@ const Navbar = () => {
             )}
           </button>
         </div>
-        
-        <Link 
-          href="/contact" 
-          className={`hidden rounded-full bg-[#2c415e] px-5 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-[#1a2a3e] md:block ${
-            scrolled ? 'shadow-md' : ''
-          }`}
-        >
-          Get in Touch <span className="ml-1">→</span>
-        </Link>
       </div>
       
       {/* Mobile Menu */}
@@ -108,11 +99,11 @@ const Navbar = () => {
               About Us
             </Link>
             <Link 
-              href="/expertise" 
+              href="/cases" 
               className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Expertise
+              Cases
             </Link>
             <Link 
               href="/services" 
@@ -122,11 +113,11 @@ const Navbar = () => {
               Services
             </Link>
             <Link 
-              href="/partners" 
+              href="/contact" 
               className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Partners
+              Contact Us
             </Link>
             <Link 
               href="/contact" 

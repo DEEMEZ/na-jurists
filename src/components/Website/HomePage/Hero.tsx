@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import heroimg from '@/assets/images/hero.png';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -52,12 +51,6 @@ const Hero = () => {
               guided by a strong commitment to the highest code of ethics.
             </p>
             <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-              <Link 
-                href="/consultation" 
-                className="rounded-full bg-[#2c415e] px-8 py-3 text-center font-medium text-white transition-all duration-300 hover:bg-[#1a2a3e] hover:shadow-lg w-full sm:w-auto"
-              >
-                Explore Cases <span className="ml-1">→</span>
-              </Link>
             </div>
           </div>
         </div>

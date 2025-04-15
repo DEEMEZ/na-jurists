@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import logo from '@/assets/images/text-logo.png';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -39,16 +39,16 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start">
             <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
-              <Link href="/privacy-policy" className="text-sm text-white/80 hover:text-white transition-colors duration-300">
+              <Link href="/services" className="text-sm text-white/80 hover:text-white transition-colors duration-300">
                 Our Services
               </Link>
               <span className="text-white/40">•</span>
-              <Link href="/terms" className="text-sm text-white/80 hover:text-white transition-colors duration-300">
+              <Link href="/contact" className="text-sm text-white/80 hover:text-white transition-colors duration-300">
                 Contact
               </Link>
               
               <span className="text-white/40">•</span>
-              <Link href="/careers" className="text-sm text-white/80 hover:text-white transition-colors duration-300">
+              <Link href="/cases" className="text-sm text-white/80 hover:text-white transition-colors duration-300">
                 Cases
               </Link>
             </div>
