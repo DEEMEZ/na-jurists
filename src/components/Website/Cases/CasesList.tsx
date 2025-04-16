@@ -14,7 +14,7 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto pb-4"> {/* Added pb-4 for bottom padding */}
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-[#2c415e]">
           <tr>
@@ -78,9 +78,8 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
         </tbody>
       </table>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6 px-4">
+       {totalPages > 1 && (
+        <div className="flex justify-center mt-6 px-4 pb-2"> {/* Added pb-2 for extra bottom padding */}
           <nav className="flex items-center gap-1">
             <button
               onClick={() => onPageChange(Math.max(1, currentPage - 1))}

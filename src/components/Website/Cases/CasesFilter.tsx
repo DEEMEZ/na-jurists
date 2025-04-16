@@ -34,7 +34,7 @@ const CasesFilter = ({ categories, onFilter, totalCases }: CasesFilterProps) => 
           />
         </div>
         
-        <div className="w-full sm:w-48">
+        <div className="w-full sm:min-w-[180px]"> {/* Changed from sm:w-48 to min-w-[180px] */}
           <label htmlFor="category" className="block text-sm font-medium text-[#2c415e] mb-1">
             Filter by Category
           </label>
