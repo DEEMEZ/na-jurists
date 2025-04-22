@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import teamMember1 from '@/assets/images/Member1.jpeg';
+import teamMember2 from '@/assets/images/Member2.jpeg';
+import teamMember3 from '@/assets/images/Member3.jpeg';
 import Image from 'next/image';
-import teamMember1 from '@/assets/images/team-member1.jpg';
-import teamMember2 from '@/assets/images/team-member2.jpg';
-import teamMember3 from '@/assets/images/team-member3.jpg';
+import { useEffect, useRef } from 'react';
 
 // Team members data with images
 const teamMembers = [
@@ -18,17 +18,17 @@ const teamMembers = [
   },
   {
     id: 2,
-    name: "Ayesha Khan",
-    title: "Senior Associate | Corporate Law Expert",
-    bio: "Ayesha specializes in corporate law and has successfully represented clients in high-stake cases at various courts.",
+    name: "Hassan Rasheed Siddique",
+    title: "Senior Lawyer | Advocate High Court",
+    bio: "He Specialized in International commercial law from University of Bedfordshire, London. He is also an alumni of international academy of leadership, FNST Gumersbach Germany and member of constitutional amendment committee Liberal Youth South Asia, Nepal. He is a Columnist/ senior analyst and an author.",
     image: teamMember2,
     delay: 150,
   },
   {
     id: 3,
-    name: "Hassan Malik",
-    title: "Associate | Taxation Specialist",
-    bio: "Hassan focuses on taxation law, helping clients navigate complex tax regulations and litigations.",
+    name: "SADAF NOMAN",
+    title: "Senior Lawyer | Advocate High Court",
+    bio: "Miss Sadaf Noman holds the professional degree of LLB from Islamic University, She has 6 years of experience in the field of criminal, civil, family and corporate law in the lower judiciary. She has special skills to file the income tax as well as sales tax returns of businesses and individuals. She is associated with NA Jurists since 2021.",
     image: teamMember3,
     delay: 200,
   },
