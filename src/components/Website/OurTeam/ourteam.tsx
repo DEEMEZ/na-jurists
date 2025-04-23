@@ -1,19 +1,20 @@
 "use client";
 
-import teamMember1 from '@/assets/images/Member1.jpeg';
 import teamMember2 from '@/assets/images/Member2.jpeg';
 import teamMember3 from '@/assets/images/Member3.jpeg';
+import teamMember4 from '@/assets/images/Member4.jpeg';
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Team members data with images
 const teamMembers = [
   {
     id: 1,
-    name: "Syed Ishfaq Hussain Naqvi",
-    title: "Managing Partner | Advocate Supreme Court",
-    bio: "Mr. Naqvi is the founding father of N&A Jurists and a renowned corporate lawyer with expertise in corporate, taxation, and energy sectors.",
-    image: teamMember1,
+    name: "HINA AHMAD",
+    title: "Senior Lawyer  | Advocate High Court",
+    shortBio: "Hina Ahmad, belongs to Sourthern Punjab, holds Profesional Degree of LLB from the BZU Multan & MSc Mass Communication from GCU Fasialabad. Hina is serving as Senior Lawyer in N&A Jurists. She has 6+ years of experience of litigation. She is enriched with skills of communication, adovacy, and litigation.",
+    fullBio: "Her areas of specialization encompass; Civil & Criminal Trials, Civil, Criminal & Service Appeals, ADR Processes (Negotiations, Arbitrations & Mediations), all kinds of Family Disputes, Writ Petitions & Intra Court Appeals, General Legal Research, and Drafting & Vetting of Legal Documents. She has handled many cases independently. She has attended National and International Conferences in Alternative Dispute Resolution (ADR). She performed her duties as Legal Head in NGOs and Penal Advocate in different departments.",
+    image: teamMember4,
     delay: 100,
   },
   {
@@ -36,6 +37,11 @@ const teamMembers = [
 
 const OurTeam = () => {
   const sectionRef = useRef<HTMLDivElement | null>(null);
+  const [expandedBio, setExpandedBio] = useState<number | null>(null);
+
+  const toggleBio = (id: number) => {
+    setExpandedBio(expandedBio === id ? null : id);
+  };
 
   // Scroll reveal animation
   useEffect(() => {
@@ -98,7 +104,7 @@ const OurTeam = () => {
                       width={128}
                       height={128}
                       className="object-cover w-full h-full"
-                      priority // Add priority for faster loading
+                      priority
                     />
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
                   </div>
@@ -109,7 +115,24 @@ const OurTeam = () => {
                   {member.name}
                 </h3>
                 <p className="text-[#4a6789] font-medium mb-3 text-center">{member.title}</p>
-                <p className="text-[#666b6f] text-sm text-center">{member.bio}</p>
+                
+                {/* Bio with Read More functionality */}
+                <div className="text-[#666b6f] text-sm text-center">
+                  {member.id === 1 ? (
+                    <>
+                      <p>{member.shortBio}</p>
+                      {expandedBio === 1 && <p className="mt-2">{member.fullBio}</p>}
+                      <button
+                        onClick={() => toggleBio(1)}
+                        className="text-[#2c415e] hover:text-[#4a6789] font-medium mt-2 text-sm underline focus:outline-none"
+                      >
+                        {expandedBio === 1 ? 'Read Less' : 'Read More'}
+                      </button>
+                    </>
+                  ) : (
+                    <p>{member.bio}</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>

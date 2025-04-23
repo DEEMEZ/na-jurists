@@ -36,21 +36,11 @@ export default function ContactPage() {
           {/* Form and Map Section */}
           <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
-              <h2 className="text-3xl font-bold text-[#2c415e] mb-6">Send Us a Message</h2>
-              <p className="text-[#666b6f] mb-8 max-w-lg">
-                Have questions about our services or need legal advice? Fill out the form below and 
-                we'll get back to you within 24 hours.
-              </p>
               <ContactForm />
             </div>
             
             <div>
-              <h2 className="text-3xl font-bold text-[#2c415e] mb-6">Our Office</h2>
-              <p className="text-[#666b6f] mb-8 max-w-lg">
-                Visit us at our conveniently located office in Islamabad. We're available for 
-                in-person consultations by appointment.
-              </p>
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-white p-13 rounded-lg shadow-md">
                 <MapLocation />
                 <div className="mt-4">
                   <h3 className="font-semibold text-[#2c415e]">Office Hours</h3>

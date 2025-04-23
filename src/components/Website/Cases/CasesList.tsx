@@ -14,7 +14,7 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
   }
 
   return (
-    <div className="overflow-x-auto pb-4"> {/* Added pb-4 for bottom padding */}
+    <div className="overflow-x-auto pb-4">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-[#2c415e]">
           <tr>
@@ -78,54 +78,56 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
         </tbody>
       </table>
 
-       {totalPages > 1 && (
-        <div className="flex justify-center mt-6 px-4 pb-2"> {/* Added pb-2 for extra bottom padding */}
-          <nav className="flex items-center gap-1">
-            <button
-              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              Previous
-            </button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => onPageChange(pageNum)}
-                  className={`px-3 py-1 rounded-md border text-sm ${currentPage === pageNum ? 'bg-[#2c415e] text-white border-[#2c415e]' : 'border-gray-300 text-[#2c415e]'}`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-            
-            {totalPages > 5 && currentPage < totalPages - 2 && (
-              <span className="px-3 py-1 text-sm text-[#666b6f]">...</span>
-            )}
-            
-            <button
-              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              Next
-            </button>
-          </nav>
-        </div>
+  {totalPages > 1 && (
+  <div className="flex justify-center mt-6 px-4 pb-2">
+    <nav className="flex items-center gap-1">
+      <button
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        disabled={currentPage === 1}
+        className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+        aria-label="Previous page"
+      >
+        &lt;
+      </button>
+      
+      {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+        let pageNum;
+        if (totalPages <= 3) {
+          pageNum = i + 1;
+        } else if (currentPage <= 2) {
+          pageNum = i + 1;
+        } else if (currentPage >= totalPages - 1) {
+          pageNum = totalPages - 2 + i;
+        } else {
+          pageNum = currentPage - 1 + i;
+        }
+        
+        return (
+          <button
+            key={pageNum}
+            onClick={() => onPageChange(pageNum)}
+            className={`px-3 py-1 rounded-md border text-sm ${currentPage === pageNum ? 'bg-[#2c415e] text-white border-[#2c415e]' : 'border-gray-300 text-[#2c415e]'}`}
+          >
+            {pageNum}
+          </button>
+        );
+      })}
+      
+      {totalPages > 3 && currentPage < totalPages - 1 && (
+        <span className="px-3 py-1 text-sm text-[#666b6f]">...</span>
       )}
+      
+      <button
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+        aria-label="Next page"
+      >
+        &gt;
+      </button>
+    </nav>
+  </div>
+)}
     </div>
   );
 };

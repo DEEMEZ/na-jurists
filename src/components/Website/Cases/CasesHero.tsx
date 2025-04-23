@@ -66,7 +66,7 @@ const CasesHero = () => {
             alt="N&A Jurists Case Studies"
             width={1920}
             height={600}
-            className="w-full object-cover h-[500px]"
+            className="w-full object-contain md:object-cover h-auto max-h-[500px]"
             priority
           />
           
