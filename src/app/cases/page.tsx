@@ -49,14 +49,18 @@ export default function CasesPage() {
     loadData();
   }, []);
 
-  const categories = [...new Set(casesData.map(caseItem => caseItem.category))].sort();
-
-  const handleFilter = (filters: { category: string; searchQuery: string }) => {
+  const handleFilter = (filters: { searchQuery: string; court: string; subject: string }) => {
     let results = [...casesData];
     
-    if (filters.category) {
+    if (filters.court) {
       results = results.filter(caseItem => 
-        caseItem.category.toLowerCase() === filters.category.toLowerCase()
+        caseItem.Court?.toLowerCase().includes(filters.court.toLowerCase())
+      );
+    }
+    
+    if (filters.subject) {
+      results = results.filter(caseItem => 
+        caseItem["Subject/Applicable Law"]?.toLowerCase().includes(filters.subject.toLowerCase())
       );
     }
     
@@ -65,12 +69,10 @@ export default function CasesPage() {
       results = results.filter(caseItem => {
         const searchFields = [
           caseItem["Case Title"] || '',
-          caseItem["File Unit"] || '',
+          caseItem["Case Number"] || '',
+          caseItem["Subject/Applicable Law"] || '',
           caseItem.Court || '',
-          caseItem.HC || '',
-          caseItem["Party I"] || '',
-          caseItem["Party II"] || '',
-          caseItem["Issue / Revenue"] || ''
+          caseItem.Status || ''
         ].join(' ').toLowerCase();
         
         return searchFields.includes(query);
@@ -78,7 +80,7 @@ export default function CasesPage() {
     }
     
     setFilteredCases(results);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const indexOfLastCase = currentPage * casesPerPage;
@@ -86,7 +88,6 @@ export default function CasesPage() {
   const currentCases = filteredCases.slice(indexOfFirstCase, indexOfLastCase);
   const totalPages = Math.ceil(filteredCases.length / casesPerPage);
 
-  // Loading state
   if (isLoading) {
     return (
       <main className="min-h-screen flex flex-col">
@@ -102,7 +103,6 @@ export default function CasesPage() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <main className="min-h-screen flex flex-col">
@@ -139,7 +139,6 @@ export default function CasesPage() {
       <CasesHero />
       
       <div className="flex-grow relative py-12 bg-[#f0f3f6]">
-
         <div 
           className="absolute inset-0 z-0 opacity-10 pointer-events-none"
           style={{
@@ -153,7 +152,6 @@ export default function CasesPage() {
             {/* Filter Section */}
             <div className="p-6 border-b border-gray-200">
               <CasesFilter 
-                categories={categories} 
                 onFilter={handleFilter} 
                 totalCases={filteredCases.length}
               />

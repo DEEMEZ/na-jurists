@@ -2,55 +2,109 @@
 import { CasesFilterProps } from '@/types/LegalCase';
 import { useState } from 'react';
 
-const CasesFilter = ({ categories, onFilter, totalCases }: CasesFilterProps) => {
-  const [category, setCategory] = useState('');
+const CasesFilter = ({ onFilter, totalCases }: CasesFilterProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [court, setCourt] = useState('');
+  const [subject, setSubject] = useState('');
+
+  const courts = [
+    'Supreme Court',
+    'High Court',
+    'Civil Court',
+    'Tribunal'
+  ];
+
+  const subjects = [
+    'Election',
+    'Constitution',
+    'Tax',
+    'Access of Information',
+    'Corporate Crime',
+    'Banking',
+    'Medical/PMDC',
+    'Power',
+    'Policy Decision of govt',
+    'Company',
+    'Liquidation',
+    'Criminal',
+    'Anti money laundering',
+    'Family',
+    'Defamation',
+    'Contempt',
+    'Insurance',
+    'Service',
+    'Rent',
+    'Civil',
+    'Contract'
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onFilter({ category, searchQuery });
+    onFilter({ searchQuery, court, subject });
   };
 
   const handleReset = () => {
-    setCategory('');
     setSearchQuery('');
-    onFilter({ category: '', searchQuery: '' });
+    setCourt('');
+    setSubject('');
+    onFilter({ searchQuery: '', court: '', subject: '' });
   };
 
   return (
     <div className="mb-6">
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
-        <div className="w-full">
-          <label htmlFor="search" className="block text-sm font-medium text-[#2c415e] mb-1">
-            Search Cases
-          </label>
-          <input
-            type="text"
-            id="search"
-            placeholder="Search by title or description..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#2c415e] focus:border-[#2c415e] text-black"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <div className="w-full sm:min-w-[180px]"> {/* Changed from sm:w-48 to min-w-[180px] */}
-          <label htmlFor="category" className="block text-sm font-medium text-[#2c415e] mb-1">
-            Filter by Category
-          </label>
-          <select
-            id="category"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#2c415e] focus:border-[#2c415e] text-black"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat} className="text-black">
-                {cat}
-              </option>
-            ))}
-          </select>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="w-full">
+            <label htmlFor="search" className="block text-sm font-medium text-[#2c415e] mb-1">
+              Search Cases
+            </label>
+            <input
+              type="text"
+              id="search"
+              placeholder="Search by title or description..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#2c415e] focus:border-[#2c415e] text-black"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="w-full">
+            <label htmlFor="court" className="block text-sm font-medium text-[#2c415e] mb-1">
+              Filter by Court
+            </label>
+            <select
+              id="court"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#2c415e] focus:border-[#2c415e] text-black"
+              value={court}
+              onChange={(e) => setCourt(e.target.value)}
+            >
+              <option value="">All Courts</option>
+              {courts.map((courtItem) => (
+                <option key={courtItem} value={courtItem}>
+                  {courtItem}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full">
+            <label htmlFor="subject" className="block text-sm font-medium text-[#2c415e] mb-1">
+              Filter by Subject
+            </label>
+            <select
+              id="subject"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#2c415e] focus:border-[#2c415e] text-black"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            >
+              <option value="">All Subjects</option>
+              {subjects.map((subjectItem) => (
+                <option key={subjectItem} value={subjectItem}>
+                  {subjectItem}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto">

@@ -2,7 +2,6 @@
 "use client";
 
 import { CaseDetailsProps, LegalCase } from '@/types/LegalCase';
-import { formatExcelDate, getCaseNumber, getCaseTitle } from '@/types/utils';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -67,20 +66,20 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-[#2c415e] to-[#4a6789] p-6 sm:p-8 text-white">
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-              {getCaseTitle(caseData)}
+              {caseData['Case Title']}
             </h1>
             <div className="flex flex-wrap gap-2 sm:gap-4 mt-4">
               <span className="px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm">
-                {caseData.category}
+                {caseData.Court || 'N/A'}
               </span>
-              {getCaseNumber(caseData) && (
+              {caseData['Case Number'] && (
                 <span className="px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm">
-                  {getCaseNumber(caseData)}
+                  {caseData['Case Number']}
                 </span>
               )}
-              {caseData.Date && (
+              {caseData.Status && (
                 <span className="px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm">
-                  {formatExcelDate(caseData.Date)}
+                  {caseData.Status}
                 </span>
               )}
             </div>
@@ -91,10 +90,10 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
               <h2 className="text-xl sm:text-2xl font-bold text-[#2c415e] mb-4">Case Details</h2>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
-                {caseData["File Unit"] && (
+                {caseData['Case Number'] && (
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">File Unit</h3>
-                    <p className="text-[#666b6f] text-sm sm:text-base">{caseData["File Unit"]}</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Case Number</h3>
+                    <p className="text-[#666b6f] text-sm sm:text-base">{caseData['Case Number']}</p>
                   </div>
                 )}
                 
@@ -105,27 +104,25 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
                   </div>
                 )}
                 
-                {caseData.HC && (
+                {caseData['Subject/Applicable Law'] && (
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">High Court</h3>
-                    <p className="text-[#666b6f] text-sm sm:text-base">{caseData.HC}</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Subject/Applicable Law</h3>
+                    <p className="text-[#666b6f] text-sm sm:text-base">{caseData['Subject/Applicable Law']}</p>
                   </div>
                 )}
                 
-                {(caseData["Party I"] || caseData["Party II"]) && (
+                {caseData.Status && (
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Parties</h3>
-                    <p className="text-[#666b6f] text-sm sm:text-base">
-                      {caseData["Party I"]} {caseData["Party II"] ? `vs ${caseData["Party II"]}` : ''}
-                    </p>
+                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Status</h3>
+                    <p className="text-[#666b6f] text-sm sm:text-base">{caseData.Status}</p>
                   </div>
                 )}
                 
-                {caseData["Issue / Revenue"] && (
+                {caseData.sourceFile && (
                   <div className="sm:col-span-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Issue / Revenue</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Source</h3>
                     <p className="text-[#666b6f] text-sm sm:text-base whitespace-pre-line">
-                      {caseData["Issue / Revenue"]}
+                      {caseData.sourceFile}
                     </p>
                   </div>
                 )}

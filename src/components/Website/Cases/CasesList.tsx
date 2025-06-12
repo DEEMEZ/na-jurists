@@ -1,6 +1,5 @@
 // CasesList.tsx
 import { CasesListProps } from '@/types/LegalCase';
-import { formatExcelDate, getCaseNumber, getCaseTitle } from '@/types/utils';
 import Link from 'next/link';
 
 const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListProps) => {
@@ -25,13 +24,13 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
               Case Number
             </th>
             <th scope="col" className="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Category
+              Subject
             </th>
             <th scope="col" className="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Date
+              Court
             </th>
             <th scope="col" className="hidden xl:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Court
+              Status
             </th>
             <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
               Actions
@@ -43,27 +42,27 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
             <tr key={caseItem.id} className="hover:bg-gray-50">
               <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                 <div className="text-sm font-medium text-[#2c415e]">
-                  {getCaseTitle(caseItem)}
+                  {caseItem['Case Title']}
                 </div>
                 <div className="sm:hidden text-xs text-[#666b6f] mt-1">
-                  {getCaseNumber(caseItem)}
+                  {caseItem['Case Number'] || 'N/A'}
                 </div>
               </td>
               <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-[#666b6f]">
-                  {getCaseNumber(caseItem)}
+                  {caseItem['Case Number'] || 'N/A'}
                 </div>
               </td>
               <td className="hidden md:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
                 <span className="px-2 py-1 text-xs font-semibold bg-[#2c415e]/10 text-[#2c415e] rounded-full">
-                  {caseItem.category}
+                  {caseItem['Subject/Applicable Law'] || 'N/A'}
                 </span>
               </td>
               <td className="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-[#666b6f]">
-                {caseItem.Date ? formatExcelDate(caseItem.Date) : 'N/A'}
+                {caseItem.Court || 'N/A'}
               </td>
               <td className="hidden xl:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-[#666b6f]">
-                {caseItem.Court || 'N/A'}
+                {caseItem.Status || 'N/A'}
               </td>
               <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <Link
@@ -78,56 +77,56 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
         </tbody>
       </table>
 
-  {totalPages > 1 && (
-  <div className="flex justify-center mt-6 px-4 pb-2">
-    <nav className="flex items-center gap-1">
-      <button
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-        className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-        aria-label="Previous page"
-      >
-        &lt;
-      </button>
-      
-      {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-        let pageNum;
-        if (totalPages <= 3) {
-          pageNum = i + 1;
-        } else if (currentPage <= 2) {
-          pageNum = i + 1;
-        } else if (currentPage >= totalPages - 1) {
-          pageNum = totalPages - 2 + i;
-        } else {
-          pageNum = currentPage - 1 + i;
-        }
-        
-        return (
-          <button
-            key={pageNum}
-            onClick={() => onPageChange(pageNum)}
-            className={`px-3 py-1 rounded-md border text-sm ${currentPage === pageNum ? 'bg-[#2c415e] text-white border-[#2c415e]' : 'border-gray-300 text-[#2c415e]'}`}
-          >
-            {pageNum}
-          </button>
-        );
-      })}
-      
-      {totalPages > 3 && currentPage < totalPages - 1 && (
-        <span className="px-3 py-1 text-sm text-[#666b6f]">...</span>
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 px-4 pb-2">
+          <nav className="flex items-center gap-1">
+            <button
+              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              aria-label="Previous page"
+            >
+              &lt;
+            </button>
+            
+            {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage <= 2) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 1) {
+                pageNum = totalPages - 2 + i;
+              } else {
+                pageNum = currentPage - 1 + i;
+              }
+              
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => onPageChange(pageNum)}
+                  className={`px-3 py-1 rounded-md border text-sm ${currentPage === pageNum ? 'bg-[#2c415e] text-white border-[#2c415e]' : 'border-gray-300 text-[#2c415e]'}`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            
+            {totalPages > 3 && currentPage < totalPages - 1 && (
+              <span className="px-3 py-1 text-sm text-[#666b6f]">...</span>
+            )}
+            
+            <button
+              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              aria-label="Next page"
+            >
+              &gt;
+            </button>
+          </nav>
+        </div>
       )}
-      
-      <button
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-        className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-        aria-label="Next page"
-      >
-        &gt;
-      </button>
-    </nav>
-  </div>
-)}
     </div>
   );
 };
