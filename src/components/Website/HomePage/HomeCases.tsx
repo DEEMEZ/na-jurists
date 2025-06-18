@@ -49,37 +49,44 @@ export default function HomeCases() {
     loadData();
   }, []);
 
-  const categories = [...new Set(casesData.map(caseItem => caseItem.category))].sort();
+const courts = [...new Set(casesData.map(caseItem => caseItem.Court).filter(Boolean))].sort();
+const subjects = [...new Set(casesData.map(caseItem => caseItem['Subject/Applicable Law']).filter(Boolean))].sort();
 
-  const handleFilter = (filters: { category: string; searchQuery: string }) => {
-    let results = [...casesData];
+ const handleFilter = (filters: { searchQuery: string; court: string; subject: string }) => {
+  let results = [...casesData];
 
-    if (filters.category) {
-      results = results.filter(caseItem =>
-        caseItem.category.toLowerCase() === filters.category.toLowerCase()
-      );
-    }
+  if (filters.court) {
+    results = results.filter(caseItem =>
+      caseItem.Court?.toLowerCase() === filters.court.toLowerCase()
+    );
+  }
 
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      results = results.filter(caseItem => {
-        const searchFields = [
-          caseItem["Case Title"] || '',
-          caseItem["File Unit"] || '',
-          caseItem.Court || '',
-          caseItem.HC || '',
-          caseItem["Party I"] || '',
-          caseItem["Party II"] || '',
-          caseItem["Issue / Revenue"] || ''
-        ].join(' ').toLowerCase();
+  if (filters.subject) {
+    results = results.filter(caseItem =>
+      caseItem['Subject/Applicable Law']?.toLowerCase() === filters.subject.toLowerCase()
+    );
+  }
 
-        return searchFields.includes(query);
-      });
-    }
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase();
+    results = results.filter(caseItem => {
+      const searchFields = [
+        caseItem["Case Title"] || '',
+        caseItem["File Unit"] || '',
+        caseItem.Court || '',
+        caseItem.HC || '',
+        caseItem["Party I"] || '',
+        caseItem["Party II"] || '',
+        caseItem["Issue / Revenue"] || ''
+      ].join(' ').toLowerCase();
 
-    setFilteredCases(results);
-    setCurrentPage(1);
-  };
+      return searchFields.includes(query);
+    });
+  }
+
+  setFilteredCases(results);
+  setCurrentPage(1);
+};
 
   const indexOfLastCase = currentPage * casesPerPage;
   const indexOfFirstCase = indexOfLastCase - casesPerPage;
@@ -151,11 +158,10 @@ export default function HomeCases() {
             <div className="h-1 w-18 bg-[#2c415e] mx-auto"></div>
             {/* Filter Section */}
             <div className="p-6 border-b border-gray-200">
-              <CasesFilter
-                categories={categories}
-                onFilter={handleFilter}
-                totalCases={filteredCases.length}
-              />
+           <CasesFilter
+  onFilter={handleFilter}
+  totalCases={filteredCases.length}
+/>
             </div>
 
             {/* Cases List */}
