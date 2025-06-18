@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "npm run convert-docs && next dev",
     "convert-excel": "node scripts/convertExcelToJson.js",
-    "convert-docs": "node scripts/WordToJson.js",
-    "build": "npm run convert-docs && next build",
+"convert-docs": "if [ -f scripts/WordToJson.js ]; then node scripts/WordToJson.js; else echo 'Skipping WordToJson.js'; fi",    "build": "npm run convert-docs && next build",
     "start": "next start",
     "lint": "next lint"
   },
