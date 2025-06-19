@@ -1,4 +1,3 @@
-import Chatbot from '@/components/Chatbot/Chatbot'; // Add this import
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -28,7 +27,6 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-[#2b415e]`}>
         {children}
-        <Chatbot /> {/* Add this line */}
       </body>
     </html>
   )
