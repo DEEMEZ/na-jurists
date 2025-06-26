@@ -50,39 +50,47 @@ export default function CasesPage() {
   }, []);
 
   const handleFilter = (filters: { searchQuery: string; court: string; subject: string }) => {
-    let results = [...casesData];
-    
-    if (filters.court) {
+  let results = [...casesData];
+  
+  if (filters.court) {
+    if (filters.court === 'Civil Court & Tribunal') {
+      // Filter for either Civil Court OR Tribunal
+      results = results.filter(caseItem => 
+        caseItem.Court?.toLowerCase().includes('civil court') ||
+        caseItem.Court?.toLowerCase().includes('tribunal')
+      );
+    } else {
+      // Normal court filtering
       results = results.filter(caseItem => 
         caseItem.Court?.toLowerCase().includes(filters.court.toLowerCase())
       );
     }
-    
-    if (filters.subject) {
-      results = results.filter(caseItem => 
-        caseItem["Subject/Applicable Law"]?.toLowerCase().includes(filters.subject.toLowerCase())
-      );
-    }
-    
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      results = results.filter(caseItem => {
-        const searchFields = [
-          caseItem["Case Title"] || '',
-          caseItem["Case Number"] || '',
-          caseItem["Subject/Applicable Law"] || '',
-          caseItem.Court || '',
-          caseItem.Status || ''
-        ].join(' ').toLowerCase();
-        
-        return searchFields.includes(query);
-      });
-    }
-    
-    setFilteredCases(results);
-    setCurrentPage(1);
-  };
-
+  }
+  
+  if (filters.subject) {
+    results = results.filter(caseItem => 
+      caseItem["Subject/Applicable Law"]?.toLowerCase().includes(filters.subject.toLowerCase())
+    );
+  }
+  
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase();
+    results = results.filter(caseItem => {
+      const searchFields = [
+        caseItem["Case Title"] || '',
+        caseItem["Case Number"] || '',
+        caseItem["Subject/Applicable Law"] || '',
+        caseItem.Court || '',
+        caseItem.Status || ''
+      ].join(' ').toLowerCase();
+      
+      return searchFields.includes(query);
+    });
+  }
+  
+  setFilteredCases(results);
+  setCurrentPage(1);
+};
   const indexOfLastCase = currentPage * casesPerPage;
   const indexOfFirstCase = indexOfLastCase - casesPerPage;
   const currentCases = filteredCases.slice(indexOfFirstCase, indexOfLastCase);

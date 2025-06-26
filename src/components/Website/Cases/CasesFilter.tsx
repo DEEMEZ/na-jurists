@@ -7,27 +7,28 @@ const CasesFilter = ({ onFilter, totalCases }: CasesFilterProps) => {
   const [court, setCourt] = useState('');
   const [subject, setSubject] = useState('');
 
+  // Updated courts array with combined option
   const courts = [
     'Supreme Court',
     'High Court',
-    'Civil Court',
-    'Tribunal'
+    'Civil Court & Tribunal', // Combined option
+    // Remove individual 'Civil Court' and 'Tribunal' entries
   ];
 
   const subjects = [
     'Election',
     'Constitution',
     'Tax',
-    'Access of Information',
+    'Access to Information',
     'Corporate Crime',
     'Banking',
-    'Medical/PMDC',
+    'PMDC',
     'Power',
-    'Policy Decision of govt',
+    'Policy Decision of Government',
     'Company',
     'Liquidation',
     'Criminal',
-    'Anti money laundering',
+    'Anti Money Laundering',
     'Family',
     'Defamation',
     'Contempt',
