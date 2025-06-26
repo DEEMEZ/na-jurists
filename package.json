@@ -3,10 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+<<<<<<< HEAD
     "dev": "npm run convert-docs && next dev",
     "convert-excel": "node scripts/convertExcelToJson.js",
     "convert-docs": "powershell -Command \"if (Test-Path scripts/WordToJson.js) { node scripts/WordToJson.js } else { Write-Output 'Skipping WordToJson.js' }\"",
     "build": "npm run convert-docs && next build",
+=======
+    "dev": "next dev",
+"build": "next build",
+>>>>>>> c2d199c5f01881036b6642dc805817570476daba
     "start": "next start",
     "lint": "next lint"
   },

@@ -1,16 +1,5 @@
 [
   {
-    "id": "7b57367d-504b-4238-9d1e-2bd080b23492",
-    "sourceFile": "Cases List Supreme Court.docx",
-    "tableIndex": 0,
-    "rowIndex": 0,
-    "Case Number": "Case Number",
-    "Case Title": "Case Title",
-    "Court": "Court",
-    "Subject/Applicable Law": "Subject/Applicable Law",
-    "Status": "Status"
-  },
-  {
     "id": "02e96941-6795-4b2f-aca4-cee5f3065b01",
     "sourceFile": "Cases List Supreme Court.docx",
     "tableIndex": 0,
@@ -1305,7 +1294,7 @@
     "Case Number": null,
     "Case Title": "State v Asphandyar Tajamal",
     "Court": "Custom Court",
-    "Subject/Applicable Law": "Criminal, Anti -money Laundering",
+    "Subject/Applicable Law": "Criminal, Anti Money Laundering",
     "Status": "Decided"
   },
   {
@@ -1360,7 +1349,7 @@
     "Case Number": null,
     "Case Title": "State v Waqas (Vicky Traders)",
     "Court": "Custom Court",
-    "Subject/Applicable Law": "Criminal, Anti -money Laundering",
+    "Subject/Applicable Law": "Criminal, Anti Money Laundering",
     "Status": "Decided"
   },
   {
@@ -1404,7 +1393,7 @@
     "Case Number": null,
     "Case Title": "State v M.Shibli",
     "Court": "Custom Court",
-    "Subject/Applicable Law": "Criminal, Anti-Money Laundering",
+    "Subject/Applicable Law": "Criminal, Anti Money Laundering",
     "Status": "Decided"
   },
   {
@@ -1415,7 +1404,7 @@
     "Case Number": null,
     "Case Title": "State v Zain UlAbdin",
     "Court": "Custom Court",
-    "Subject/Applicable Law": "Criminal, Anti-Money Laundering",
+    "Subject/Applicable Law": "Criminal, Anti Money Laundering",
     "Status": "Decided"
   },
   {
@@ -1426,7 +1415,7 @@
     "Case Number": null,
     "Case Title": "State v Jia Yuling",
     "Court": "Custom Court",
-    "Subject/Applicable Law": "Criminal, Anti-Money Laundering",
+    "Subject/Applicable Law": "Criminal, Anti Money Laundering",
     "Status": "Decided"
   },
   {
@@ -3659,7 +3648,7 @@
     "Case Number": "Crl. Appeal 234/2023 Anti-Money Laundering (SB)",
     "Case Title": "Isphandyar Tajammal Awan VS The State etc.",
     "Court": "High Court",
-    "Subject/Applicable Law": "Criminal, anti-money laundering, Tax, Corporate Crime",
+    "Subject/Applicable Law": "Criminal, Anti Money Laundering, Tax, Corporate Crime",
     "Status": "Pending"
   },
   {
@@ -4924,7 +4913,7 @@
     "Case Number": "Crl. Appeal 324/2022 Anti-Money Laundering (SB)",
     "Case Title": "The State through Director I & I VS Abid Hussain etc.",
     "Court": "High Court",
-    "Subject/Applicable Law": "Tax, Anti-Money Laundering",
+    "Subject/Applicable Law": "Tax, Anti Money Laundering",
     "Status": "Decided"
   },
   {
@@ -5188,7 +5177,7 @@
     "Case Number": "Crl. Appeal 262/2022 Anti Smuggling (SB)",
     "Case Title": "Mujeeb Ullah VS The State through IO, Directorate of Intelligence etc.",
     "Court": "High Court",
-    "Subject/Applicable Law": "Tax, Corporate Crime, Anti-Money Laundering",
+    "Subject/Applicable Law": "Tax, Corporate Crime, Anti Money Laundering",
     "Status": "Decided"
   },
   {
