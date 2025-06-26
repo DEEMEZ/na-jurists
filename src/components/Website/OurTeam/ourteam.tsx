@@ -21,7 +21,8 @@ const teamMembers = [
     id: 2,
     name: "Hassan Rasheed Siddique",
     title: "Senior Lawyer | Advocate High Court",
-    bio: "He Specialized in International commercial law from University of Bedfordshire, London. He is also an alumni of international academy of leadership, FNST Gumersbach Germany and member of constitutional amendment committee Liberal Youth South Asia, Nepal. He is a Columnist/ senior analyst and an author.",
+    shortBio: "Hassan Rasheed Siddique specializes in International commercial law from University of Bedfordshire, London. He has significant experience and is also an alumni of international academy of leadership.",
+    fullBio: "He Specialized in International commercial law from University of Bedfordshire, London. He is also an alumni of international academy of leadership, FNST Gumersbach Germany and member of constitutional amendment committee Liberal Youth South Asia, Nepal. He is a Columnist/ senior analyst and an author.",
     image: teamMember2,
     delay: 150,
   },
@@ -29,7 +30,8 @@ const teamMembers = [
     id: 3,
     name: "SADAF NOMAN",
     title: "Senior Lawyer | Advocate High Court",
-    bio: "Miss Sadaf Noman holds the professional degree of LLB from Islamic University, She has 6 years of experience in the field of criminal, civil, family and corporate law in the lower judiciary. She has special skills to file the income tax as well as sales tax returns of businesses and individuals. She is associated with NA Jurists since 2021.",
+    shortBio: "Sadaf Noman holds the professional degree of LLB from Islamic University and has 6 years of experience in legal fields. She is associated with N&A Jurists since 2021.",
+    fullBio: "Miss Sadaf Noman holds the professional degree of LLB from Islamic University. She has 6 years of experience in the field of criminal, civil, family and corporate law in the lower judiciary. She has special skills to file the income tax as well as sales tax returns of businesses and individuals. She is associated with NA Jurists since 2021.",
     image: teamMember3,
     delay: 200,
   },
@@ -130,7 +132,16 @@ const OurTeam = () => {
                       </button>
                     </>
                   ) : (
-                    <p>{member.bio}</p>
+                    <>
+                      <p>{member.shortBio}</p>
+                      {expandedBio === member.id && <p className="mt-2">{member.fullBio}</p>}
+                      <button
+                        onClick={() => toggleBio(member.id)}
+                        className="text-[#2c415e] hover:text-[#4a6789] font-medium mt-2 text-sm underline focus:outline-none"
+                      >
+                        {expandedBio === member.id ? 'Read Less' : 'Read More'}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

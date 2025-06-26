@@ -1,4 +1,3 @@
-// CaseDetails.tsx
 "use client";
 
 import { CaseDetailsProps, LegalCase } from '@/types/LegalCase';
@@ -52,7 +51,7 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
         </p>
         <button
           onClick={() => router.push('/cases')}
-          className="mt-4 px-4 py-2 bg-[#2c415e] text-white rounded-lg hover:bg-[#1a2a3e]"
+          className="mt-4 px-4 py-2 bg-[#2c415e] text-white rounded-lg hover:bg-[#1a2e4e]"
         >
           Back to Cases
         </button>
@@ -115,15 +114,6 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
                   <div>
                     <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Status</h3>
                     <p className="text-[#666b6f] text-sm sm:text-base">{caseData.Status}</p>
-                  </div>
-                )}
-                
-                {caseData.sourceFile && (
-                  <div className="sm:col-span-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-[#2c415e]">Source</h3>
-                    <p className="text-[#666b6f] text-sm sm:text-base whitespace-pre-line">
-                      {caseData.sourceFile}
-                    </p>
                   </div>
                 )}
               </div>

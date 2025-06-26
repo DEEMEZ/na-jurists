@@ -1,4 +1,3 @@
-// CasesList.tsx
 import { CasesListProps } from '@/types/LegalCase';
 import Link from 'next/link';
 
@@ -15,33 +14,21 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
   return (
     <div className="overflow-x-auto pb-4">
       <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-[#2c415e]">
+        <thead className="bg-[#2c415e] text-white">
           <tr>
-            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Case Title
-            </th>
-            <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Case Number
-            </th>
-            <th scope="col" className="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Subject
-            </th>
-            <th scope="col" className="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Court
-            </th>
-            <th scope="col" className="hidden xl:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Status
-            </th>
-            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-              Actions
-            </th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Case Title</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Case Number</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Subject</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Court</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Status</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {cases.map((caseItem) => (
             <tr key={caseItem.id} className="hover:bg-gray-50">
               <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-[#2c415e]">
+                <div className="text-sm font-bold text-[#2c415e] w-full">
                   {caseItem['Case Title']}
                 </div>
                 <div className="sm:hidden text-xs text-[#666b6f] mt-1">
@@ -86,7 +73,6 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
               className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               aria-label="Previous page"
             >
-              &lt;
             </button>
             
             {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
@@ -122,7 +108,7 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
               className="px-3 py-1 rounded-md border border-gray-300 text-[#2c415e] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               aria-label="Next page"
             >
-              &gt;
+              
             </button>
           </nav>
         </div>
