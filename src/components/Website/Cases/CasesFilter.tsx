@@ -7,12 +7,10 @@ const CasesFilter = ({ onFilter, totalCases }: CasesFilterProps) => {
   const [court, setCourt] = useState('');
   const [subject, setSubject] = useState('');
 
-  // Updated courts array with combined option
   const courts = [
     'Supreme Court',
     'High Court',
-    'Civil Court & Tribunal', // Combined option
-    // Remove individual 'Civil Court' and 'Tribunal' entries
+    'Civil Court & Tribunal', 
   ];
 
   const subjects = [
