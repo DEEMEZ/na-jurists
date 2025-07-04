@@ -18,7 +18,7 @@ export const services = [
           "Prosecution against management of the companies",
           "Advising the domestic and foreign clients in preparation of procurements documents in line with Public Procurement Rules, 2004"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "https://www.clairewoodphotography.co.uk/wp-content/uploads/2019/10/commercial-corporate-group-manchester-leeds-photographer-photographer-Turner-Townsend-1.jpg"
       },
       {
         title: "Merger and Acquisition",
@@ -32,7 +32,7 @@ export const services = [
           "Convening the requisite statutory meetings of the shareholders and board",
           "Sanctions from the competent Court of jurisdiction"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "https://tse1.mm.bing.net/th/id/OIP.O6NlVyx621bYR5WMTUD0nQHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
       },
       {
         title: "Insurance",
@@ -44,7 +44,7 @@ export const services = [
           "Defending the revocation and cancellation of license matters",
           "Registration of the insurance surveyors and ensure the compliance of related laws"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "https://th.bing.com/th/id/R.bc2b2cf96a9f2dd12049ff8daa7eba0f?rik=wu%2fSq2ueWehDqQ&pid=ImgRaw&r=0"
       },
       {
         title: "Non-Banking Finance Companies",
@@ -54,7 +54,7 @@ export const services = [
           "Advising the client to ensure the compliance of NBFC laws in Pakistan",
           "Represent the NBFC before the regulator and Courts"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "https://www.pw.live/exams/wp-content/uploads/2024/06/Non-Banking-Financial-Companies-NBFCs.jpg"
       }
     ]
   },
