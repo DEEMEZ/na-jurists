@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import Member1 from '@/assets/images/Member1.jpeg';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 
 const ManagingPartner = () => {
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -49,12 +50,14 @@ const ManagingPartner = () => {
             {/* Image column */}
             <div className="flex justify-center">
               <div className="relative w-64 h-80 overflow-hidden rounded-lg shadow-lg border border-gray-100">
-                {/* This would be replaced with an actual image of the managing partner */}
-                <div className="absolute inset-0 bg-[#2c415e]/5 flex items-center justify-center">
-                  <div className="rounded-full bg-[#2c415e] text-white w-32 h-32 flex items-center justify-center text-4xl shadow-md">
-                    A.N.
-                  </div>
-                </div>
+                <Image
+                  src={Member1}
+                  alt="Syed Ishfaq Hussain Naqvi - Managing Partner"
+                  width={256}
+                  height={320}
+                  className="w-full h-full object-cover"
+                  quality={90}
+                />
                 {/* Stylish border accent */}
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
               </div>
@@ -74,7 +77,7 @@ const ManagingPartner = () => {
               {/* Meet Our Team Button */}
               <Link
                 href="/about#our-team"
-                prefetch={true} // Prefetch the About Us page
+                prefetch={true}
                 className="mt-6 inline-block rounded-full bg-[#2c415e] px-6 py-2 text-white font-medium transition-all duration-300 hover:bg-[#1a2a3e] hover:shadow-lg flex items-center"
               >
                 Meet Our Team <span className="ml-1">→</span>

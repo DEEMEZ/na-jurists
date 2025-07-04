@@ -119,13 +119,6 @@ const Navbar = () => {
             >
               Contact Us
             </Link>
-            <Link 
-              href="/contact" 
-              className="rounded-full bg-[#2c415e] px-5 py-2 text-center text-sm font-medium text-white transition-all duration-300 hover:bg-[#1a2a3e] shadow-md"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Get in Touch <span className="ml-1">→</span>
-            </Link>
           </div>
         </div>
       )}

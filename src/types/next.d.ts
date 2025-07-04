@@ -1,5 +1,16 @@
 // src/types/next.d.ts
-export interface NextPageProps<T = string> {
-  params: { id: T };
-  searchParams?: { [key: string]: string | string[] | undefined };
+import 'next';
+
+declare module 'next' {
+  export interface PageProps {
+    params: { [key: string]: string | string[] }
+    searchParams?: { [key: string]: string | string[] | undefined }
+  }
+}
+
+declare module 'next/types' {
+  export interface DefaultPageProps {
+    params: { [key: string]: string | string[] }
+    searchParams?: { [key: string]: string | string[] | undefined }
+  }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import CasesFilter from '@/components/Website/Cases/CasesFilter';
+import CasesHero from '@/components/Website/Cases/CasesHero';
 import CasesList from '@/components/Website/Cases/CasesList';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
@@ -13,7 +14,7 @@ export default function CasesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const casesPerPage = 9;
+  const casesPerPage = 10;
 
   useEffect(() => {
     const loadData = async () => {
@@ -21,23 +22,25 @@ export default function CasesPage() {
         setIsLoading(true);
         setError(null);
         
-        const response = await fetch(`/data/cases.json?t=${new Date().getTime()}`);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const response = await fetch('/data/cases.json');
         
         if (!response.ok) {
-          throw new Error(`Failed to load data (HTTP ${response.status})`);
+          throw new Error(`Failed to load cases (HTTP ${response.status})`);
         }
 
         const data = await response.json();
         
         if (!Array.isArray(data)) {
-          throw new Error('Invalid data format: expected array');
+          throw new Error('Invalid data format: expected array of cases');
         }
 
         setCasesData(data);
         setFilteredCases(data);
       } catch (err) {
-        console.error('Data loading error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load cases data');
+        console.error('Failed to load cases:', err);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -46,37 +49,48 @@ export default function CasesPage() {
     loadData();
   }, []);
 
-  const categories = [...new Set(casesData.map(caseItem => caseItem.category))];
-
-  const handleFilter = (filters: { category: string; searchQuery: string }) => {
-    let results = [...casesData];
-    
-    if (filters.category) {
+  const handleFilter = (filters: { searchQuery: string; court: string; subject: string }) => {
+  let results = [...casesData];
+  
+  if (filters.court) {
+    if (filters.court === 'Civil Court & Tribunal') {
+      // Filter for either Civil Court OR Tribunal
       results = results.filter(caseItem => 
-        caseItem.category.toLowerCase() === filters.category.toLowerCase()
+        caseItem.Court?.toLowerCase().includes('civil court') ||
+        caseItem.Court?.toLowerCase().includes('tribunal')
+      );
+    } else {
+      // Normal court filtering
+      results = results.filter(caseItem => 
+        caseItem.Court?.toLowerCase().includes(filters.court.toLowerCase())
       );
     }
-    
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      results = results.filter(caseItem => {
-        const title = (caseItem["Case Title"] || 
-                      caseItem["CASE TITLE"] || 
-                      caseItem["Case Title "] || 
-                      "").toLowerCase();
-        const description = (caseItem["File Unit"] || 
-                            caseItem.Court || 
-                            caseItem.HC || 
-                            "").toLowerCase();
-        
-        return title.includes(query) || description.includes(query);
-      });
-    }
-    
-    setFilteredCases(results);
-    setCurrentPage(1); // Reset to first page when filters change
-  };
-
+  }
+  
+  if (filters.subject) {
+    results = results.filter(caseItem => 
+      caseItem["Subject/Applicable Law"]?.toLowerCase().includes(filters.subject.toLowerCase())
+    );
+  }
+  
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase();
+    results = results.filter(caseItem => {
+      const searchFields = [
+        caseItem["Case Title"] || '',
+        caseItem["Case Number"] || '',
+        caseItem["Subject/Applicable Law"] || '',
+        caseItem.Court || '',
+        caseItem.Status || ''
+      ].join(' ').toLowerCase();
+      
+      return searchFields.includes(query);
+    });
+  }
+  
+  setFilteredCases(results);
+  setCurrentPage(1);
+};
   const indexOfLastCase = currentPage * casesPerPage;
   const indexOfFirstCase = indexOfLastCase - casesPerPage;
   const currentCases = filteredCases.slice(indexOfFirstCase, indexOfLastCase);
@@ -86,10 +100,10 @@ export default function CasesPage() {
     return (
       <main className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-grow flex items-center justify-center">
+        <div className="flex-grow flex items-center justify-center bg-[#f0f3f6]">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#2c415e]"></div>
-            <p className="mt-4 text-[#2c415e]">Loading cases...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2c415e]"></div>
+            <p className="mt-4 text-lg text-[#2c415e]">Loading our case database...</p>
           </div>
         </div>
         <Footer />
@@ -101,16 +115,24 @@ export default function CasesPage() {
     return (
       <main className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <h3 className="text-xl font-medium text-red-500 mb-2">Error Loading Cases</h3>
-            <p className="text-[#666b6f]">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-[#2c415e] text-white rounded-lg hover:bg-[#1a2a3e]"
-            >
-              Try Again
-            </button>
+        <div className="flex-grow flex items-center justify-center bg-[#f0f3f6]">
+          <div className="text-center max-w-md mx-4">
+            <h3 className="text-xl font-medium text-red-600 mb-3">Error Loading Cases</h3>
+            <p className="text-[#666b6f] mb-6">{error}</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-[#2c415e] text-white rounded-lg hover:bg-[#1a2a3e] transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="px-4 py-2 bg-gray-200 text-[#2c415e] rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Return Home
+              </button>
+            </div>
           </div>
         </div>
         <Footer />
@@ -121,7 +143,10 @@ export default function CasesPage() {
   return (
     <main className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-grow relative py-16 bg-[#f0f3f6]">
+      
+      <CasesHero />
+      
+      <div className="flex-grow relative py-12 bg-[#f0f3f6]">
         <div 
           className="absolute inset-0 z-0 opacity-10 pointer-events-none"
           style={{
@@ -132,21 +157,15 @@ export default function CasesPage() {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-[#2c415e] to-[#4a6789] p-8 text-white">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">Explore Our Cases</h1>
-              <p className="text-white/90 max-w-2xl">
-                Browse through our extensive portfolio of legal cases across various practice areas
-              </p>
-            </div>
-            
+            {/* Filter Section */}
             <div className="p-6 border-b border-gray-200">
               <CasesFilter 
-                categories={categories} 
                 onFilter={handleFilter} 
                 totalCases={filteredCases.length}
               />
             </div>
             
+            {/* Cases List */}
             <div className="p-6">
               <CasesList 
                 cases={currentCases} 
@@ -158,6 +177,7 @@ export default function CasesPage() {
           </div>
         </div>
       </div>
+      
       <Footer />
     </main>
   );

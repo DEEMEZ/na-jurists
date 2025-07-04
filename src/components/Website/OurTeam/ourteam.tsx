@@ -1,34 +1,37 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import teamMember2 from '@/assets/images/Member2.jpeg';
+import teamMember3 from '@/assets/images/Member3.jpeg';
+import teamMember4 from '@/assets/images/Member4.jpeg';
 import Image from 'next/image';
-import teamMember1 from '@/assets/images/team-member1.jpg';
-import teamMember2 from '@/assets/images/team-member2.jpg';
-import teamMember3 from '@/assets/images/team-member3.jpg';
+import { useEffect, useRef, useState } from 'react';
 
 // Team members data with images
 const teamMembers = [
   {
     id: 1,
-    name: "Syed Ishfaq Hussain Naqvi",
-    title: "Managing Partner | Advocate Supreme Court",
-    bio: "Mr. Naqvi is the founding father of N&A Jurists and a renowned corporate lawyer with expertise in corporate, taxation, and energy sectors.",
-    image: teamMember1,
+    name: "HINA AHMAD",
+    title: "Senior Lawyer  | Advocate High Court",
+    shortBio: "Hina Ahmad, belongs to Sourthern Punjab, holds Profesional Degree of LLB from the BZU Multan & MSc Mass Communication from GCU Fasialabad. Hina is serving as Senior Lawyer in N&A Jurists. She has 6+ years of experience of litigation. She is enriched with skills of communication, adovacy, and litigation.",
+    fullBio: "Her areas of specialization encompass; Civil & Criminal Trials, Civil, Criminal & Service Appeals, ADR Processes (Negotiations, Arbitrations & Mediations), all kinds of Family Disputes, Writ Petitions & Intra Court Appeals, General Legal Research, and Drafting & Vetting of Legal Documents. She has handled many cases independently. She has attended National and International Conferences in Alternative Dispute Resolution (ADR). She performed her duties as Legal Head in NGOs and Penal Advocate in different departments.",
+    image: teamMember4,
     delay: 100,
   },
   {
     id: 2,
-    name: "Ayesha Khan",
-    title: "Senior Associate | Corporate Law Expert",
-    bio: "Ayesha specializes in corporate law and has successfully represented clients in high-stake cases at various courts.",
+    name: "Hassan Rasheed Siddique",
+    title: "Senior Lawyer | Advocate High Court",
+    shortBio: "Hassan Rasheed Siddique specializes in International commercial law from University of Bedfordshire, London. He has significant experience and is also an alumni of international academy of leadership.",
+    fullBio: "He Specialized in International commercial law from University of Bedfordshire, London. He is also an alumni of international academy of leadership, FNST Gumersbach Germany and member of constitutional amendment committee Liberal Youth South Asia, Nepal. He is a Columnist/ senior analyst and an author.",
     image: teamMember2,
     delay: 150,
   },
   {
     id: 3,
-    name: "Hassan Malik",
-    title: "Associate | Taxation Specialist",
-    bio: "Hassan focuses on taxation law, helping clients navigate complex tax regulations and litigations.",
+    name: "SADAF NOMAN",
+    title: "Senior Lawyer | Advocate High Court",
+    shortBio: "Sadaf Noman holds the professional degree of LLB from Islamic University and has 6 years of experience in legal fields. She is associated with N&A Jurists since 2021.",
+    fullBio: "Miss Sadaf Noman holds the professional degree of LLB from Islamic University. She has 6 years of experience in the field of criminal, civil, family and corporate law in the lower judiciary. She has special skills to file the income tax as well as sales tax returns of businesses and individuals. She is associated with NA Jurists since 2021.",
     image: teamMember3,
     delay: 200,
   },
@@ -36,6 +39,11 @@ const teamMembers = [
 
 const OurTeam = () => {
   const sectionRef = useRef<HTMLDivElement | null>(null);
+  const [expandedBio, setExpandedBio] = useState<number | null>(null);
+
+  const toggleBio = (id: number) => {
+    setExpandedBio(expandedBio === id ? null : id);
+  };
 
   // Scroll reveal animation
   useEffect(() => {
@@ -98,7 +106,7 @@ const OurTeam = () => {
                       width={128}
                       height={128}
                       className="object-cover w-full h-full"
-                      priority // Add priority for faster loading
+                      priority
                     />
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
                   </div>
@@ -109,7 +117,33 @@ const OurTeam = () => {
                   {member.name}
                 </h3>
                 <p className="text-[#4a6789] font-medium mb-3 text-center">{member.title}</p>
-                <p className="text-[#666b6f] text-sm text-center">{member.bio}</p>
+                
+                {/* Bio with Read More functionality */}
+                <div className="text-[#666b6f] text-sm text-center">
+                  {member.id === 1 ? (
+                    <>
+                      <p>{member.shortBio}</p>
+                      {expandedBio === 1 && <p className="mt-2">{member.fullBio}</p>}
+                      <button
+                        onClick={() => toggleBio(1)}
+                        className="text-[#2c415e] hover:text-[#4a6789] font-medium mt-2 text-sm underline focus:outline-none"
+                      >
+                        {expandedBio === 1 ? 'Read Less' : 'Read More'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p>{member.shortBio}</p>
+                      {expandedBio === member.id && <p className="mt-2">{member.fullBio}</p>}
+                      <button
+                        onClick={() => toggleBio(member.id)}
+                        className="text-[#2c415e] hover:text-[#4a6789] font-medium mt-2 text-sm underline focus:outline-none"
+                      >
+                        {expandedBio === member.id ? 'Read Less' : 'Read More'}
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>

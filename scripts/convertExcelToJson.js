@@ -1,4 +1,4 @@
-const XLSX = require('xlsx');
+/*const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 
@@ -43,4 +43,4 @@ try {
 } catch (error) {
   console.error('❌ Conversion failed:', error);
   process.exit(1);
-}
+}*/
