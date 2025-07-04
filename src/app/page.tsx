@@ -7,6 +7,7 @@ import CaseStudies from '@/components/Website/HomePage/CaseStudies';
 import ManagingPartner from '@/components/Website/HomePage/ManagingPartner';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import HomeCases from '@/components/Website/HomePage/HomeCases';
+import Testimonials from '@/components/Website/HomePage/Testimonials'; 
 
 export default function Home() {
   return (
@@ -20,6 +21,8 @@ export default function Home() {
         <CaseStudies2 />
         <Spacer height={1} />
         <HomeCases />
+        <Spacer height={1} />
+        <Testimonials />
         <Spacer height={1} />
         <ManagingPartner />
         <Spacer height={1} />

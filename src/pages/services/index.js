@@ -7,6 +7,7 @@ import ServicesHeroImage from '../../assets/images/serviceshero.png';
 import Footer from '../../components/Website/Global/Footer/Footer.tsx';
 import Navbar from '../../components/Website/Global/Navbar/Navbar.tsx';
 import { services } from '../../constants';
+import Testimonials from '@/components/Website/HomePage/Testimonials'; // Add this import
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -209,61 +210,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-background">
-              Client Success Stories
-            </h2>
-            <div className="h-1 w-24 bg-background mx-auto mb-6"></div>
-            <p className="text-lg text-gray-700 max-w-4xl mx-auto">
-              Hear from clients who have experienced our exceptional service firsthand
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "The team at N&A Jurists handled my complex property dispute with exceptional skill and dedication. Their strategic approach saved me both time and money.",
-                name: "Ahmed R.",
-                case: "Property Dispute Resolution"
-              },
-              {
-                quote: "As a small business owner, I needed legal guidance that was both expert and affordable. N&A Jurists provided exactly that - top-notch service at reasonable rates.",
-                name: "Fatima S.",
-                case: "Business Legal Advisory"
-              },
-              {
-                quote: "During a difficult family matter, the compassion and professionalism shown by my lawyer made all the difference. I couldn't have asked for better representation.",
-                name: "Imran Q.",
-                case: "Family Law Matter"
-              }
-            ].map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-gray-50 p-8 rounded-xl relative"
-              >
-                <Quote className="absolute top-6 left-6 text-gray-200 w-8 h-8" />
-                <p className="text-gray-700 italic mb-6 pl-8">"{testimonial.quote}"</p>
-                <div className="border-t border-gray-200 pt-4">
-                  <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                  <p className="text-sm text-gray-500">{testimonial.case}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+       <Testimonials />
 
       {/* CTA Section */}
       <section className="py-20 px-6 bg-background bg-[url('https://i.imgur.com/pDwGPBz.jpeg')] bg-cover bg-center bg-no-repeat relative">

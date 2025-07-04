@@ -49,6 +49,9 @@ const Navbar = () => {
           <Link href="/about" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             About Us
           </Link>
+          <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
+            Our Team
+          </Link>
           <Link href="/cases" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Cases
           </Link>
