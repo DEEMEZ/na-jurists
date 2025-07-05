@@ -76,7 +76,7 @@ const ManagingPartner = () => {
 
               {/* Meet Our Team Button */}
               <Link
-                href="/about#our-team"
+                href="/team"
                 prefetch={true}
                 className="mt-6 inline-block rounded-full bg-[#2c415e] px-6 py-2 text-white font-medium transition-all duration-300 hover:bg-[#1a2a3e] hover:shadow-lg flex items-center"
               >
