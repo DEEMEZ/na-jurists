@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-   "build": "next build",
+    "dev": "npm run convert-docs && next dev",
+    "convert-docs": "node scripts/WordToJson.js",
+    "build": "npm run convert-docs && next build",
     "start": "next start",
     "lint": "next lint"
   },
