@@ -7,7 +7,7 @@ import ServicesHeroImage from '../../assets/images/serviceshero.png';
 import Footer from '../../components/Website/Global/Footer/Footer.tsx';
 import Navbar from '../../components/Website/Global/Navbar/Navbar.tsx';
 import { services } from '../../constants';
-import Testimonials from '@/components/Website/HomePage/Testimonials'; // Add this import
+import Testimonials from '@/components/Website/HomePage/Testimonials'; 
 
 const containerVariants = {
   hidden: { opacity: 0 },
