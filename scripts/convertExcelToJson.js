@@ -4,7 +4,7 @@ const path = require('path');
 
 // Array of Excel files to process (currently one file)
 const inputFiles = [
-    '../public/data/CASES List.xlsx',
+    '../public/data/Cases List Revised.xlsx',
 ];
 
 const outputPath = path.join(__dirname, '../public/data/cases.json');
