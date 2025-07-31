@@ -7,7 +7,7 @@ const inputFiles = [
     '../public/data/Cases List Revised.xlsx',
 ];
 
-const outputPath = path.join(__dirname, '../public/data/cases1.json');
+const outputPath = path.join(__dirname, '../public/data/cases.json');
 let allCases = [];
 
 // Function to process Excel file
