@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import LoadingSpinner from '@/components/Website/Global/LoadingSpinner/LoadingSpinner'; // Make sure to create this component
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -26,6 +27,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
       </head>
       <body className={`${inter.className} antialiased bg-[#2b415e]`}>
+        <LoadingSpinner />
         {children}
       </body>
     </html>
