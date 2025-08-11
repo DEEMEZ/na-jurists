@@ -8,7 +8,6 @@ const inputFiles = [
     '../public/data/Cases List Supreme Court.docx',
     '../public/data/Civil Courts cases list.docx',
     '../public/data/IHC Cases New List.docx',
-    '../public/data/Civil%20Courts%20cases%20list.docx',
 
 ];
 

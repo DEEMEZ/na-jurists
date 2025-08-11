@@ -79,7 +79,7 @@ export default function ServicesPage() {
           >
             <Link
               href="/contact"
-              className="bg-white text-background px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-100 transition inline-block border-2 border-white shadow-lg"
+              className="bg-white text-[#2c415e] px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-100 transition inline-block border-2 border-white shadow-lg"
             >
               Get Free Consultation
             </Link>
@@ -103,11 +103,11 @@ export default function ServicesPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-background">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#2c415e]">
               Our Legal Services
             </h2>
-            <div className="h-1 w-24 bg-background mx-auto mb-6"></div>
-            <p className="text-lg text-gray-700 max-w-4xl mx-auto">
+            <div className="h-1 w-24 bg-[#2c415e] mx-auto mb-6"></div>
+            <p className="text-lg text-[#666b6f] max-w-4xl mx-auto">
               We provide expert legal guidance across multiple practice areas, ensuring comprehensive solutions for all your legal needs.
             </p>
           </motion.div>
@@ -124,7 +124,7 @@ export default function ServicesPage() {
               <motion.div
                 key={service.id}
                 variants={itemVariants}
-                className="bg-background rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group"
+                className="bg-[#2c415e] rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group"
               >
                 <Link href={`/services/${service.id}`} className="flex flex-col h-full">
                   <div className="p-6 flex-grow">
@@ -159,11 +159,11 @@ export default function ServicesPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-background">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#2c415e]">
               Why Clients Choose Us
             </h2>
-            <div className="h-1 w-24 bg-background mx-auto mb-6"></div>
-            <p className="text-lg text-gray-700 max-w-4xl mx-auto">
+            <div className="h-1 w-24 bg-[#2c415e] mx-auto mb-6"></div>
+            <p className="text-lg text-[#666b6f] max-w-4xl mx-auto">
               Our commitment to excellence sets us apart in the legal industry
             </p>
           </motion.div>
@@ -171,17 +171,17 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: <Briefcase className="w-12 h-12 mb-4 text-background" />,
+                icon: <Briefcase className="w-12 h-12 mb-4 text-[#2c415e]" />,
                 title: "Specialized Expertise",
                 description: "Our lawyers focus on specific practice areas, ensuring deep knowledge and experience in each field."
               },
               {
-                icon: <ArrowRight className="w-12 h-12 mb-4 text-background" />,
+                icon: <ArrowRight className="w-12 h-12 mb-4 text-[#2c415e]" />,
                 title: "End-to-End Solutions",
                 description: "From initial consultation to final resolution, we manage every aspect of your legal matter."
               },
               {
-                icon: <Quote className="w-12 h-12 mb-4 text-background" />,
+                icon: <Quote className="w-12 h-12 mb-4 text-[#2c415e]" />,
                 title: "Client-First Approach",
                 description: "We prioritize your needs and goals, providing personalized attention and strategic advice."
               }
@@ -197,10 +197,10 @@ export default function ServicesPage() {
                 <div className="flex justify-center">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 text-center">
+                <h3 className="text-xl font-semibold text-[#2c415e] mb-3 text-center">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 text-center">
+                <p className="text-[#666b6f] text-center">
                   {feature.description}
                 </p>
               </motion.div>
@@ -213,7 +213,7 @@ export default function ServicesPage() {
        <Testimonials />
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-background bg-[url('https://i.imgur.com/pDwGPBz.jpeg')] bg-cover bg-center bg-no-repeat relative">
+      <section className="py-20 px-6 bg-[#2c415e] bg-[url('https://i.imgur.com/pDwGPBz.jpeg')] bg-cover bg-center bg-no-repeat relative">
         <div className="absolute inset-0 bg-black/60 z-0" />
         <div className="max-w-4xl mx-auto relative z-10 text-center">
           <motion.h2
@@ -242,7 +242,7 @@ export default function ServicesPage() {
           >
             <Link
               href="/contact"
-              className="inline-block bg-white text-background px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-100 transition shadow-lg"
+              className="inline-block bg-white text-[#2c415e] px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-100 transition shadow-lg"
             >
               Schedule Consultation
             </Link>

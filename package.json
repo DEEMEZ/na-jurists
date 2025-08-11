@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm run convert-docs && npm run convert-excel && next dev",
+    "dev": "npm run convert-docs && next dev",
     "convert-docs": "node scripts/WordToJson.js",
-    "convert-excel": "node scripts/convertExcelToJson.js",
-    "build": "npm run convert-docs && npm run convert-excel && next build",
+    "build": "npm run convert-docs && next build",
     "start": "next start",
     "lint": "next lint"
   },
