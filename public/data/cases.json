@@ -1,4 +1,5 @@
 [
+
   {
     "id": "beb01893-29bb-4859-b819-3c12724cbde0",
     "sourceFile": "Cases List Supreme Court.docx",
@@ -295,17 +296,6 @@
     "Court": "Supreme Court",
     "Subject/Applicable Law": "Service",
     "Status": "Pending"
-  },
-  {
-    "id": "5392c22f-2f91-49cd-b419-c961f7529603",
-    "sourceFile": "Civil Courts cases list.docx",
-    "tableIndex": 0,
-    "rowIndex": 0,
-    "Case Number": "Case Number",
-    "Case Title": "Case Title",
-    "Court": "Court",
-    "Subject/Applicable Law": "Subject/Applicable Law",
-    "Status": "Status"
   },
   {
     "id": "9f2afb8d-a6df-4e77-a7cc-0a4499b69fab",
@@ -3574,17 +3564,7 @@
     "Subject/Applicable Law": null,
     "Status": null
   },
-  {
-    "id": "62161d95-0c31-47ee-a07d-9c173d42ab74",
-    "sourceFile": "IHC Cases New List.docx",
-    "tableIndex": 0,
-    "rowIndex": 0,
-    "Case Number": "Case Number",
-    "Case Title": "Case Title",
-    "Court": "Court",
-    "Subject/Applicable Law": "Subject/Applicable Law",
-    "Status": "Status"
-  },
+ 
   {
     "id": "ca77e4a0-b6c8-452c-a985-3ee609307808",
     "sourceFile": "IHC Cases New List.docx",
