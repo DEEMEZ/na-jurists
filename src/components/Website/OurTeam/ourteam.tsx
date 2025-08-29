@@ -1,49 +1,135 @@
 "use client";
 
-import teamMember2 from '@/assets/images/Member2.jpeg';
-import teamMember3 from '@/assets/images/Member3.jpeg';
-import teamMember4 from '@/assets/images/Member4.jpeg';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-// Team members data with images
+// Team members data
 const teamMembers = [
   {
     id: 1,
-    name: "HINA AHMAD",
-    title: "Senior Lawyer  | Advocate High Court",
-    shortBio: "Hina Ahmad, belongs to Sourthern Punjab, holds Profesional Degree of LLB from the BZU Multan & MSc Mass Communication from GCU Fasialabad. Hina is serving as Senior Lawyer in N&A Jurists. She has 6+ years of experience of litigation. She is enriched with skills of communication, adovacy, and litigation.",
-    fullBio: "Her areas of specialization encompass; Civil & Criminal Trials, Civil, Criminal & Service Appeals, ADR Processes (Negotiations, Arbitrations & Mediations), all kinds of Family Disputes, Writ Petitions & Intra Court Appeals, General Legal Research, and Drafting & Vetting of Legal Documents. She has handled many cases independently. She has attended National and International Conferences in Alternative Dispute Resolution (ADR). She performed her duties as Legal Head in NGOs and Penal Advocate in different departments.",
-    image: teamMember4,
+    name: "Muhammad Ali Haider",
+    title: "Associate Partner",
+    fullBio: "Mr. Muhammad Ali Haider, Advocate High Court, holds an LL.B. (Hons) from the University of London and his areas of expertise include constitutional law, tax litigation, service matters, and regulatory compliance. He has represented a diverse clientele, including individuals, corporate entities, and government bodies, before the High Courts and specialized tribunals. Renowned for his analytical rigor and structured legal reasoning, he offers effective and result-oriented legal solutions.",
     delay: 100,
   },
   {
     id: 2,
-    name: "Hassan Rasheed Siddique",
-    title: "Senior Lawyer | Advocate High Court",
-    shortBio: "Hassan Rasheed Siddique specializes in International commercial law from University of Bedfordshire, London. He has significant experience and is also an alumni of international academy of leadership.",
-    fullBio: "He Specialized in International commercial law from University of Bedfordshire, London. He is also an alumni of international academy of leadership, FNST Gumersbach Germany and member of constitutional amendment committee Liberal Youth South Asia, Nepal. He is a Columnist/ senior analyst and an author.",
-    image: teamMember2,
+    name: "Hijab E Zainab",
+    title: "Associate",
+    fullBio: "Ms. Hijab E Zainab is a law graduate from the University of London, specializing in corporate law, civil and family litigation, and regulatory compliance. With expertise in company incorporation, SECP matters, REITs regulation, and NBFCs, she provides both legal advisory and hands-on services related to corporate structuring, regulatory filings, and compliance with SECP frameworks. Known for her pragmatic and solution-oriented approach, she has extensive experience representing clients before courts and regulatory tribunals, delivering effective and tailored legal solutions.",
     delay: 150,
   },
   {
     id: 3,
-    name: "SADAF NOMAN",
-    title: "Senior Lawyer | Advocate High Court",
-    shortBio: "Sadaf Noman holds the professional degree of LLB from Islamic University and has 6 years of experience in legal fields. She is associated with N&A Jurists since 2021.",
-    fullBio: "Miss Sadaf Noman holds the professional degree of LLB from Islamic University. She has 6 years of experience in the field of criminal, civil, family and corporate law in the lower judiciary. She has special skills to file the income tax as well as sales tax returns of businesses and individuals. She is associated with NA Jurists since 2021.",
-    image: teamMember3,
+    name: "Zain Hyder Malik",
+    title: "Associate",
+    fullBio: "Mr. Zain Hyder Malik is a committed and skilled legal practitioner with an LLB degree and a strong foundation in both criminal and civil law. He has successfully represented clients in a broad spectrum of serious matters, including murder trials, narcotics offences, financial crimes, and other complex criminal proceedings. Zain has also secured favorable outcomes in numerous bail petitions. His unwavering dedication to justice and sharp courtroom advocacy have earned him the trust of clients and respect within the legal community.",
+    delay: 200,
+  },
+  {
+    id: 4,
+    name: "Jabbar Khan",
+    title: "Associate",
+    fullBio: "With over thirteen years of experience in income and sales tax, including service at the Federal Board of Revenue (2010–2023), Mr. Jabbar, Advocate High Court, is highly skilled in income and sales tax, accounting and has represented clients in complex and high-profile matters before the appellate tax forums.",
+    delay: 100,
+  },
+  {
+    id: 5,
+    name: "HINA AHMAD",
+    title: "Senior Lawyer  | Advocate High Court",
+    fullBio: "Ms. Hina Ahmed, Advocate High Court, has substantial experience in family law, civil litigation, and property law. She has represented a diverse clientele in complex legal matters before various courts and forums. Her practice is marked by a thorough understanding of procedural and substantive law. She provides clear, effective, and results-driven legal solutions.",
+    delay: 150,
+  },
+  {
+    id: 6,
+    name: "Jowaria Tariq",
+    title: "Associate",
+    fullBio: "Ms. Jowaria Tariq is a law graduate from the University of London with expertise in corporate and commercial law, mergers and acquisitions, intellectual property, and arbitration and mediation services. She has experience in handling a broad range of corporate transactions, commercial litigation and regulatory work. She has advised and represented multinational companies and clients, bringing a practical, business-oriented approach to legal problem-solving.",
+    delay: 200,
+  },
+  {
+    id: 7,
+    name: "Ahmed",
+    title: "Intern",
+    fullBio: "Mr. Ahmad is currently serving as an Intern at N&A Jurists, where he actively contributes to the preparation of well-researched legal documents for proceedings before the District and High Courts. He is a dedicated team member focused on supporting effective legal strategies and delivering quality assistance in client matters.",
+    delay: 100,
+  },
+  {
+    id: 8,
+    name: "Sawaid Ul Hassaan",
+    title: "Intern",
+    fullBio: "Mr. Sawaid Ul Hassan, a law graduate from NUST Islamabad, serves as an Intern at N&A Jurists and plays a key role in drafting comprehensive legal documents for matters before the High Courts and District Courts. He is a valuable member of the team committed to achieving the best results for clients",
+    delay: 150,
+  },
+  {
+    id: 9,
+    name: "Farhat Jamil",
+    title: "Office Manager/clerk",
+    fullBio: "Mr. Farhat Jamil serves as Office Manager and Clerk at N&A Jurists, providing essential administrative support to ensure the smooth operation of the firm and efficient handling of client matters.",
     delay: 200,
   },
 ];
 
-const OurTeam = () => {
-  const sectionRef = useRef<HTMLDivElement | null>(null);
-  const [expandedBio, setExpandedBio] = useState<number | null>(null);
+const CloseIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4 text-black"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M18 6l-12 12" />
+      <path d="M6 6l12 12" />
+    </svg>
+  );
+};
 
-  const toggleBio = (id: number) => {
-    setExpandedBio(expandedBio === id ? null : id);
-  };
+const OurTeam = () => {
+  const [active, setActive] = useState<(typeof teamMembers)[number] | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Handle modal effects
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setActive(null);
+      }
+    }
+
+    if (active) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [active]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        setActive(null);
+      }
+    };
+
+    if (active) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [active]);
 
   // Scroll reveal animation
   useEffect(() => {
@@ -52,7 +138,8 @@ const OurTeam = () => {
         const rect = sectionRef.current.getBoundingClientRect();
         const isVisible = rect.top < window.innerHeight * 0.8 && rect.bottom >= 0;
         
-        if (isVisible) {
+        if (isVisible && !sectionRef.current.classList.contains('opacity-100')) {
+          setIsVisible(true);
           sectionRef.current.classList.add('opacity-100');
           sectionRef.current.classList.remove('opacity-0', 'translate-y-10');
         }
@@ -60,96 +147,172 @@ const OurTeam = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial state
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <section id="our-team" className="relative py-16">
-      {/* Background pattern */}
-      <div
-        className="absolute inset-0 z-0 opacity-5"
-        style={{
-          backgroundImage:
-            'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.3\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
-          backgroundSize: '60px 60px',
-        }}
-      />
-
-      <div className="container mx-auto px-4 relative z-10 max-w-7xl">
-        <div
-          ref={sectionRef}
-          className="bg-white rounded-xl shadow-lg p-8 md:p-12 transition-all duration-1000 transform opacity-0 translate-y-10"
-        >
-          {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#2c415e] mb-4">Our Team</h2>
-            <div className="h-1 w-24 bg-[#2c415e] mx-auto"></div>
-            <p className="text-[#666b6f] mt-4 max-w-3xl mx-auto">
-              Meet the dedicated professionals at N&A Jurists, committed to delivering exceptional legal expertise with integrity.
-            </p>
-          </div>
-
-          {/* Team Members Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {teamMembers.map((member) => (
-              <div
-                key={member.id}
-                className="bg-white rounded-lg p-6 border border-[#e5eaf4] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#a7c1d9] hover:-translate-y-1 group"
-                style={{ transitionDelay: `${member.delay}ms` }}
-              >
-                {/* Team Member Image */}
-                <div className="flex justify-center mb-4">
-                  <div className="relative w-32 h-32 overflow-hidden rounded-full shadow-md border border-gray-100">
-                    <Image
-                      src={member.image}
-                      alt={member.name}
-                      width={128}
-                      height={128}
-                      className="object-cover w-full h-full"
-                      priority
+    <>
+      {/* Modal Overlay and Content */}
+      {active && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className={`fixed inset-0 bg-black/20 z-[90] transition-opacity duration-300 ${
+              active ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          
+          {/* Modal */}
+          <div className="fixed inset-0 grid place-items-center z-[100] p-4">
+            {/* Close button */}
+            <button
+              className="flex absolute top-4 right-4 lg:hidden items-center justify-center bg-white rounded-full h-8 w-8 shadow-lg z-[110] transition-all hover:scale-110"
+              onClick={() => setActive(null)}
+            >
+              <CloseIcon />
+            </button>
+            
+            {/* Modal Content */}
+            <div
+              ref={modalRef}
+              className={`w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-300 ${
+                active ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+              }`}
+            >
+              {/* Team Member Icon in Modal */}
+              <div className="flex justify-center p-8 bg-gradient-to-br from-[#f8fafc] to-[#e5eaf4]">
+                <div className="relative w-40 h-40 overflow-hidden rounded-full shadow-lg border-4 border-white bg-gray-200 flex items-center justify-center transform hover:scale-105 transition-transform duration-200">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-24 w-24 text-gray-400" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
                     />
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
-                  </div>
-                </div>
-
-                {/* Team Member Info */}
-                <h3 className="text-lg font-semibold text-[#2c415e] mb-1 text-center group-hover:text-[#1a2a3e]">
-                  {member.name}
-                </h3>
-                <p className="text-[#4a6789] font-medium mb-3 text-center">{member.title}</p>
-                
-                {/* Bio with Read More functionality */}
-                <div className="text-[#666b6f] text-sm text-center">
-                  {member.id === 1 ? (
-                    <>
-                      <p>{member.shortBio}</p>
-                      {expandedBio === 1 && <p className="mt-2">{member.fullBio}</p>}
-                      <button
-                        onClick={() => toggleBio(1)}
-                        className="text-[#2c415e] hover:text-[#4a6789] font-medium mt-2 text-sm underline focus:outline-none"
-                      >
-                        {expandedBio === 1 ? 'Read Less' : 'Read More'}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <p>{member.shortBio}</p>
-                      {expandedBio === member.id && <p className="mt-2">{member.fullBio}</p>}
-                      <button
-                        onClick={() => toggleBio(member.id)}
-                        className="text-[#2c415e] hover:text-[#4a6789] font-medium mt-2 text-sm underline focus:outline-none"
-                      >
-                        {expandedBio === member.id ? 'Read Less' : 'Read More'}
-                      </button>
-                    </>
-                  )}
+                  </svg>
+                  <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
                 </div>
               </div>
-            ))}
+
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold text-[#2c415e] mb-2">
+                    {active.name}
+                  </h3>
+                  <p className="text-[#4a6789] font-medium text-lg">
+                    {active.title}
+                  </p>
+                </div>
+                
+                <div className="relative">
+                  <div className="text-[#666b6f] text-sm leading-relaxed max-h-64 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <p>{active.fullBio}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Main Section */}
+      <section id="our-team" className="relative py-16">
+        {/* Background pattern */}
+        <div
+          className="absolute inset-0 z-0 opacity-5"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.3\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
+            backgroundSize: '60px 60px',
+          }}
+        />
+
+        <div className="container mx-auto px-4 relative z-10 max-w-7xl">
+          <div
+            ref={sectionRef}
+            className="bg-white rounded-xl shadow-lg p-8 md:p-12 transition-all duration-1000 transform opacity-0 translate-y-10"
+          >
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-[#2c415e] mb-4">Our Team</h2>
+              <div className="h-1 w-24 bg-[#2c415e] mx-auto"></div>
+              <p className="text-[#666b6f] mt-4 max-w-3xl mx-auto">
+                Meet the dedicated professionals at N&A Jurists, committed to delivering exceptional legal expertise with integrity.
+              </p>
+            </div>
+
+            {/* Team Members Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {teamMembers.map((member, index) => (
+                <div
+                  key={member.id}
+                  onClick={() => setActive(member)}
+                  className={`bg-white rounded-lg p-6 border border-[#e5eaf4] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#a7c1d9] hover:-translate-y-1 group cursor-pointer transform ${
+                    isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+                  }`}
+                  style={{ 
+                    transitionDelay: isVisible ? `${member.delay}ms` : '0ms'
+                  }}
+                >
+                  {/* Team Member Icon */}
+                  <div className="flex justify-center mb-4">
+                    <div className="relative w-32 h-32 overflow-hidden rounded-full shadow-md border border-gray-100 bg-gray-200 flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="h-20 w-20 text-gray-400" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                        />
+                      </svg>
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
+                    </div>
+                  </div>
+
+                  {/* Team Member Info */}
+                  <h3 className="text-lg font-semibold text-[#2c415e] mb-1 text-center group-hover:text-[#1a2a3e] transition-colors">
+                    {member.name}
+                  </h3>
+                  <p className="text-[#4a6789] font-medium mb-3 text-center">
+                    {member.title}
+                  </p>
+                  
+                  {/* Truncated Bio Preview */}
+                  <div className="text-[#666b6f] text-sm text-center">
+                    <p className="line-clamp-3">
+                      {member.fullBio.length > 120 
+                        ? `${member.fullBio.substring(0, 120)}...` 
+                        : member.fullBio
+                      }
+                    </p>
+                  </div>
+
+                  {/* Click to expand indicator */}
+                  <div className="text-center mt-3">
+                    <span className="text-xs text-[#4a6789] opacity-70 group-hover:opacity-100 transition-opacity">
+                      Click to read more
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 

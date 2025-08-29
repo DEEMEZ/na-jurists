@@ -1,23 +1,24 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 const LoadingSpinner = () => {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setIsLoading(false);
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const isLink = target.tagName === 'A' || target.closest('a');
-      const isButton = target.tagName === 'BUTTON' || target.closest('button');
+      const link = target.closest('a');
       
-      if (isLink || isButton) {
+      // Only show spinner for internal navigation links
+      if (link && link.href && link.href.startsWith(window.location.origin)) {
         setIsLoading(true);
       }
     };
