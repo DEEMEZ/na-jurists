@@ -5,14 +5,24 @@ import { usePathname, useSearchParams } from 'next/navigation';
 
 const LoadingSpinner = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false); // Track client-side mount
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Set isMounted to true only on the client
   useEffect(() => {
-    setIsLoading(false);
-  }, [pathname, searchParams]);
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (isMounted) {
+      setIsLoading(false);
+    }
+  }, [pathname, searchParams, isMounted]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest('a');
@@ -25,9 +35,10 @@ const LoadingSpinner = () => {
 
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
-  }, []);
+  }, [isMounted]);
 
-  if (!isLoading) return null;
+  // Don't render anything on the server
+  if (!isMounted || !isLoading) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
