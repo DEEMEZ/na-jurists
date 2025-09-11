@@ -31,3 +31,40 @@ export interface CasesListProps {
 export interface CaseDetailsProps {
   id: string;
 }
+
+// Reported Judgments Types
+export interface ReportedJudgment {
+  id: string;
+  fileName: string;
+  title: string;
+  caseNumber: string;
+  court: string;
+  judge: string;
+  date: string;
+  parties: string;
+  subject: string;
+  summary: string;
+  fullText: string;
+  type: string;
+  isPdf?: boolean;
+}
+
+export interface ReportedJudgmentsFilterProps {
+  onFilter: (filters: { 
+    searchQuery: string;
+    court: string;
+    subject: string;
+  }) => void;
+  totalJudgments: number;
+}
+
+export interface ReportedJudgmentsListProps {
+  judgments: ReportedJudgment[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+export interface ReportedJudgmentDetailsProps {
+  id: string;
+}

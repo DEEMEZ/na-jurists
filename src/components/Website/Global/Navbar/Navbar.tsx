@@ -55,6 +55,9 @@ const Navbar = () => {
           <Link href="/cases" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Cases
           </Link>
+          <Link href="/reported-judgments" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
+            Reported Judgments
+          </Link>
           <Link href="/services" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Services
           </Link>
@@ -102,11 +105,25 @@ const Navbar = () => {
               About Us
             </Link>
             <Link 
+              href="/team" 
+              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Our Team
+            </Link>
+            <Link 
               href="/cases" 
               className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Cases
+            </Link>
+            <Link 
+              href="/reported-judgments" 
+              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Reported Judgments
             </Link>
             <Link 
               href="/services" 
