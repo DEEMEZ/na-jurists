@@ -1,257 +1,246 @@
-"use client";
+'use client';
 
-import { Suspense } from 'react';
-import ReportedJudgmentsFilter from '@/components/Website/ReportedJudgments/ReportedJudgmentsFilter';
-import ReportedJudgmentsHero from '@/components/Website/ReportedJudgments/ReportedJudgmentsHero';
+import { useState, useEffect } from 'react';
+import {
+  getJudgmentsByPage,
+  getAllJudgments,
+  searchJudgments,
+  filterJudgmentsByCourt,
+  filterJudgmentsByYear,
+  ReportedJudgment
+} from '@/components/Website/ReportedJudgments/ReportedJudgements';
 import ReportedJudgmentsList from '@/components/Website/ReportedJudgments/ReportedJudgmentsList';
-import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
-import { ReportedJudgment } from '@/types/LegalCase';
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import Footer from '@/components/Website/Global/Footer/Footer';
+import { Search, Building2, Calendar, RotateCcw } from 'lucide-react';
 
-// Loading fallback component for the filter
-function FilterFallback() {
-  return (
-    <div className="p-6 border-b border-gray-200">
-      <div className="animate-pulse">
-        <div className="h-8 bg-gray-200 rounded mb-4 w-1/3"></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="h-10 bg-gray-200 rounded"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Component to handle search params with Suspense
-function ReportedJudgmentsContentWithParams() {
-  const searchParams = useSearchParams();
-  const [judgmentsData, setJudgmentsData] = useState<ReportedJudgment[]>([]);
-  const [filteredJudgments, setFilteredJudgments] = useState<ReportedJudgment[]>([]);
+const ReportedJudgmentsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const judgmentsPerPage = 10;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [courtFilter, setCourtFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('');
+  const [filteredJudgments, setFilteredJudgments] = useState<ReportedJudgment[]>([]);
+  const [paginationData, setPaginationData] = useState({
+    judgments: [] as ReportedJudgment[],
+    totalPages: 0,
+    currentPage: 1,
+    totalCount: 0
+  });
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    let results = filteredJudgments;
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+    // Apply search
+    if (searchQuery.trim()) {
+      results = searchJudgments(searchQuery);
+    } else {
+      // Start with all judgments if no search
+      results = [...filteredJudgments];
+    }
 
-        const response = await fetch('/data/reported-judgments.json');
+    // Apply court filter
+    if (courtFilter) {
+      results = results.filter(judgment => 
+        judgment.court.toLowerCase().includes(courtFilter.toLowerCase())
+      );
+    }
 
-        if (!response.ok) {
-          throw new Error(`Failed to load reported judgments (HTTP ${response.status})`);
-        }
+    // Apply year filter
+    if (yearFilter) {
+      results = results.filter(judgment => 
+        judgment.date.includes(yearFilter) || judgment.citation.includes(yearFilter)
+      );
+    }
 
-        const data = await response.json();
+    // Paginate the filtered results
+    const startIndex = (currentPage - 1) * 10;
+    const endIndex = startIndex + 10;
+    const paginatedResults = results.slice(startIndex, endIndex);
 
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format: expected array of reported judgments');
-        }
+    setPaginationData({
+      judgments: paginatedResults,
+      totalPages: Math.ceil(results.length / 10),
+      currentPage,
+      totalCount: results.length
+    });
 
-        setJudgmentsData(data);
-        setFilteredJudgments(data);
-      } catch (err) {
-        console.error('Failed to load reported judgments:', err);
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Reset to page 1 if current page is beyond available pages
+    if (currentPage > Math.ceil(results.length / 10) && Math.ceil(results.length / 10) > 0) {
+      setCurrentPage(1);
+    }
+  }, [searchQuery, courtFilter, yearFilter, currentPage, filteredJudgments]);
 
-    loadData();
+  useEffect(() => {
+    // Initialize with all judgments - load all at once
+    const allJudgments = getAllJudgments();
+    setFilteredJudgments(allJudgments);
+
+    // Set initial pagination data
+    const paginatedResults = allJudgments.slice(0, 10);
+    setPaginationData({
+      judgments: paginatedResults,
+      totalPages: Math.ceil(allJudgments.length / 10),
+      currentPage: 1,
+      totalCount: allJudgments.length
+    });
   }, []);
 
-  useEffect(() => {
-    // Apply filters from search params if present
-    const searchQuery = searchParams?.get('search') || '';
-    const court = searchParams?.get('court') || '';
-    const subject = searchParams?.get('subject') || '';
-
-    let results = [...judgmentsData];
-
-    if (court) {
-      results = results.filter(judgment =>
-        judgment.court?.toLowerCase().includes(court.toLowerCase())
-      );
-    }
-
-    if (subject) {
-      results = results.filter(judgment =>
-        judgment.subject?.toLowerCase().includes(subject.toLowerCase())
-      );
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      results = results.filter(judgment => {
-        const searchFields = [
-          judgment.title || '',
-          judgment.caseNumber || '',
-          judgment.parties || '',
-          judgment.court || '',
-          judgment.subject || '',
-          judgment.summary || '',
-          judgment.judge || ''
-        ].join(' ').toLowerCase();
-
-        return searchFields.includes(query);
-      });
-    }
-
-    setFilteredJudgments(results);
-    setCurrentPage(1);
-  }, [searchParams, judgmentsData]);
-
-  const handleFilter = (filters: { searchQuery: string; court: string; subject: string }) => {
-    let results = [...judgmentsData];
-
-    if (filters.court) {
-      results = results.filter(judgment =>
-        judgment.court?.toLowerCase().includes(filters.court.toLowerCase())
-      );
-    }
-
-    if (filters.subject) {
-      results = results.filter(judgment =>
-        judgment.subject?.toLowerCase().includes(filters.subject.toLowerCase())
-      );
-    }
-
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      results = results.filter(judgment => {
-        const searchFields = [
-          judgment.title || '',
-          judgment.caseNumber || '',
-          judgment.parties || '',
-          judgment.court || '',
-          judgment.subject || '',
-          judgment.summary || '',
-          judgment.judge || ''
-        ].join(' ').toLowerCase();
-
-        return searchFields.includes(query);
-      });
-    }
-
-    setFilteredJudgments(results);
-    setCurrentPage(1);
-
-    // Update URL with search params
-    const params = new URLSearchParams();
-    if (filters.searchQuery) params.set('search', filters.searchQuery);
-    if (filters.court) params.set('court', filters.court);
-    if (filters.subject) params.set('subject', filters.subject);
-    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const indexOfLastJudgment = currentPage * judgmentsPerPage;
-  const indexOfFirstJudgment = indexOfLastJudgment - judgmentsPerPage;
-  const currentJudgments = filteredJudgments.slice(indexOfFirstJudgment, indexOfLastJudgment);
-  const totalPages = Math.ceil(filteredJudgments.length / judgmentsPerPage);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex-grow flex items-center justify-center bg-[#f0f3f6]">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2c415e]"></div>
-          <p className="mt-4 text-lg text-[#2c415e]">Loading reported judgments database...</p>
-        </div>
-      </div>
-    );
-  }
+  const clearFilters = () => {
+    setSearchQuery('');
+    setCourtFilter('');
+    setYearFilter('');
+    setCurrentPage(1);
 
-  if (error) {
-    return (
-      <div className="flex-grow flex items-center justify-center bg-[#f0f3f6]">
-        <div className="text-center max-w-md mx-4">
-          <h3 className="text-xl font-medium text-red-600 mb-3">Error Loading Reported Judgments</h3>
-          <p className="text-[#666b6f] mb-6">{error}</p>
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-[#2c415e] text-white rounded-lg hover:bg-[#1a2a3e] transition-colors"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={() => window.location.href = '/'}
-              className="px-4 py-2 bg-gray-200 text-[#2c415e] rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Return Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    // Reset to all judgments
+    const allJudgments = getAllJudgments();
+    setFilteredJudgments(allJudgments);
 
-  return (
-    <>
-      <ReportedJudgmentsHero />
+    const paginatedResults = allJudgments.slice(0, 10);
+    setPaginationData({
+      judgments: paginatedResults,
+      totalPages: Math.ceil(allJudgments.length / 10),
+      currentPage: 1,
+      totalCount: allJudgments.length
+    });
+  };
 
-      <div className="flex-grow relative py-12 bg-[#f0f3f6]">
-        <div
-          className="absolute inset-0 z-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%232c415e\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
-            backgroundSize: '60px 60px',
-          }}
-        />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            {/* Filter Section with Suspense */}
-            <div className="p-6 border-b border-gray-200">
-              <Suspense fallback={<FilterFallback />}>
-                <ReportedJudgmentsFilter
-                  onFilter={handleFilter}
-                  totalJudgments={filteredJudgments.length}
-                />
-              </Suspense>
-            </div>
-
-            {/* Reported Judgments List */}
-            <div className="p-6">
-              <ReportedJudgmentsList
-                judgments={currentJudgments}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-export default function ReportedJudgmentsPage() {
   return (
     <main className="min-h-screen flex flex-col">
       <Navbar />
-      <Suspense
-        fallback={
-          <div className="flex-grow flex items-center justify-center bg-[#f0f3f6]">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2c415e]"></div>
-              <p className="mt-4 text-lg text-[#2c415e]">Loading page...</p>
-            </div>
+
+      <div className="flex-grow bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-[#2c415e] mb-2">Reported Judgments</h1>
+            <p className="text-[#666b6f]">Browse through our collection of reported legal judgments</p>
           </div>
-        }
-      >
-        <ReportedJudgmentsContentWithParams />
-      </Suspense>
+
+          {/* Search and Filter Section */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <form onSubmit={handleSearch} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Search Input */}
+                <div className="md:col-span-2">
+                  <label htmlFor="search" className="block text-sm font-medium text-[#2c415e] mb-1 flex items-center gap-2">
+                    <Search className="w-4 h-4" />
+                    Search Judgments
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by citation, title, parties, or keywords..."
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4a6789] focus:border-transparent"
+                    />
+                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  </div>
+                </div>
+
+                {/* Court Filter */}
+                <div>
+                  <label htmlFor="court" className="block text-sm font-medium text-[#2c415e] mb-1 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    Court
+                  </label>
+                  <select
+                    id="court"
+                    value={courtFilter}
+                    onChange={(e) => setCourtFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4a6789] focus:border-transparent"
+                  >
+                    <option value="">All Courts</option>
+                    <option value="Islamabad High Court">Islamabad High Court</option>
+                    <option value="Supreme Court">Supreme Court</option>
+                    <option value="Lahore High Court">Lahore High Court</option>
+                    <option value="Sindh High Court">Sindh High Court</option>
+                    <option value="Peshawar High Court">Peshawar High Court</option>
+                    <option value="Balochistan High Court">Balochistan High Court</option>
+                  </select>
+                </div>
+
+                {/* Year Filter */}
+                <div>
+                  <label htmlFor="year" className="block text-sm font-medium text-[#2c415e] mb-1 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Year
+                  </label>
+                  <select
+                    id="year"
+                    value={yearFilter}
+                    onChange={(e) => setYearFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4a6789] focus:border-transparent"
+                  >
+                    <option value="">All Years</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                    <option value="2019">2019</option>
+                    <option value="2018">2018</option>
+                    <option value="2017">2017</option>
+                    <option value="2016">2016</option>
+                    <option value="2015">2015</option>
+                    <option value="2014">2014</option>
+                    <option value="2012">2012</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#2c415e] text-white rounded-md hover:bg-[#1e2d3f] transition-colors flex items-center gap-2"
+                >
+                  <Search className="w-4 h-4" />
+                  Search
+                </button>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="px-4 py-2 border border-gray-300 text-[#2c415e] rounded-md hover:bg-gray-50 transition-colors flex items-center gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Clear Filters
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Results Summary */}
+          <div className="mb-4">
+            <p className="text-sm text-[#666b6f]">
+              Showing {paginationData.judgments.length} of {paginationData.totalCount} judgments
+            </p>
+          </div>
+
+          {/* Judgments List */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <ReportedJudgmentsList
+              judgments={paginationData.judgments}
+              currentPage={paginationData.currentPage}
+              totalPages={paginationData.totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        </div>
+      </div>
+
       <Footer />
     </main>
   );
-}
+};
+
+export default ReportedJudgmentsPage;

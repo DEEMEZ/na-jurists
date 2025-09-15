@@ -8,8 +8,9 @@ import { useParams } from 'next/navigation';
 export default function ReportedJudgmentDetailPage() {
   const params = useParams();
   const id = params?.id as string;
+  const numericId = id ? parseInt(id, 10) : null;
 
-  if (!id) {
+  if (!id || !numericId || isNaN(numericId)) {
     return (
       <main className="min-h-screen flex flex-col">
         <Navbar />
@@ -28,7 +29,7 @@ export default function ReportedJudgmentDetailPage() {
     <main className="min-h-screen flex flex-col">
       <Navbar />
       <div className="flex-grow">
-        <ReportedJudgmentDetails id={id} />
+        <ReportedJudgmentDetails id={numericId} />
       </div>
       <Footer />
     </main>

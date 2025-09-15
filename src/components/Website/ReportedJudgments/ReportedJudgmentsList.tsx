@@ -1,5 +1,12 @@
-import { ReportedJudgmentsListProps } from '@/types/LegalCase';
+import { ReportedJudgment } from '@/components/Website/ReportedJudgments/ReportedJudgements';
 import Link from 'next/link';
+
+interface ReportedJudgmentsListProps {
+  judgments: ReportedJudgment[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
 
 const ReportedJudgmentsList = ({ judgments, currentPage, totalPages, onPageChange }: ReportedJudgmentsListProps) => {
   if (judgments.length === 0) {
@@ -16,65 +23,50 @@ const ReportedJudgmentsList = ({ judgments, currentPage, totalPages, onPageChang
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-[#2c415e] text-white">
           <tr>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Title</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Case Number</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Court</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Subject</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Date</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Type</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Sr. No</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Citation</th>
+            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Dictum/Law</th>
             <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {judgments.map((judgment) => (
+          {judgments.map((judgment, index) => (
             <tr key={judgment.id} className="hover:bg-gray-50">
+              <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                <div className="text-sm font-medium text-[#2c415e]">
+                  {(currentPage - 1) * 10 + index + 1}
+                </div>
+              </td>
               <td className="px-4 sm:px-6 py-4">
-                <div className="text-sm font-bold text-[#2c415e] w-full max-w-xs">
-                  {judgment.title}
+                <div className="text-sm font-bold text-[#2c415e] max-w-xs">
+                  {judgment.citation || judgment.caseNumber || judgment.title}
                 </div>
-                <div className="sm:hidden text-xs text-[#666b6f] mt-1">
-                  {judgment.caseNumber}
+                {/* Mobile view: Show dictum/law under citation */}
+                <div className="sm:hidden text-xs text-[#4a6789] mt-1 max-w-xs">
+                  {judgment.dictumLaw || judgment.subject}
                 </div>
-                {judgment.parties && judgment.parties !== 'Not extracted' && (
-                  <div className="text-xs text-[#4a6789] mt-1 max-w-xs truncate">
-                    {judgment.parties}
+              </td>
+              <td className="hidden sm:table-cell px-4 sm:px-6 py-4">
+                <div className="text-sm text-[#666b6f] max-w-sm">
+                  {judgment.dictumLaw || judgment.subject}
+                </div>
+                {judgment.court && (
+                  <div className="text-xs text-[#4a6789] mt-1">
+                    {judgment.court}
                   </div>
                 )}
-              </td>
-              <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-[#666b6f]">
-                  {judgment.caseNumber}
-                </div>
-              </td>
-              <td className="hidden md:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-[#666b6f] max-w-32 truncate">
-                  {judgment.court}
-                </div>
-              </td>
-              <td className="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
-                <span className="px-2 py-1 text-xs font-semibold bg-[#2c415e]/10 text-[#2c415e] rounded-full">
-                  {judgment.subject}
-                </span>
-              </td>
-              <td className="hidden xl:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-[#666b6f]">
-                {judgment.date}
-              </td>
-              <td className="hidden 2xl:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#666b6f]">
-                    {judgment.isPdf ? 'PDF' : 'DOCX'}
-                  </span>
-                  {judgment.isPdf && (
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  )}
-                </div>
+                {judgment.date && (
+                  <div className="text-xs text-[#666b6f] mt-1">
+                    {judgment.date}
+                  </div>
+                )}
               </td>
               <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <Link
                   href={`/reported-judgments/${judgment.id}`}
-                  className="text-[#4a6789] hover:text-[#2c415e] transition-colors"
+                  className="text-[#4a6789] hover:text-[#2c415e] transition-colors text-sm"
                 >
-                  View Details
+                  Detail
                 </Link>
               </td>
             </tr>

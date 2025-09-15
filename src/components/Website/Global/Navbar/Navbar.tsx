@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLegalResourcesOpen, setIsLegalResourcesOpen] = useState(false);
 
   // Add scroll effect to navbar
   useEffect(() => {
@@ -52,12 +53,51 @@ const Navbar = () => {
           <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Team
           </Link>
-          <Link href="/cases" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
-            Cases
-          </Link>
-          <Link href="/reported-judgments" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
-            Reported Judgments
-          </Link>
+          
+          {/* Legal Resources Dropdown */}
+          <div className="relative group">
+            <button
+              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300 flex items-center"
+              onMouseEnter={() => setIsLegalResourcesOpen(true)}
+              onMouseLeave={() => setIsLegalResourcesOpen(false)}
+            >
+              Legal Resources
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                className={`ml-1 h-4 w-4 transition-transform duration-200 ${isLegalResourcesOpen ? 'rotate-180' : ''}`}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {/* Dropdown Menu */}
+            <div 
+              className={`absolute left-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ${
+                isLegalResourcesOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+              }`}
+              onMouseEnter={() => setIsLegalResourcesOpen(true)}
+              onMouseLeave={() => setIsLegalResourcesOpen(false)}
+            >
+              <div className="py-1">
+                <Link 
+                  href="/cases" 
+                  className="block px-4 py-2 text-sm text-[#2c415e] hover:bg-gray-50 hover:text-[#4a6789] transition-colors duration-300"
+                >
+                  Cases
+                </Link>
+                <Link 
+                  href="/reported-judgments" 
+                  className="block px-4 py-2 text-sm text-[#2c415e] hover:bg-gray-50 hover:text-[#4a6789] transition-colors duration-300"
+                >
+                  Reported Judgments
+                </Link>
+              </div>
+            </div>
+          </div>
+          
           <Link href="/services" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Services
           </Link>
@@ -111,26 +151,32 @@ const Navbar = () => {
             >
               Our Team
             </Link>
-            <Link 
-              href="/cases" 
-              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Cases
-            </Link>
-            <Link 
-              href="/reported-judgments" 
-              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Reported Judgments
-            </Link>
+            
+            {/* Mobile Legal Resources Section */}
+            <div className="border-l-2 border-[#2c415e] pl-4">
+              <div className="text-[#2c415e] font-medium mb-2">Legal Resources</div>
+              <Link 
+                href="/cases" 
+                className="block text-sm text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300 mb-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Cases
+              </Link>
+              <Link 
+                href="/reported-judgments" 
+                className="block text-sm text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Reported Judgments
+              </Link>
+            </div>
+            
             <Link 
               href="/services" 
               className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Services
+              Our Services
             </Link>
             <Link 
               href="/contact" 
