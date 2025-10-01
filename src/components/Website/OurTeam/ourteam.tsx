@@ -81,7 +81,7 @@ const CloseIcon = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4 text-black"
+      className="h-5 w-5 text-gray-600 hover:text-gray-800 transition-colors"
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M18 6l-12 12" />
@@ -165,21 +165,21 @@ const OurTeam = () => {
           
           {/* Modal */}
           <div className="fixed inset-0 grid place-items-center z-[100] p-4">
-            {/* Close button */}
-            <button
-              className="flex absolute top-4 right-4 lg:hidden items-center justify-center bg-white rounded-full h-8 w-8 shadow-lg z-[110] transition-all hover:scale-110"
-              onClick={() => setActive(null)}
-            >
-              <CloseIcon />
-            </button>
-            
             {/* Modal Content */}
             <div
               ref={modalRef}
-              className={`w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-300 ${
+              className={`relative w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-300 ${
                 active ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
               }`}
             >
+              {/* Close button inside modal */}
+              <button
+                className="absolute top-4 right-4 flex items-center justify-center bg-white rounded-full h-10 w-10 shadow-lg z-10 transition-all hover:scale-110 hover:bg-gray-50"
+                onClick={() => setActive(null)}
+                aria-label="Close modal"
+              >
+                <CloseIcon />
+              </button>
               {/* Team Member Icon in Modal */}
               <div className="flex justify-center p-8 bg-gradient-to-br from-[#f8fafc] to-[#e5eaf4]">
                 <div className="relative w-40 h-40 overflow-hidden rounded-full shadow-lg border-4 border-white bg-gray-200 flex items-center justify-center transform hover:scale-105 transition-transform duration-200">

@@ -21,7 +21,7 @@ export const testimonials: Testimonial[] = [
     name: "Farhana Sheikh",
     role: "CFO, Pharma Solutions Inc.",
     content: "We avoided ₨8.2M in penalties thanks to their FBR tax advisory. Their team understands Pakistan's complex tax landscape better than anyone.",
-    rating: 5,
+    rating: 4,
     image: ""
   },
   {
@@ -34,8 +34,8 @@ export const testimonials: Testimonial[] = [
   },
   {
     id: 4,
-    name: "Ali Manufacturing",
-    role: "Faisalabad",
+    name: "Muhammad Ali Hassan",
+    role: "Managing Director, Ali Manufacturing (Faisalabad)",
     content: "Seamless acquisition of our competitor's assets worth ₨950M. Their due diligence uncovered liabilities we'd never have found ourselves.",
     rating: 5,
     image: ""
@@ -43,47 +43,47 @@ export const testimonials: Testimonial[] = [
   {
     id: 5,
     name: "Dr. Samina Khan",
-    role: "Herbal Pharma (Peshawar)",
+    role: "CEO, Herbal Pharma (Peshawar)",
     content: "Protected our 12 herbal formulations through IPO Pakistan patents. Their IP team fights counterfeiters aggressively in Peshawar courts.",
     rating: 5,
     image: ""
   },
   {
     id: 6,
-    name: "TechVenture Pakistan",
-    role: "Rawalpindi",
+    name: "Asad Malik",
+    role: "CTO, TechVenture Pakistan (Rawalpindi)",
     content: "Drafted bulletproof SaaS contracts and handled our data localization compliance with PTA. Saved us ₨15M in potential GDPR violations.",
-    rating: 5,
+    rating: 4,
     image: ""
   },
   {
     id: 7,
-    name: "Miners Association",
-    role: "Quetta",
+    name: "Khalil Ahmed",
+    role: "President, Miners Association (Quetta)",
     content: "Won our landmark case in Supreme Court protecting miners' rights under Article 9. Their constitutional experts are unmatched in Pakistan.",
     rating: 5,
     image: ""
   },
   {
     id: 8,
-    name: "ChenOne Group HR",
-    role: "Multan",
+    name: "Nadia Iqbal",
+    role: "HR Director, ChenOne Group (Multan)",
     content: "Reduced our labor disputes by 80% after they overhauled our employment contracts per Punjab Industrial Act amendments.",
     rating: 5,
     image: ""
   },
   {
     id: 9,
-    name: "Goods Exporters Council",
-    role: "Sialkot",
+    name: "Tariq Mahmood",
+    role: "Chairman, Goods Exporters Council (Sialkot)",
     content: "Resolved our ₨220M commercial dispute through arbitration in 45 days versus 3+ years in courts. Brilliant negotiators.",
     rating: 5,
     image: ""
   },
   {
     id: 10,
-    name: "Sindh Insurance Co.",
-    role: "Hyderabad",
+    name: "Rashid Ali Khan",
+    role: "Claims Manager, Sindh Insurance Co. (Hyderabad)",
     content: "Successfully defended 17 fraudulent claims worth ₨65M. Their forensic evidence presentation in court set new precedents for insurance fraud cases.",
     rating: 5,
     image: ""
@@ -101,7 +101,7 @@ export const testimonials: Testimonial[] = [
     name: "Sarah Johnson",
     role: "Director, Financial Services",
     content: "The team's knowledge of tax law is unparalleled. They helped us navigate complex regulations and saved our company from potential penalties.",
-    rating: 5,
+    rating: 4,
     image: ""
   }
 ];

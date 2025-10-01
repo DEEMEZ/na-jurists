@@ -153,7 +153,7 @@ export default function Testimonials() {
                   <div className="bg-white border border-gray-200 p-5 h-full w-full flex flex-col justify-between rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="overflow-hidden">
                       <div className="flex items-center mb-4">
-                        <div className="relative w-10 h-10 mr-3 flex items-center justify-center rounded-full overflow-hidden bg-[#2c415e]/10">
+                        <div className="relative w-10 h-10 mr-3 flex-shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-[#2c415e]/10">
                           {testimonial.image ? (
                             <img
                               src={testimonial.image}
@@ -161,11 +161,11 @@ export default function Testimonials() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <UserCircle2 className="w-10 h-10 text-[#2c415e]" />
+                            <UserCircle2 className="w-10 h-10 text-[#2c415e] flex-shrink-0" />
                           )}
                         </div>
 
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <h3 className="text-sm font-semibold text-[#2c415e] truncate">
                             {testimonial.name}
                           </h3>
@@ -226,7 +226,7 @@ export default function Testimonials() {
 
               <div className="pr-8">
                 <div className="flex items-center mb-6">
-                  <div className="relative w-16 h-16 mr-4 flex items-center justify-center rounded-full overflow-hidden bg-[#2c415e]/10">
+                  <div className="relative w-16 h-16 mr-4 flex-shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-[#2c415e]/10">
                     {selectedTestimonial.image ? (
                       <img
                         src={selectedTestimonial.image}
@@ -234,11 +234,11 @@ export default function Testimonials() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <UserCircle2 className="w-16 h-16 text-[#2c415e]" />
+                      <UserCircle2 className="w-16 h-16 text-[#2c415e] flex-shrink-0" />
                     )}
                   </div>
 
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h3 className="text-xl font-bold text-[#2c415e]">
                       {selectedTestimonial.name}
                     </h3>

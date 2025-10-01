@@ -1,6 +1,12 @@
 import { CasesListProps } from '@/types/LegalCase';
 import Link from 'next/link';
 
+const truncateTitle = (title: string, wordLimit: number = 10): string => {
+  const words = title?.split(' ') || [];
+  if (words.length <= wordLimit) return title || '';
+  return words.slice(0, wordLimit).join(' ') + '...';
+};
+
 const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListProps) => {
   if (cases.length === 0) {
     return (
@@ -12,46 +18,43 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
   }
 
   return (
-    <div className="overflow-x-auto pb-4">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="pb-4">
+      <table className="w-full divide-y divide-gray-200 table-fixed">
         <thead className="bg-[#2c415e] text-white">
           <tr>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Case Title</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Case Number</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Subject</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Court</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Status</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
+            <th className="w-1/4 px-2 py-3 text-left text-xs font-bold uppercase tracking-wider">Case Title</th>
+            <th className="w-1/6 px-2 py-3 text-left text-xs font-bold uppercase tracking-wider">Case Number</th>
+            <th className="w-1/5 px-2 py-3 text-left text-xs font-bold uppercase tracking-wider">Subject</th>
+            <th className="w-1/6 px-2 py-3 text-left text-xs font-bold uppercase tracking-wider">Court</th>
+            <th className="w-1/8 px-2 py-3 text-left text-xs font-bold uppercase tracking-wider">Status</th>
+            <th className="w-1/8 px-2 py-3 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {cases.map((caseItem) => (
             <tr key={caseItem.id} className="hover:bg-gray-50">
-              <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-bold text-[#2c415e] w-full">
-                  {caseItem['Case Title']}
-                </div>
-                <div className="sm:hidden text-xs text-[#666b6f] mt-1">
-                  {caseItem['Case Number'] || 'N/A'}
+              <td className="px-2 py-3">
+                <div className="text-sm font-bold text-[#2c415e]" title={caseItem['Case Title']}>
+                  {truncateTitle(caseItem['Case Title'] || '', 10)}
                 </div>
               </td>
-              <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
+              <td className="px-2 py-3">
                 <div className="text-sm text-[#666b6f]">
                   {caseItem['Case Number'] || 'N/A'}
                 </div>
               </td>
-              <td className="hidden md:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
-                <span className="px-2 py-1 text-xs font-semibold bg-[#2c415e]/10 text-[#2c415e] rounded-full">
+              <td className="px-2 py-3">
+                <span className="inline-block px-2 py-1 text-xs font-semibold bg-[#2c415e]/10 text-[#2c415e] rounded-full">
                   {caseItem['Subject/Applicable Law'] || 'N/A'}
                 </span>
               </td>
-              <td className="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-[#666b6f]">
+              <td className="px-2 py-3 text-sm text-[#666b6f]">
                 {caseItem.Court || 'N/A'}
               </td>
-              <td className="hidden xl:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-[#666b6f]">
+              <td className="px-2 py-3 text-sm text-[#666b6f]">
                 {caseItem.Status || 'N/A'}
               </td>
-              <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <td className="px-2 py-3 text-sm font-medium">
                 <Link
                   href={`/cases/${caseItem.id}`}
                   className="text-[#4a6789] hover:text-[#2c415e]"
