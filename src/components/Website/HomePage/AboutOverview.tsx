@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { Award, Scale, Building2, Clock, Shield, Zap, Users } from 'lucide-react';
 
 const AboutOverview = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -26,10 +27,10 @@ const AboutOverview = () => {
   }, []);
 
   const achievements = [
-    { number: "25+", label: "Years of Excellence", icon: "🏆" },
-    { number: "500+", label: "Cases Won", icon: "⚖️" },
-    { number: "100+", label: "Corporate Clients", icon: "🏢" },
-    { number: "24/7", label: "Client Support", icon: "📞" }
+    { number: "300+", label: "Satisfied Clients", icon: Award },
+    { number: "500+", label: "Cases Won", icon: Scale },
+    { number: "100+", label: "Corporate Clients", icon: Building2 },
+    { number: "24/7", label: "Client Support", icon: Clock }
   ];
 
   return (
@@ -56,7 +57,7 @@ const AboutOverview = () => {
                 <span className="block text-[#4a6789]">Excellence Since 1998</span>
               </h2>
 
-              <div className="w-20 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37]"></div>
+              <div className="w-20 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b]"></div>
             </div>
 
             <div className="space-y-6 text-[#718096] text-lg leading-relaxed">
@@ -82,9 +83,7 @@ const AboutOverview = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="w-16 h-16 bg-[#1a2b3d] rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
+                  <Shield className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="font-semibold text-[#1a2b3d] mb-2">Integrity</h3>
                 <p className="text-sm text-[#718096]">Unwavering ethical standards</p>
@@ -92,19 +91,15 @@ const AboutOverview = () => {
 
               <div className="text-center">
                 <div className="w-16 h-16 bg-[#4a6789] rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+                  <Zap className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="font-semibold text-[#1a2b3d] mb-2">Excellence</h3>
                 <p className="text-sm text-[#718096]">Superior legal expertise</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#d4af37] rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
+                <div className="w-16 h-16 bg-[#5a7a9b] rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="font-semibold text-[#1a2b3d] mb-2">Dedication</h3>
                 <p className="text-sm text-[#718096]">Committed to client success</p>
@@ -154,27 +149,32 @@ const AboutOverview = () => {
 
                   {/* Achievements Grid */}
                   <div className="grid grid-cols-2 gap-4">
-                    {achievements.map((achievement, index) => (
-                      <div
-                        key={index}
-                        className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center hover:bg-white/20 transition-all duration-300"
-                      >
-                        <div className="text-2xl mb-2">{achievement.icon}</div>
-                        <div className="text-2xl font-bold text-[#d4af37] mb-1">
-                          {achievement.number}
+                    {achievements.map((achievement, index) => {
+                      const IconComponent = achievement.icon;
+                      return (
+                        <div
+                          key={index}
+                          className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center hover:bg-white/20 transition-all duration-300"
+                        >
+                          <div className="flex justify-center mb-2">
+                            <IconComponent className="w-6 h-6 text-[#4a6789]" />
+                          </div>
+                          <div className="text-2xl font-bold text-white mb-1">
+                            {achievement.number}
+                          </div>
+                          <div className="text-xs text-blue-200">
+                            {achievement.label}
+                          </div>
                         </div>
-                        <div className="text-xs text-blue-200">
-                          {achievement.label}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Call to Action */}
                   <div className="text-center pt-4">
                     <Link
                       href="/contact"
-                      className="inline-flex items-center bg-[#d4af37] text-[#1a2b3d] px-6 py-3 rounded-lg font-semibold hover:bg-[#e6c04a] transition-all duration-300 transform hover:-translate-y-1"
+                      className="inline-flex items-center bg-[#4a6789] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#5a7a9b] transition-all duration-300 transform hover:-translate-y-1"
                     >
                       Schedule Consultation
                       <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,9 +185,6 @@ const AboutOverview = () => {
                 </div>
               </div>
 
-              {/* Decorative Elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#4a6789]/20 rounded-full"></div>
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#d4af37]/20 rounded-full"></div>
             </div>
           </div>
         </div>

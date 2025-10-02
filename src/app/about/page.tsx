@@ -72,7 +72,7 @@ export default function AboutPage() {
                     Our journey reflects our commitment to excellence and our ability to adapt to the evolving legal landscape.
                   </p>
                   <p className="mt-4">
-                    Over the past 25+ years, we've successfully represented clients in landmark cases before the Supreme Court, High Courts, and District Courts across Pakistan.
+                    Over the past 20+ years, we've successfully represented clients in landmark cases before the Supreme Court, High Courts, and District Courts across Pakistan.
                   </p>
                 </div>
               </div>

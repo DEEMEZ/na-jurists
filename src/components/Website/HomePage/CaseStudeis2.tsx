@@ -10,7 +10,7 @@ const stats = [
   { value: 50, suffix: "+", label: "Cases in Supreme Court", duration: 2000 },
   { value: 1000, suffix: "+", label: "Cases in High Court", duration: 2500 },
   { value: 1000, suffix: "+", label: "Cases in District Courts", duration: 2500 },
-  { value: 25, suffix: "+", label: "Satisfied Clients", duration: 1800 }
+  { value: 100, suffix: "+", label: "Satisfied Clients", duration: 1800 }
 ];
 
 // Case studies data with properly referenced images

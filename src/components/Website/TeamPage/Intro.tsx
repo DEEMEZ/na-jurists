@@ -44,7 +44,7 @@ const TeamIntro = () => {
             
             <div className="grid grid-cols-2 gap-4">
               {[
-                { value: 25, label: "Years Combined Experience" },
+                { value: 300, label: "Happy Clients" },
                 { value: 1000, label: "Cases Handled" },
                 { value: 50, label: "Supreme Court Cases" },
                 { value: 12, label: "Practice Areas" }

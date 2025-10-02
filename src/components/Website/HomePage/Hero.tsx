@@ -100,147 +100,153 @@ const Hero = () => {
         {/* Main Content */}
         <div className="container mx-auto px-6 py-20 relative z-30">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center space-y-8">
-              {/* Logo */}
-              <div className={`transition-all duration-1000 delay-200 ${
-                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center min-h-[70vh]">
+              {/* Left Side - Logo & Branding */}
+              <div className={`space-y-8 transition-all duration-1000 delay-200 ${
+                isLoaded ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'
               }`}>
-                <div className="inline-block bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                  <Image
-                    src="/text-logo.png"
-                    alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
-                    width={350}
-                    height={120}
-                    className="brightness-0 invert max-w-[280px] md:max-w-[350px] h-auto"
-                    priority
-                  />
+                {/* Logo with side accent */}
+                <div className="relative">
+                  <div className="absolute -left-6 top-0 bottom-0 w-2 bg-gradient-to-b from-[#4a6789] to-[#5a7a9b] rounded-full"></div>
+                  <div className="bg-white/5 backdrop-blur-sm rounded-r-3xl pl-12 pr-8 py-8 border-r border-white/20">
+                    <Image
+                      src="/text-logo.png"
+                      alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
+                      width={350}
+                      height={120}
+                      className="brightness-0 invert max-w-[250px] md:max-w-[300px] h-auto"
+                      priority
+                    />
+                  </div>
+                </div>
+
+                {/* Side badges */}
+                <div className="space-y-4 pl-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-3 h-3 bg-[#4a6789] rounded-full"></div>
+                    <span className="text-white/80 text-sm font-medium">Supreme Court Advocates</span>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-3 h-3 bg-[#5a7a9b] rounded-full"></div>
+                    <span className="text-white/80 text-sm font-medium">Corporate Law Specialists</span>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-3 h-3 bg-[#6a8aab] rounded-full"></div>
+                    <span className="text-white/80 text-sm font-medium">1500+ Cases Handled</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Dynamic Content with Smooth Fade Transitions */}
-              <div className={`space-y-6 transition-all duration-1000 delay-400 ${
-                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+              {/* Right Side - Content */}
+              <div className={`space-y-8 transition-all duration-1000 delay-400 ${
+                isLoaded ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
               }`}>
-                <div className="space-y-4">
-                  <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                    <p className="text-white font-semibold text-lg md:text-xl tracking-wide uppercase drop-shadow-lg">
+                {/* Subtitle with corner accent */}
+                <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                  <div className="relative">
+                    <div className="absolute -top-2 -left-2 w-6 h-6 border-l-2 border-t-2 border-[#4a6789]"></div>
+                    <p className="text-[#4a6789] font-semibold text-lg md:text-xl tracking-wide uppercase pl-6">
                       {heroSlides[currentSlide].subtitle}
                     </p>
                   </div>
-
-                  <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight text-white max-w-5xl mx-auto drop-shadow-2xl">
-                      {heroSlides[currentSlide].title}
-                    </h1>
-                  </div>
                 </div>
 
-                <div className="w-32 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto"></div>
-
+                {/* Large asymmetrical title */}
                 <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                  <p className="text-lg md:text-xl text-white leading-relaxed max-w-3xl mx-auto drop-shadow-lg">
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[0.9] text-left">
+                    <span className="block">{heroSlides[currentSlide].title.split(' ')[0]}</span>
+                    {heroSlides[currentSlide].title.split(' ').length > 1 && (
+                      <span className="block text-right text-white/70 text-4xl md:text-5xl lg:text-6xl ml-8 -mt-2">
+                        {heroSlides[currentSlide].title.split(' ').slice(1).join(' ')}
+                      </span>
+                    )}
+                  </h1>
+                </div>
+
+                {/* Angled separator */}
+                <div className="relative h-1 w-32">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#4a6789] to-transparent transform -skew-x-12"></div>
+                </div>
+
+                {/* Description */}
+                <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                  <p className="text-lg md:text-xl text-white/90 leading-relaxed max-w-lg">
                     {heroSlides[currentSlide].description}
                   </p>
                 </div>
-              </div>
 
-              {/* CTA Buttons with fade transitions */}
-              <div className={`flex flex-col sm:flex-row gap-6 justify-center pt-8 transition-all duration-1000 delay-600 ${
-                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-              }`}>
-                <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                  <Link
-                    href="/services"
-                    className="bg-[#4a6789] text-white px-10 py-4 rounded-lg hover:bg-[#5a7a9b] transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 text-center uppercase tracking-wide"
-                  >
-                    {heroSlides[currentSlide].cta1}
-                  </Link>
-                </div>
-                <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                  <Link
-                    href="/contact"
-                    className="bg-[#4a6789] text-white px-10 py-4 rounded-lg hover:bg-[#5a7a9b] transition-all duration-300 font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 text-center uppercase tracking-wide"
-                  >
-                    {heroSlides[currentSlide].cta2}
-                  </Link>
-                </div>
-              </div>
-
-              {/* Professional Statistics */}
-              <div className={`grid grid-cols-2 md:grid-cols-4 gap-8 pt-16 transition-all duration-1000 delay-800 ${
-                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-              }`}>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <div className="text-3xl font-bold text-[#4a6789] mb-2">25+</div>
-                  <div className="text-blue-200 text-sm uppercase tracking-wide">Years Experience</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <div className="text-3xl font-bold text-[#4a6789] mb-2">500+</div>
-                  <div className="text-blue-200 text-sm uppercase tracking-wide">Cases Won</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <div className="text-3xl font-bold text-[#4a6789] mb-2">100+</div>
-                  <div className="text-blue-200 text-sm uppercase tracking-wide">Corporate Clients</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <div className="text-3xl font-bold text-[#4a6789] mb-2">24/7</div>
-                  <div className="text-blue-200 text-sm uppercase tracking-wide">Client Support</div>
+                {/* Stacked CTA Buttons */}
+                <div className="space-y-4">
+                  <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                    <Link
+                      href="/services"
+                      className="group flex items-center justify-between bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] text-white px-8 py-4 rounded-none hover:from-[#5a7a9b] hover:to-[#6a8aab] transition-all duration-300 font-bold w-full max-w-xs"
+                    >
+                      <span>{heroSlides[currentSlide].cta1}</span>
+                      <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Link>
+                  </div>
+                  <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                    <Link
+                      href="/contact"
+                      className="group flex items-center justify-between border-l-4 border-[#4a6789] bg-white/5 backdrop-blur-sm text-white px-8 py-4 hover:bg-white/10 transition-all duration-300 font-semibold w-full max-w-xs"
+                    >
+                      <span>{heroSlides[currentSlide].cta2}</span>
+                      <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Link>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Slide Indicators */}
-              <div className={`flex justify-center space-x-4 pt-12 transition-all duration-1000 delay-1000 ${
-                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-              }`}>
-                {heroSlides.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      if (index !== currentSlide) {
-                        setIsTransitioning(true);
+            {/* Slide Indicators */}
+            <div className={`flex justify-center space-x-4 pt-12 transition-all duration-1000 delay-1000 ${
+              isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            }`}>
+              {heroSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    if (index !== currentSlide) {
+                      setIsTransitioning(true);
+                      setTimeout(() => {
+                        setCurrentSlide(index);
                         setTimeout(() => {
-                          setCurrentSlide(index);
-                          setTimeout(() => {
-                            setIsTransitioning(false);
-                          }, 100);
-                        }, 500);
-                      }
-                    }}
-                    className={`w-4 h-4 rounded-full transition-all duration-300 ${
-                      index === currentSlide
-                        ? 'bg-[#4a6789] scale-125 shadow-lg'
-                        : 'bg-white/30 hover:bg-white/50'
-                    }`}
-                  />
-                ))}
-              </div>
+                          setIsTransitioning(false);
+                        }, 100);
+                      }, 500);
+                    }
+                  }}
+                  className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                    index === currentSlide
+                      ? 'bg-[#4a6789] scale-125 shadow-lg'
+                      : 'bg-white/30 hover:bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
 
-              {/* Professional Badges */}
-              <div className={`flex flex-wrap justify-center gap-4 pt-8 transition-all duration-1000 delay-1200 ${
-                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-              }`}>
-                <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
-                  <span className="text-blue-200 text-sm font-medium">Supreme Court Advocates</span>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
-                  <span className="text-blue-200 text-sm font-medium">Corporate Law Specialists</span>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
-                  <span className="text-blue-200 text-sm font-medium">Trusted Legal Advisors</span>
-                </div>
+            {/* Professional Badges */}
+            <div className={`flex flex-wrap justify-center gap-4 pt-8 transition-all duration-1000 delay-1200 ${
+              isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            }`}>
+              <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
+                <span className="text-blue-200 text-sm font-medium">Supreme Court Advocates</span>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
+                <span className="text-blue-200 text-sm font-medium">Corporate Law Specialists</span>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
+                <span className="text-blue-200 text-sm font-medium">Trusted Legal Advisors</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-30">
-          <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 border border-white/20">
-            <svg className="w-6 h-6 text-[#4a6789]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
-        </div>
       </div>
 
       {/* Enhanced Team Photo Section */}
@@ -262,24 +268,6 @@ const Hero = () => {
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#1a2b3d]/40 via-transparent to-transparent z-5"></div>
 
-          {/* Enhanced team caption */}
-          <div className="absolute bottom-8 left-8 right-8 z-20">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white/95 backdrop-blur-sm rounded-xl py-6 px-8 shadow-2xl text-center border border-white/20">
-                <h3 className="text-[#1a2b3d] font-bold text-xl md:text-2xl mb-2">
-                  Our Distinguished Legal Team
-                </h3>
-                <p className="text-[#718096] text-sm md:text-base mb-4">
-                  Experienced advocates committed to delivering exceptional legal outcomes for our clients
-                </p>
-                <div className="flex flex-wrap justify-center gap-4 text-sm">
-                  <span className="bg-[#1a2b3d] text-white px-3 py-1 rounded-full">Supreme Court Advocates</span>
-                  <span className="bg-[#4a6789] text-white px-3 py-1 rounded-full">Corporate Law Specialists</span>
-                  <span className="bg-[#4a6789] text-white px-3 py-1 rounded-full">Trusted Advisors</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import Member1 from '@/assets/images/Member1.jpeg';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+import { ArrowRight } from 'lucide-react';
 
 const ManagingPartner = () => {
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -56,7 +57,7 @@ const ManagingPartner = () => {
               Meet Our
               <span className="block text-[#4a6789]">Managing Partner</span>
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
             <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
               Led by visionary legal expertise with decades of experience in corporate law and Supreme Court advocacy
             </p>
@@ -78,12 +79,9 @@ const ManagingPartner = () => {
                   {/* Enhanced overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a2b3d]/30 via-transparent to-transparent"></div>
                   {/* Professional border accent */}
-                  <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1a2b3d] via-[#4a6789] to-[#d4af37]"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1a2b3d] via-[#4a6789] to-[#5a7a9b]"></div>
                 </div>
 
-                {/* Decorative elements */}
-                <div className="absolute -top-6 -right-6 w-32 h-32 bg-[#4a6789]/10 rounded-full -z-10"></div>
-                <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-[#d4af37]/10 rounded-full -z-10"></div>
               </div>
             </div>
 
@@ -104,7 +102,7 @@ const ManagingPartner = () => {
                     <span className="bg-[#4a6789] text-white px-3 py-1 rounded-full text-xs font-medium">
                       Corporate Law
                     </span>
-                    <span className="bg-[#d4af37] text-white px-3 py-1 rounded-full text-xs font-medium">
+                    <span className="bg-[#5a7a9b] text-white px-3 py-1 rounded-full text-xs font-medium">
                       Taxation
                     </span>
                   </div>
@@ -151,9 +149,7 @@ const ManagingPartner = () => {
                   className="bg-[#1a2b3d] text-white px-8 py-3 rounded-lg hover:bg-[#2c415e] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center flex items-center justify-center"
                 >
                   Meet Our Full Team
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
                 <Link
                   href="/contact"

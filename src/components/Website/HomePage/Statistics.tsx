@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import {
+  Award,
+  Scale,
+  Building2,
+  ThumbsUp,
+  Trophy,
+  Users
+} from 'lucide-react';
 
 const Statistics = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,11 +24,11 @@ const Statistics = () => {
 
   const achievements = [
     {
-      value: 25,
+      value: 1500,
       suffix: "+",
-      label: "Years of Legal Excellence",
-      description: "Providing trusted legal services since 1998",
-      icon: "🏆",
+      label: "Cases Handled",
+      description: "Successfully resolved cases across all practice areas",
+      icon: <Award className="w-12 h-12" />,
       color: "from-[#1a2b3d] to-[#2c415e]"
     },
     {
@@ -28,7 +36,7 @@ const Statistics = () => {
       suffix: "+",
       label: "Successful Cases",
       description: "Favorable outcomes across all practice areas",
-      icon: "⚖️",
+      icon: <Scale className="w-12 h-12" />,
       color: "from-[#4a6789] to-[#5a7a9b]"
     },
     {
@@ -36,15 +44,15 @@ const Statistics = () => {
       suffix: "+",
       label: "Corporate Clients",
       description: "Trusted by leading businesses and organizations",
-      icon: "🏢",
-      color: "from-[#d4af37] to-[#e6c04a]"
+      icon: <Building2 className="w-12 h-12" />,
+      color: "from-[#5a7a9b] to-[#6a8aab]"
     },
     {
       value: 99,
       suffix: "%",
       label: "Client Satisfaction",
       description: "Consistent delivery of exceptional legal services",
-      icon: "😊",
+      icon: <ThumbsUp className="w-12 h-12" />,
       color: "from-[#2c415e] to-[#3d526f]"
     },
     {
@@ -52,7 +60,7 @@ const Statistics = () => {
       suffix: "+",
       label: "Legal Awards",
       description: "Recognition for outstanding legal practice",
-      icon: "🥇",
+      icon: <Trophy className="w-12 h-12" />,
       color: "from-[#1a2b3d] to-[#4a6789]"
     },
     {
@@ -60,8 +68,8 @@ const Statistics = () => {
       suffix: "+",
       label: "Expert Advocates",
       description: "Highly qualified legal professionals",
-      icon: "👥",
-      color: "from-[#4a6789] to-[#d4af37]"
+      icon: <Users className="w-12 h-12" />,
+      color: "from-[#4a6789] to-[#5a7a9b]"
     }
   ];
 
@@ -171,7 +179,7 @@ const Statistics = () => {
             Proven Track Record of
             <span className="block text-[#4a6789]">Legal Excellence</span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
           <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
             Our commitment to excellence has earned us recognition and the trust of clients across various industries.
             These numbers reflect our dedication to delivering outstanding legal outcomes.
@@ -193,7 +201,7 @@ const Statistics = () => {
                 <div className={`absolute inset-0 bg-gradient-to-br ${achievement.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
 
                 <div className="relative z-10 text-center">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <div className="text-[#4a6789] mb-4 group-hover:scale-110 transition-transform duration-300 flex justify-center">
                     {achievement.icon}
                   </div>
 

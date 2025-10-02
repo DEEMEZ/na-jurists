@@ -153,7 +153,7 @@ const subjects = [...new Set(casesData.map(caseItem => caseItem['Subject/Applica
             Our Recent
             <span className="block text-[#4a6789]">Legal Cases</span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
           <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
             Explore our successful case history and legal victories across various practice areas
           </p>

@@ -2,6 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  CheckCircle
+} from 'lucide-react';
 
 const ContactCTA = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -26,45 +33,28 @@ const ContactCTA = () => {
 
   const contactMethods = [
     {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-        </svg>
-      ),
+      icon: <Phone className="w-8 h-8" />,
       title: "Call Us",
       description: "Speak with our legal experts",
       contact: "+92 51 123 4567",
       action: "tel:+925112345678"
     },
     {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
+      icon: <Mail className="w-8 h-8" />,
       title: "Email Us",
       description: "Send us your legal inquiry",
       contact: "info@najurists.com",
       action: "mailto:info@najurists.com"
     },
     {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
+      icon: <MapPin className="w-8 h-8" />,
       title: "Visit Us",
       description: "Meet us at our office",
       contact: "Islamabad, Pakistan",
       action: "/contact"
     },
     {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
+      icon: <Clock className="w-8 h-8" />,
       title: "24/7 Support",
       description: "Emergency legal assistance",
       contact: "Always Available",
@@ -96,7 +86,7 @@ const ContactCTA = () => {
 
       {/* Floating elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-[#4a6789]/10 rounded-full blur-xl"></div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#d4af37]/10 rounded-full blur-xl"></div>
+      <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#5a7a9b]/10 rounded-full blur-xl"></div>
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Header */}
@@ -104,15 +94,15 @@ const ContactCTA = () => {
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
         }`}>
           <div className="inline-block mb-4">
-            <span className="bg-[#d4af37]/20 text-[#d4af37] px-4 py-2 rounded-full text-sm font-semibold">
+            <span className="bg-[#4a6789]/20 text-[#4a6789] px-4 py-2 rounded-full text-sm font-semibold">
               Get In Touch
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Discuss Your
-            <span className="block text-[#d4af37]">Legal Needs?</span>
+            <span className="block text-[#4a6789]">Legal Needs?</span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
           <p className="text-blue-200 text-lg leading-relaxed max-w-3xl mx-auto">
             Take the first step towards resolving your legal matters. Our experienced team is ready to provide
             you with expert guidance and representation.
@@ -142,15 +132,15 @@ const ContactCTA = () => {
                       }}
                     >
                       <div className="flex items-center space-x-4 p-4 rounded-xl hover:bg-white/10 transition-all duration-300 group-hover:scale-105">
-                        <div className="w-12 h-12 bg-[#d4af37] rounded-lg flex items-center justify-center text-[#1a2b3d] group-hover:bg-white group-hover:text-[#1a2b3d] transition-colors duration-300">
+                        <div className="w-12 h-12 bg-[#4a6789] rounded-lg flex items-center justify-center text-white group-hover:bg-white group-hover:text-[#4a6789] transition-colors duration-300">
                           {method.icon}
                         </div>
                         <div>
-                          <h4 className="font-semibold text-white group-hover:text-[#d4af37] transition-colors duration-300">
+                          <h4 className="font-semibold text-white group-hover:text-[#4a6789] transition-colors duration-300">
                             {method.title}
                           </h4>
                           <p className="text-blue-200 text-sm">{method.description}</p>
-                          <p className="text-[#d4af37] text-sm font-medium">{method.contact}</p>
+                          <p className="text-[#4a6789] text-sm font-medium">{method.contact}</p>
                         </div>
                       </div>
                     </div>
@@ -164,7 +154,7 @@ const ContactCTA = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {services.map((service, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-[#d4af37] rounded-full"></div>
+                      <div className="w-2 h-2 bg-[#4a6789] rounded-full"></div>
                       <span className="text-blue-200 text-sm">{service}</span>
                     </div>
                   ))}
@@ -180,9 +170,7 @@ const ContactCTA = () => {
             <div className="bg-white rounded-2xl p-8 shadow-2xl">
               <div className="text-center space-y-6">
                 <div className="w-20 h-20 bg-[#1a2b3d] rounded-full flex items-center justify-center mx-auto">
-                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
+                  <CheckCircle className="w-10 h-10 text-white" />
                 </div>
 
                 <div>
@@ -206,7 +194,7 @@ const ContactCTA = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-[#718096]">Cost</span>
-                      <span className="font-semibold text-[#d4af37]">FREE</span>
+                      <span className="font-semibold text-[#4a6789]">FREE</span>
                     </div>
                   </div>
                 </div>
@@ -241,19 +229,19 @@ const ContactCTA = () => {
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#d4af37] mb-2">25+</div>
-                <div className="text-blue-200 text-sm">Years Experience</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#d4af37] mb-2">500+</div>
-                <div className="text-blue-200 text-sm">Cases Won</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#d4af37] mb-2">100+</div>
+                <div className="text-3xl font-bold text-white mb-2">250+</div>
                 <div className="text-blue-200 text-sm">Happy Clients</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#d4af37] mb-2">24/7</div>
+                <div className="text-3xl font-bold text-white mb-2">500+</div>
+                <div className="text-blue-200 text-sm">Cases Won</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-2">100+</div>
+                <div className="text-blue-200 text-sm">Happy Clients</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-2">24/7</div>
                 <div className="text-blue-200 text-sm">Support</div>
               </div>
             </div>

@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import {
+  Shield,
+  Building2,
+  DollarSign,
+  Clock,
+  Users,
+  ShieldCheck
+} from 'lucide-react';
 
 const WhyChooseUs = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,61 +22,37 @@ const WhyChooseUs = () => {
 
   const features = [
     {
-      icon: (
-        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-      ),
+      icon: <Shield className="w-12 h-12" />,
       title: "Supreme Court Advocates",
       description: "Our senior partners are qualified advocates of the Supreme Court of Pakistan, bringing the highest level of legal expertise to your case.",
       color: "bg-[#1a2b3d]"
     },
     {
-      icon: (
-        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      ),
+      icon: <Building2 className="w-12 h-12" />,
       title: "Corporate Law Specialists",
       description: "Extensive experience in corporate formation, mergers & acquisitions, and commercial law with a proven track record of success.",
       color: "bg-[#4a6789]"
     },
     {
-      icon: (
-        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-        </svg>
-      ),
+      icon: <DollarSign className="w-12 h-12" />,
       title: "Cost-Effective Solutions",
       description: "Transparent pricing with no hidden costs. We provide maximum value while maintaining the highest standards of legal service.",
-      color: "bg-[#d4af37]"
+      color: "bg-[#5a7a9b]"
     },
     {
-      icon: (
-        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
+      icon: <Clock className="w-12 h-12" />,
       title: "24/7 Client Support",
       description: "Round-the-clock availability for urgent matters. Our commitment to client service extends beyond business hours.",
       color: "bg-[#2c415e]"
     },
     {
-      icon: (
-        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
+      icon: <Users className="w-12 h-12" />,
       title: "Experienced Team",
       description: "Decades of combined legal experience across multiple practice areas with a focus on achieving the best outcomes for our clients.",
       color: "bg-[#1a2b3d]"
     },
     {
-      icon: (
-        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      ),
+      icon: <ShieldCheck className="w-12 h-12" />,
       title: "Confidentiality Assured",
       description: "Strict adherence to attorney-client privilege and confidentiality protocols. Your sensitive information remains secure with us.",
       color: "bg-[#4a6789]"
@@ -76,7 +60,7 @@ const WhyChooseUs = () => {
   ];
 
   const stats = [
-    { end: 25, label: "Years Experience", suffix: "+" },
+    { end: 250, label: "Happy Clients", suffix: "+" },
     { end: 500, label: "Cases Won", suffix: "+" },
     { end: 100, label: "Corporate Clients", suffix: "+" },
     { end: 99, label: "Client Satisfaction", suffix: "%" }
@@ -144,7 +128,7 @@ const WhyChooseUs = () => {
             Your Trusted
             <span className="block text-[#4a6789]">Legal Partners</span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
           <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
             With decades of legal experience and a commitment to excellence, we provide comprehensive legal solutions
             tailored to meet your unique needs and objectives.
@@ -159,7 +143,7 @@ const WhyChooseUs = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-[#d4af37] mb-2">
+                  <div className="text-3xl md:text-4xl font-bold text-white mb-2">
                     {index === 0 ? counters.years :
                      index === 1 ? counters.cases :
                      index === 2 ? counters.clients :

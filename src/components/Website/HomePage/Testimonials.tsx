@@ -136,7 +136,7 @@ export default function Testimonials() {
             What Our Clients
             <span className="block text-[#4a6789]">Say About Us</span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
           <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
             Trusted by businesses and individuals across Pakistan. Here's what our clients have to say about
             their experience working with N&A Jurists.
@@ -213,7 +213,7 @@ export default function Testimonials() {
                         {[...Array(5)].map((_, i) => (
                           <svg
                             key={i}
-                            className={`w-4 h-4 ${i < testimonial.rating ? 'text-[#d4af37]' : 'text-gray-300'}`}
+                            className={`w-4 h-4 ${i < testimonial.rating ? 'text-[#4a6789]' : 'text-gray-300'}`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -288,7 +288,7 @@ export default function Testimonials() {
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className={`w-5 h-5 ${i < selectedTestimonial.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                      className={`w-5 h-5 ${i < selectedTestimonial.rating ? 'text-[#4a6789]' : 'text-gray-300'}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
