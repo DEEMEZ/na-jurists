@@ -1,13 +1,15 @@
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Hero from '@/components/Website/HomePage/Hero';
+import AboutOverview from '@/components/Website/HomePage/AboutOverview';
 import PracticeAreas from '@/components/Website/HomePage/PracticeAreas';
-import Spacer from '@/components/Website/Global/Spacer/Spacer';
-import CaseStudies2 from '@/components/Website/HomePage/CaseStudeis2';
-import CaseStudies from '@/components/Website/HomePage/CaseStudies';
+import WhyChooseUs from '@/components/Website/HomePage/WhyChooseUs';
+import Statistics from '@/components/Website/HomePage/Statistics';
 import ManagingPartner from '@/components/Website/HomePage/ManagingPartner';
-import Footer from '@/components/Website/Global/Footer/Footer';
+import Testimonials from '@/components/Website/HomePage/Testimonials';
+import ContactCTA from '@/components/Website/HomePage/ContactCTA';
 import HomeCases from '@/components/Website/HomePage/HomeCases';
-import Testimonials from '@/components/Website/HomePage/Testimonials'; 
+import Footer from '@/components/Website/Global/Footer/Footer';
+import Spacer from '@/components/Website/Global/Spacer/Spacer'; 
 
 export default function Home() {
   return (
@@ -15,17 +17,14 @@ export default function Home() {
       <Navbar />
       <div className="flex-grow">
         <Hero />
-        <Spacer height={2} />
+        <AboutOverview />
         <PracticeAreas />
-        <Spacer height={1} />
-        <CaseStudies2 />
-        <Spacer height={1} />
-        <HomeCases />
-        <Spacer height={1} />
-        <Testimonials />
-        <Spacer height={1} />
+        <WhyChooseUs />
+        <Statistics />
+        <ContactCTA />
         <ManagingPartner />
-        <Spacer height={1} />
+        <HomeCases />
+        <Testimonials />
       </div>
       <Footer />
     </main>

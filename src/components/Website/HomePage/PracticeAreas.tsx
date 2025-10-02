@@ -198,41 +198,96 @@ const PracticeAreas = () => {
   ];
 
   return (
-    <section className="relative">
-      {/* Background pattern */}
-      <div 
-        className="absolute inset-0 z-0 opacity-5"
+    <section className="relative py-20 bg-gradient-to-br from-[#f7fafc] to-[#edf2f7]">
+      {/* Enhanced background pattern */}
+      <div
+        className="absolute inset-0 z-0 opacity-3"
         style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.3\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
-          backgroundSize: '60px 60px',
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%231a2b3d\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M25 25h50v50H25V25zM0 0h20v20H0V0zM80 0h20v20H80V0zM0 80h20v20H0V80zM80 80h20v20H80V80z\'/%3E%3C/g%3E%3C/svg%3E")',
+          backgroundSize: '120px 120px',
         }}
       />
-      
-      <div className="container mx-auto px-4 relative z-10 max-w-7xl py-16">
-        <div 
+
+      <div className="container mx-auto px-6 relative z-10 max-w-7xl">
+        <div
           ref={practiceAreaRef}
-          className="bg-white rounded-xl shadow-lg p-8 md:p-12 transition-all duration-1000 transform opacity-0 translate-y-10"
+          className="transition-all duration-1000 transform opacity-0 translate-y-10"
         >
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#2c415e] mb-4">We Assist Our Clients in</h2>
-            <div className="h-1 w-24 bg-[#2c415e] mx-auto"></div>
-            <p className="text-[#666b6f] mt-4 max-w-3xl mx-auto">
-              Specialized legal expertise tailored to address your specific needs with the highest level of professionalism.
+          {/* Enhanced Header */}
+          <div className="text-center mb-16">
+            <div className="inline-block mb-4">
+              <span className="bg-[#1a2b3d]/10 text-[#1a2b3d] px-4 py-2 rounded-full text-sm font-semibold">
+                Our Expertise
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-6">
+              Legal Services We
+              <span className="block text-[#4a6789]">Provide</span>
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+            <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
+              Comprehensive legal solutions delivered by experienced advocates committed to your success.
+              Our specialized expertise spans across multiple practice areas.
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          {/* Enhanced Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {practiceAreas.map((area, index) => (
-              <div 
+              <div
                 key={index}
-                className="bg-white rounded-lg p-6 border border-[#e5eaf4] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#a7c1d9] hover:-translate-y-1 group"
+                className="bg-white rounded-xl p-6 border border-[#e2e8f0] shadow-lg hover:shadow-2xl transition-all duration-500 hover:border-[#4a6789]/30 hover:-translate-y-2 group relative overflow-hidden"
                 style={{ transitionDelay: `${area.delay}ms` }}
               >
-                <Icon name={area.icon} />
-                <h3 className="text-lg font-semibold text-[#2c415e] mb-2 text-center group-hover:text-[#1a2a3e]">{area.title}</h3>
-                <p className="text-[#666b6f] text-sm text-center">{area.description}</p>
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1a2b3d]/5 to-[#4a6789]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                {/* Content */}
+                <div className="relative z-10">
+                  <div className="transform group-hover:scale-110 transition-transform duration-300">
+                    <Icon name={area.icon} />
+                  </div>
+                  <h3 className="text-lg font-bold text-[#1a2b3d] mb-3 text-center group-hover:text-[#4a6789] transition-colors duration-300">
+                    {area.title}
+                  </h3>
+                  <p className="text-[#718096] text-sm leading-relaxed text-center">
+                    {area.description}
+                  </p>
+
+                  {/* Arrow icon that appears on hover */}
+                  <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                    <svg className="w-5 h-5 text-[#4a6789]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             ))}
+          </div>
+
+          {/* Call to Action Section */}
+          <div className="text-center mt-16 bg-white rounded-2xl p-8 shadow-lg border border-[#e2e8f0]">
+            <h3 className="text-2xl font-bold text-[#1a2b3d] mb-4">
+              Need Legal Assistance?
+            </h3>
+            <p className="text-[#718096] mb-6 max-w-2xl mx-auto">
+              Our experienced legal team is ready to provide you with expert guidance and representation.
+              Contact us today for a consultation.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/services"
+                className="bg-[#1a2b3d] text-white px-8 py-3 rounded-lg hover:bg-[#2c415e] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                View All Services
+              </Link>
+              <Link
+                href="/contact"
+                className="border-2 border-[#4a6789] text-[#4a6789] px-8 py-3 rounded-lg hover:bg-[#4a6789] hover:text-white transition-all duration-300 font-semibold"
+              >
+                Get Consultation
+              </Link>
+            </div>
           </div>
         </div>
       </div>

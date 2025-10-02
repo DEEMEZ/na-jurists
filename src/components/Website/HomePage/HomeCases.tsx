@@ -140,28 +140,32 @@ const subjects = [...new Set(casesData.map(caseItem => caseItem['Subject/Applica
   }
 
   return (
-    <main className="min-h-screen flex flex-col">
-      <div className="flex-grow relative py-12 bg-[#f0f3f6]">
-        <div
-          className="absolute inset-0 z-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%232c415e\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
-            backgroundSize: '60px 60px',
-          }}
-        />
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-6">
+          {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-block mb-4">
+            <span className="bg-[#4a6789]/10 text-[#4a6789] px-4 py-2 rounded-full text-sm font-semibold">
+              Legal Cases
+            </span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-6">
+            Our Recent
+            <span className="block text-[#4a6789]">Legal Cases</span>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+          <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
+            Explore our successful case history and legal victories across various practice areas
+          </p>
+        </div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className='flex w-full justify-center items-center pt-10'>
-              <span className='text-[#2c415e] font-bold text-4xl mb-4'>Cases</span>
-            </div>
-            <div className="h-1 w-18 bg-[#2c415e] mx-auto"></div>
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             {/* Filter Section */}
             <div className="p-6 border-b border-gray-200">
-           <CasesFilter
-  onFilter={handleFilter}
-  totalCases={filteredCases.length}
-/>
+              <CasesFilter
+                onFilter={handleFilter}
+                totalCases={filteredCases.length}
+              />
             </div>
 
             {/* Cases List */}
@@ -173,14 +177,11 @@ const subjects = [...new Set(casesData.map(caseItem => caseItem['Subject/Applica
                 onPageChange={setCurrentPage}
               />
             </div>
-            <div className='py-3 flex w-full justify-center items-center'>
-              <Link href={'/cases'} className='bg-[#2c415e] px-4 py-2 rounded-lg text-white'>View All Cases</Link>
+            <div className="py-3 flex w-full justify-center items-center">
+              <Link href="/cases" className="bg-[#2c415e] px-4 py-2 rounded-lg text-white">View All Cases</Link>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* <Footer /> */}
-    </main>
+    </section>
   );
 }

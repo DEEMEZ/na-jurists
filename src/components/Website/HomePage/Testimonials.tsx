@@ -114,11 +114,34 @@ export default function Testimonials() {
   const infiniteTestimonials = Array(3).fill(testimonials).flat();
 
   return (
-    <section className="relative py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center text-[#2c415e] mb-12">
-          What Our Clients Say
-        </h2>
+    <section className="relative py-20 bg-gradient-to-br from-[#f7fafc] to-[#edf2f7]">
+      {/* Background Pattern */}
+      <div
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%231a2b3d\' fill-opacity=\'0.3\'%3E%3Cpath d=\'M30 15a15 15 0 100 30 15 15 0 000-30zm0 20a5 5 0 110-10 5 5 0 010 10z\'/%3E%3C/g%3E%3C/svg%3E")',
+          backgroundSize: '120px 120px',
+        }}
+      />
+
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Enhanced Header */}
+        <div className="text-center mb-16">
+          <div className="inline-block mb-4">
+            <span className="bg-[#4a6789]/10 text-[#4a6789] px-4 py-2 rounded-full text-sm font-semibold">
+              Client Reviews
+            </span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-6">
+            What Our Clients
+            <span className="block text-[#4a6789]">Say About Us</span>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#d4af37] mx-auto mb-6"></div>
+          <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
+            Trusted by businesses and individuals across Pakistan. Here's what our clients have to say about
+            their experience working with N&A Jurists.
+          </p>
+        </div>
         
         <div
           ref={containerRef}
@@ -150,10 +173,16 @@ export default function Testimonials() {
                   onPointerUp={(e) => handlePointerUp(testimonial, e)}
                   onPointerCancel={handlePointerCancel}
                 >
-                  <div className="bg-white border border-gray-200 p-5 h-full w-full flex flex-col justify-between rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="overflow-hidden">
+                  <div className="bg-white border border-[#e2e8f0] p-6 h-full w-full flex flex-col justify-between rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-[#4a6789]/30 group relative overflow-hidden">
+                    {/* Gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a2b3d]/5 to-[#4a6789]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                    <div className="relative z-10">
+                      {/* Quote icon */}
+                      <div className="absolute -top-2 -left-2 text-4xl text-[#4a6789]/20 font-serif">"</div>
+
                       <div className="flex items-center mb-4">
-                        <div className="relative w-10 h-10 mr-3 flex-shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-[#2c415e]/10">
+                        <div className="relative w-12 h-12 mr-4 flex-shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-[#4a6789]/10 group-hover:bg-[#4a6789]/20 transition-colors duration-300">
                           {testimonial.image ? (
                             <img
                               src={testimonial.image}
@@ -161,35 +190,42 @@ export default function Testimonials() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <UserCircle2 className="w-10 h-10 text-[#2c415e] flex-shrink-0" />
+                            <UserCircle2 className="w-12 h-12 text-[#4a6789] flex-shrink-0" />
                           )}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-sm font-semibold text-[#2c415e] truncate">
+                          <h3 className="text-base font-bold text-[#1a2b3d] truncate group-hover:text-[#4a6789] transition-colors duration-300">
                             {testimonial.name}
                           </h3>
-                          <p className="text-xs text-gray-600 truncate">
+                          <p className="text-sm text-[#718096] truncate">
                             {testimonial.role}
                           </p>
                         </div>
                       </div>
-                      <blockquote className="text-sm text-gray-700 italic line-clamp-5 mb-3">
-                        &quot;{testimonial.content}&quot;
-                      </blockquote>
-                    </div>
 
-                    <div className="flex justify-center mt-auto pt-2">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`w-3 h-3 ${i < testimonial.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
+                      <blockquote className="text-[#718096] italic line-clamp-4 mb-4 leading-relaxed">
+                        "{testimonial.content}"
+                      </blockquote>
+
+                      {/* Star rating */}
+                      <div className="flex justify-center mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-4 h-4 ${i < testimonial.rating ? 'text-[#d4af37]' : 'text-gray-300'}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+
+                      {/* Read more indicator */}
+                      <div className="text-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <span className="text-xs text-[#4a6789] font-medium">Click to read full review</span>
+                      </div>
                     </div>
                   </div>
                 </motion.div>

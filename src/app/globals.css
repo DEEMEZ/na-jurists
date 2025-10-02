@@ -1,16 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #2c415e;
-  --foreground: #ededed;
+  /* Professional color palette inspired by the logo */
+  --primary-navy: #1a2b3d;        /* Deep navy for headers */
+  --secondary-navy: #2c415e;       /* Current navy */
+  --accent-blue: #4a6789;          /* Lighter blue for accents */
+  --text-dark: #2d3748;            /* Professional dark text */
+  --text-light: #718096;           /* Subtle gray text */
+  --background-light: #f7fafc;     /* Clean light background */
+  --background-white: #ffffff;     /* Pure white */
+  --gold-accent: #d4af37;          /* Professional gold for highlights */
+  --foreground: #2d3748;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background) !important;
+  background: var(--background-light) !important;
   color: var(--foreground) !important;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
 }
 
 @keyframes spin {

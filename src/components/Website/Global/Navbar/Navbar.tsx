@@ -1,6 +1,6 @@
 "use client";
 
-import logo from '@/assets/images/text-logo.png';
+// Logo now served from public directory
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -31,12 +31,12 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between px-4">
         <div className="flex items-center">
           <Link href="/">
-            <Image 
-              src={logo}
-              alt="N&A Jurists Logo" 
-              width={150} 
-              height={50} 
-              className={`mr-4 transition-all duration-300 ${scrolled ? 'w-[130px]' : 'w-[150px]'}`}
+            <Image
+              src="/text-logo.png"
+              alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
+              width={160}
+              height={55}
+              className={`transition-all duration-300 ${scrolled ? 'w-[140px]' : 'w-[160px]'} h-auto`}
               priority
             />
           </Link>
