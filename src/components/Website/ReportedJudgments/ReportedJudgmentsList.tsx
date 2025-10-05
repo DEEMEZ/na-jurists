@@ -20,34 +20,34 @@ const ReportedJudgmentsList = ({ judgments, currentPage, totalPages, onPageChang
 
   return (
     <div className="overflow-x-auto pb-4">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="w-full divide-y divide-gray-200">
         <thead className="bg-[#2c415e] text-white">
           <tr>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Sr. No</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Citation</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Dictum/Law</th>
-            <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
+            <th className="px-2 sm:px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Sr. No</th>
+            <th className="px-2 sm:px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Citation</th>
+            <th className="hidden md:table-cell px-2 sm:px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Dictum/Law</th>
+            <th className="px-2 sm:px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {judgments.map((judgment, index) => (
             <tr key={judgment.id} className="hover:bg-gray-50">
-              <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+              <td className="px-2 sm:px-4 py-3 whitespace-nowrap">
                 <div className="text-sm font-medium text-[#2c415e]">
                   {(currentPage - 1) * 10 + index + 1}
                 </div>
               </td>
-              <td className="px-4 sm:px-6 py-4">
-                <div className="text-sm font-bold text-[#2c415e] max-w-xs">
+              <td className="px-2 sm:px-4 py-3">
+                <div className="text-sm font-bold text-[#2c415e]">
                   {judgment.citation || judgment.caseNumber || judgment.title}
                 </div>
                 {/* Mobile view: Show dictum/law under citation */}
-                <div className="sm:hidden text-xs text-[#4a6789] mt-1 max-w-xs">
+                <div className="md:hidden text-xs text-[#666b6f] mt-1">
                   {judgment.dictumLaw || judgment.subject}
                 </div>
               </td>
-              <td className="hidden sm:table-cell px-4 sm:px-6 py-4">
-                <div className="text-sm text-[#666b6f] max-w-sm">
+              <td className="hidden md:table-cell px-2 sm:px-4 py-3">
+                <div className="text-sm text-[#666b6f]">
                   {judgment.dictumLaw || judgment.subject}
                 </div>
                 {judgment.court && (
@@ -61,7 +61,7 @@ const ReportedJudgmentsList = ({ judgments, currentPage, totalPages, onPageChang
                   </div>
                 )}
               </td>
-              <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-medium">
                 <Link
                   href={`/reported-judgments/${judgment.id}`}
                   className="text-[#4a6789] hover:text-[#2c415e] transition-colors text-sm"
