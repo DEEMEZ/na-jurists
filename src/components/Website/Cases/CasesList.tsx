@@ -1,5 +1,9 @@
+"use client";
+
 import { CasesListProps } from '@/types/LegalCase';
-import Link from 'next/link';
+import OTPModal from './OTPModal';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const truncateTitle = (title: string, wordLimit: number = 10): string => {
   const words = title?.split(' ') || [];
@@ -8,6 +12,19 @@ const truncateTitle = (title: string, wordLimit: number = 10): string => {
 };
 
 const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListProps) => {
+  const router = useRouter();
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('');
+
+  const handleViewDetails = (caseId: string) => {
+    setSelectedCaseId(caseId);
+    setShowOTPModal(true);
+  };
+
+  const handleOTPVerified = () => {
+    setShowOTPModal(false);
+    router.push(`/cases/${selectedCaseId}`);
+  };
   if (cases.length === 0) {
     return (
       <div className="text-center py-12 px-4">
@@ -62,12 +79,12 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
                 {caseItem.Status || 'N/A'}
               </td>
               <td className="px-2 py-3 text-sm font-medium">
-                <Link
-                  href={`/cases/${caseItem.id}`}
-                  className="text-[#4a6789] hover:text-[#2c415e]"
+                <button
+                  onClick={() => handleViewDetails(caseItem.id)}
+                  className="text-[#4a6789] hover:text-[#2c415e] transition-colors"
                 >
                   View Details
-                </Link>
+                </button>
               </td>
             </tr>
           ))}
@@ -123,6 +140,13 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
           </nav>
         </div>
       )}
+
+      <OTPModal
+        isOpen={showOTPModal}
+        onClose={() => setShowOTPModal(false)}
+        onVerified={handleOTPVerified}
+        caseId={selectedCaseId}
+      />
     </div>
   );
 };

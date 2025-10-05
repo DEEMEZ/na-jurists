@@ -71,18 +71,28 @@ const ReportedJudgmentsPage = () => {
   }, [searchQuery, courtFilter, yearFilter, currentPage, filteredJudgments]);
 
   useEffect(() => {
-    // Initialize with all judgments - load all at once
-    const allJudgments = getAllJudgments();
-    setFilteredJudgments(allJudgments);
+    // Load judgments from public folder
+    const loadJudgments = async () => {
+      try {
+        const response = await fetch('/data/reported-judgments.json');
+        const data = await response.json();
 
-    // Set initial pagination data
-    const paginatedResults = allJudgments.slice(0, 10);
-    setPaginationData({
-      judgments: paginatedResults,
-      totalPages: Math.ceil(allJudgments.length / 10),
-      currentPage: 1,
-      totalCount: allJudgments.length
-    });
+        setFilteredJudgments(data);
+
+        // Set initial pagination data
+        const paginatedResults = data.slice(0, 10);
+        setPaginationData({
+          judgments: paginatedResults,
+          totalPages: Math.ceil(data.length / 10),
+          currentPage: 1,
+          totalCount: data.length
+        });
+      } catch (error) {
+        console.error('Error loading judgments:', error);
+      }
+    };
+
+    loadJudgments();
   }, []);
 
   const handlePageChange = (page: number) => {

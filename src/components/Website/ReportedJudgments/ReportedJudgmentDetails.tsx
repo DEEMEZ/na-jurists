@@ -15,9 +15,21 @@ const ReportedJudgmentDetails = ({ id }: ReportedJudgmentDetailsProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const judgment = getJudgmentById(id);
-    setJudgmentData(judgment || null);
-    setIsLoading(false);
+    const loadJudgment = async () => {
+      try {
+        const response = await fetch('/data/reported-judgments.json');
+        const data = await response.json();
+        const judgment = data.find((j: ReportedJudgment) => j.id === id);
+        setJudgmentData(judgment || null);
+      } catch (error) {
+        console.error('Error loading judgment:', error);
+        setJudgmentData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadJudgment();
   }, [id]);
 
   if (isLoading) {

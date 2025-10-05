@@ -1,5 +1,5 @@
-// Generated TypeScript file with all 69 reported judgments
-import judgmentsData from './reported-judgments.json';
+// TypeScript file with all 69 reported judgments
+// Data loaded from JSON file extracted from DOCX and PDF files
 
 export interface ReportedJudgment {
   id: number;
@@ -20,7 +20,17 @@ export interface ReportedJudgment {
   keywords: string[];
 }
 
-export const reportedJudgments: ReportedJudgment[] = judgmentsData;
+// Load judgments synchronously from public folder
+let reportedJudgmentsData: ReportedJudgment[] = [];
+
+// This will be populated by the page components
+export let reportedJudgments: ReportedJudgment[] = reportedJudgmentsData;
+
+// Function to set judgments data (called by components after fetch)
+export const setReportedJudgments = (data: ReportedJudgment[]) => {
+  reportedJudgments = data;
+  reportedJudgmentsData = data;
+};
 
 // Helper functions for fetching judgments
 export const getJudgmentById = (id: number): ReportedJudgment | undefined => {

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "extract-judgments": "node scripts/extract-judgments.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -19,6 +20,7 @@
     "next": "^15.3.0",
     "nodemailer": "^6.10.0",
     "openai": "^4.96.0",
+    "pdf-parse": "^2.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",
