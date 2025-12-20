@@ -82,14 +82,14 @@ const Navbar = () => {
               onMouseLeave={() => setIsLegalResourcesOpen(false)}
             >
               <div className="py-1">
-                <Link 
-                  href="/cases" 
+                <Link
+                  href="/cases"
                   className="block px-4 py-2 text-sm text-[#2c415e] hover:bg-gray-50 hover:text-[#4a6789] transition-colors duration-300"
                 >
                   Cases
                 </Link>
-                <Link 
-                  href="/reported-judgments" 
+                <Link
+                  href="/judgments"
                   className="block px-4 py-2 text-sm text-[#2c415e] hover:bg-gray-50 hover:text-[#4a6789] transition-colors duration-300"
                 >
                   Reported Judgments
@@ -155,15 +155,15 @@ const Navbar = () => {
             {/* Mobile Legal Resources Section */}
             <div className="border-l-2 border-[#2c415e] pl-4">
               <div className="text-[#2c415e] font-medium mb-2">Legal Resources</div>
-              <Link 
-                href="/cases" 
+              <Link
+                href="/cases"
                 className="block text-sm text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300 mb-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Cases
               </Link>
-              <Link 
-                href="/reported-judgments" 
+              <Link
+                href="/judgments"
                 className="block text-sm text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
