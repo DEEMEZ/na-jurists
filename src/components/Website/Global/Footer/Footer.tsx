@@ -198,6 +198,19 @@ const Footer = () => {
                 Advocates, Corporate & Legal Consultants
               </p>
             </div>
+            <div className="text-center md:text-right">
+              <p className="text-blue-200 text-sm">
+                Powered by{' '}
+                <a
+                  href="https://www.mavroqit.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-[#4a6789] font-semibold transition-colors duration-300"
+                >
+                  Mavroq IT
+                </a>
+              </p>
+            </div>
           </div>
 
           {/* Professional Badge */}
