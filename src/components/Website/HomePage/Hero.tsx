@@ -10,6 +10,8 @@ const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const heroBgRef = useRef<HTMLDivElement | null>(null);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
 
   const heroSlides = [
     {
@@ -49,15 +51,21 @@ const Hero = () => {
       }, 500);
     }, 6000);
 
-    // Subtle parallax scrolling effect
+    // Subtle parallax scrolling effect (rAF-throttled)
     const handleScroll = () => {
-      if (heroBgRef.current) {
-        const scrollPosition = window.scrollY;
-        heroBgRef.current.style.transform = `translateY(${scrollPosition * 0.3}px)`;
+      lastScrollY.current = window.scrollY;
+      if (!ticking.current) {
+        ticking.current = true;
+        requestAnimationFrame(() => {
+          if (heroBgRef.current) {
+            heroBgRef.current.style.transform = `translateY(${lastScrollY.current * 0.15}px)`;
+          }
+          ticking.current = false;
+        });
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       clearInterval(slideInterval);
@@ -69,21 +77,14 @@ const Hero = () => {
     <div className="w-full overflow-hidden">
       {/* Modern Hero Section with Background Image */}
       <div className="relative min-h-screen flex items-center">
-        {/* Background Image with Parallax Effect */}
+        {/* Background with subtle texture */}
         <div
           ref={heroBgRef}
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-          }}
+          className="absolute inset-0 z-0 bg-gradient-to-br from-[#0f1419] via-[#1a2b3d] to-[#2c415e]"
         />
 
         {/* Professional Multi-layer Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2b3d]/90 via-[#1a2b3d]/80 to-[#2c415e]/85 z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2b3d]/30 via-[#1a2b3d]/20 to-[#2c415e]/25 z-10"></div>
 
         {/* Subtle Animated Pattern Overlay */}
         <div
@@ -109,14 +110,14 @@ const Hero = () => {
                 <div className="relative">
                   <div className="absolute -left-6 top-0 bottom-0 w-2 bg-gradient-to-b from-[#4a6789] to-[#5a7a9b] rounded-full"></div>
                   <div className="bg-white/5 backdrop-blur-sm rounded-r-3xl pl-12 pr-8 py-8 border-r border-white/20">
-                    <Image
-                      src="/text-logo.png"
-                      alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
-                      width={350}
-                      height={120}
-                      className="brightness-0 invert max-w-[250px] md:max-w-[300px] h-auto"
-                      priority
-                    />
+                    <div className="text-white">
+                      <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
+                        N&A JURISTS
+                      </h2>
+                      <p className="text-sm md:text-base text-white/80 font-medium tracking-wider">
+                        Advocates, Corporate & Legal Consultants
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -229,46 +230,9 @@ const Hero = () => {
                 />
               ))}
             </div>
-
-            {/* Professional Badges */}
-            <div className={`flex flex-wrap justify-center gap-4 pt-8 transition-all duration-1000 delay-1200 ${
-              isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            }`}>
-              <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
-                <span className="text-blue-200 text-sm font-medium">Supreme Court Advocates</span>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
-                <span className="text-blue-200 text-sm font-medium">Corporate Law Specialists</span>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-full px-6 py-2 border border-white/20">
-                <span className="text-blue-200 text-sm font-medium">Trusted Legal Advisors</span>
-              </div>
-            </div>
           </div>
         </div>
 
-      </div>
-
-      {/* Enhanced Team Photo Section */}
-      <div className="relative w-full overflow-hidden bg-white">
-        <div className="absolute inset-y-0 left-0 w-1/12 bg-gradient-to-r from-[#1a2b3d]/90 to-transparent z-10"></div>
-        <div className="absolute inset-y-0 right-0 w-1/12 bg-gradient-to-l from-[#1a2b3d]/90 to-transparent z-10"></div>
-
-        <div className={`w-full transition-all duration-1000 delay-500 ${
-          isLoaded ? 'scale-100 opacity-100' : 'scale-105 opacity-0'
-        }`}>
-          <Image
-            src={heroimg}
-            alt="N&A Jurists Professional Team"
-            width={1920}
-            height={600}
-            className="w-full object-cover h-[400px] md:h-[500px]"
-            priority
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1a2b3d]/40 via-transparent to-transparent z-5"></div>
-
-        </div>
       </div>
     </div>
   );

@@ -7,18 +7,26 @@ import { useEffect, useRef, useState } from 'react';
 const CasesHero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const heroBgRef = useRef<HTMLDivElement | null>(null);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
 
   useEffect(() => {
     setIsLoaded(true);
 
     const handleScroll = () => {
-      if (heroBgRef.current) {
-        const scrollPosition = window.scrollY;
-        heroBgRef.current.style.transform = `translateY(${scrollPosition * 0.15}px)`;
+      lastScrollY.current = window.scrollY;
+      if (!ticking.current) {
+        ticking.current = true;
+        requestAnimationFrame(() => {
+          if (heroBgRef.current) {
+            heroBgRef.current.style.transform = `translateY(${lastScrollY.current * 0.15}px)`;
+          }
+          ticking.current = false;
+        });
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -68,6 +76,8 @@ const CasesHero = () => {
             height={600}
             className="w-full object-contain md:object-cover h-auto max-h-[500px]"
             priority
+            quality={70}
+            sizes="(max-width: 768px) 100vw, 90vw"
           />
           
 

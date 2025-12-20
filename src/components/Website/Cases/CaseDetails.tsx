@@ -15,11 +15,11 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetch('/data/cases.json');
-        if (!response.ok) throw new Error('Failed to fetch cases');
+        const response = await fetch(`/api/cases?id=${encodeURIComponent(id)}`);
+        if (!response.ok) throw new Error('Failed to fetch case');
         
         const data = await response.json();
-        const foundCase = data.find((c: LegalCase) => c.id === id);
+        const foundCase = data.data as LegalCase | undefined;
         
         if (!foundCase) throw new Error('Case not found');
         setCaseData(foundCase);

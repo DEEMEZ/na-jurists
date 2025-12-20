@@ -18,7 +18,7 @@ export const services = [
           "Prosecution against management of the companies",
           "Advising the domestic and foreign clients in preparation of procurements documents in line with Public Procurement Rules, 2004"
         ],
-        image: "https://www.clairewoodphotography.co.uk/wp-content/uploads/2019/10/commercial-corporate-group-manchester-leeds-photographer-photographer-Turner-Townsend-1.jpg"
+        image: "/assets/images/hero.jpg"
       },
       {
         title: "Merger and Acquisition",
@@ -32,7 +32,7 @@ export const services = [
           "Convening the requisite statutory meetings of the shareholders and board",
           "Sanctions from the competent Court of jurisdiction"
         ],
-        image: "https://tse1.mm.bing.net/th/id/OIP.O6NlVyx621bYR5WMTUD0nQHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
+        image: "/assets/images/hero.jpg"
       },
       {
         title: "Insurance",
@@ -44,7 +44,7 @@ export const services = [
           "Defending the revocation and cancellation of license matters",
           "Registration of the insurance surveyors and ensure the compliance of related laws"
         ],
-        image: "https://th.bing.com/th/id/R.bc2b2cf96a9f2dd12049ff8daa7eba0f?rik=wu%2fSq2ueWehDqQ&pid=ImgRaw&r=0"
+        image: "/assets/images/hero.jpg"
       },
       {
         title: "Non-Banking Finance Companies",
@@ -54,7 +54,7 @@ export const services = [
           "Advising the client to ensure the compliance of NBFC laws in Pakistan",
           "Represent the NBFC before the regulator and Courts"
         ],
-        image: "https://www.pw.live/exams/wp-content/uploads/2024/06/Non-Banking-Financial-Companies-NBFCs.jpg"
+        image: "/assets/images/hero.jpg"
       }
     ]
   },
@@ -72,7 +72,7 @@ export const services = [
           "Conduct of proceedings at various forums under Benami Act, 2017",
           "Compliance and litigation of Federal and Provincial Sales Tax and Federal Excise Duty"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "/assets/images/hero.jpg"
       }
     ]
   },
@@ -90,7 +90,7 @@ export const services = [
           "Carrying out the due diligence on the security assets",
           "Charge registration (for banks and companies)"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "/assets/images/hero.jpg"
       }
     ]
   },
@@ -109,7 +109,7 @@ export const services = [
           "Handling the Tax Litigation before High Court and Supreme Court of Pakistan",
           "Representation before the international forum including Internal Chamber of Commerce & Dubai International Arbitration Center"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "/assets/images/hero.jpg"
       }
     ]
   },
@@ -123,7 +123,7 @@ export const services = [
           "Representation of domestic and international clients in arbitration under the Arbitration Act, 1940",
           "Representation before other ADR forums available under Tax Laws, Company Law and Insurance Laws"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "/assets/images/hero.jpg"
       }
     ]
   },
@@ -142,7 +142,7 @@ export const services = [
           "Advising the management in handling with trade unions and its related applicable laws",
           "Representing the clients in service matters before the Tribunal and the Courts"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "/assets/images/hero.jpg"
       }
     ]
   },
@@ -162,7 +162,7 @@ export const services = [
           "Copy and trade mark of laws",
           "Patent laws"
         ],
-        image: "https://placehold.co/600x400/EEE/31343C"
+        image: "/assets/images/hero.jpg"
       }
     ]
   }

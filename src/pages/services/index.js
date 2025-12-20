@@ -7,7 +7,6 @@ import ServicesHeroImage from '../../assets/images/serviceshero.png';
 import Footer from '../../components/Website/Global/Footer/Footer.tsx';
 import Navbar from '../../components/Website/Global/Navbar/Navbar.tsx';
 import { services } from '../../constants';
-import Testimonials from '@/components/Website/HomePage/Testimonials'; 
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -39,7 +38,8 @@ export default function ServicesPage() {
       fill
       className="object-cover"
       priority
-      quality={90}
+      quality={70}
+      sizes="100vw"
     />
   </div>
   
@@ -209,11 +209,8 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-       <Testimonials />
-
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-[#2c415e] bg-[url('https://i.imgur.com/pDwGPBz.jpeg')] bg-cover bg-center bg-no-repeat relative">
+      {/* <section className="py-20 px-6 bg-[#2c415e] bg-[url('https://i.imgur.com/pDwGPBz.jpeg')] bg-cover bg-center bg-no-repeat relative">
         <div className="absolute inset-0 bg-black/60 z-0" />
         <div className="max-w-4xl mx-auto relative z-10 text-center">
           <motion.h2
@@ -248,7 +245,7 @@ export default function ServicesPage() {
             </Link>
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       <Footer />
     </div>

@@ -1,7 +1,6 @@
-import groupPhoto from '@/assets/images/aboutushero.png';
+import groupPhoto from '@/assets/images/hero.png';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
-import OurTeam from '@/components/Website/OurTeam/ourteam';
 import { Metadata } from 'next';
 import Image from 'next/image';
 
@@ -15,12 +14,12 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen flex flex-col">
       <Navbar />
-      
+
         <div className="relative w-full overflow-hidden">
 
-        <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-[#2c415e]/90 to-transparent z-10"></div>
-        <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-[#2c415e]/90 to-transparent z-10"></div>
-        
+        <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-[#2c415e]/60 to-transparent z-10"></div>
+        <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-[#2c415e]/60 to-transparent z-10"></div>
+
         <div className="w-full">
           <Image
             src={groupPhoto}
@@ -28,6 +27,7 @@ export default function AboutPage() {
             width={1920}
             height={600}
             className="w-full object-cover h-[500px]"
+            style={{ objectPosition: '50% 60%' }}
             priority
             quality={90}
           />
@@ -119,9 +119,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {/* Our Team Section */}
-      <OurTeam />
 
       {/* Practice Areas Preview */}
       <section className="relative py-16 bg-[#2c415e] text-white">

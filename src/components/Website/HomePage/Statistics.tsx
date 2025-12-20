@@ -114,7 +114,7 @@ const Statistics = () => {
           animateCounters();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.1 }
     );
 
     if (sectionRef.current) {
@@ -155,7 +155,7 @@ const Statistics = () => {
   };
 
   return (
-    <section ref={sectionRef} className="pt-20 pb-10 bg-gradient-to-br from-[#f7fafc] via-white to-[#edf2f7] relative overflow-hidden">
+    <section ref={sectionRef} className="py-12 md:pt-20 md:pb-10 bg-gradient-to-br from-[#f7fafc] via-white to-[#edf2f7] relative overflow-hidden">
       {/* Background Pattern */}
       <div
         className="absolute inset-0 opacity-5"
@@ -165,9 +165,9 @@ const Statistics = () => {
         }}
       />
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
-        <div className={`text-center mb-16 transition-all duration-1000 ${
+        <div className={`text-center mb-8 md:mb-16 transition-all duration-1000 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
         }`}>
           <div className="inline-block mb-4">
@@ -175,19 +175,19 @@ const Statistics = () => {
               Our Achievements
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1a2b3d] mb-6">
             Proven Track Record of
             <span className="block text-[#4a6789]">Legal Excellence</span>
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
-          <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
+          <p className="text-[#718096] text-base md:text-lg leading-relaxed max-w-3xl mx-auto px-4">
             Our commitment to excellence has earned us recognition and the trust of clients across various industries.
             These numbers reflect our dedication to delivering outstanding legal outcomes.
           </p>
         </div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {achievements.map((achievement, index) => (
             <div
               key={index}
@@ -196,7 +196,7 @@ const Statistics = () => {
               }`}
               style={{ transitionDelay: `${index * 200}ms` }}
             >
-              <div className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#e2e8f0] hover:border-[#4a6789]/30 group relative overflow-hidden">
+              <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#e2e8f0] hover:border-[#4a6789]/30 group relative overflow-hidden">
                 {/* Gradient background on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${achievement.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
 
@@ -206,7 +206,7 @@ const Statistics = () => {
                   </div>
 
                   <div className="mb-4">
-                    <div className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-2">
+                    <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-2">
                       {index === 0 ? counters.experience :
                        index === 1 ? counters.cases :
                        index === 2 ? counters.clients :
@@ -214,7 +214,7 @@ const Statistics = () => {
                        index === 4 ? counters.awards :
                        counters.team}{achievement.suffix}
                     </div>
-                    <h3 className="text-xl font-bold text-[#4a6789] mb-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-[#4a6789] mb-2">
                       {achievement.label}
                     </h3>
                   </div>

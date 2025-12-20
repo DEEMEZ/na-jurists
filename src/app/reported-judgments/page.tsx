@@ -1,14 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  getJudgmentsByPage,
-  getAllJudgments,
-  searchJudgments,
-  filterJudgmentsByCourt,
-  filterJudgmentsByYear,
-  ReportedJudgment
-} from '@/components/Website/ReportedJudgments/ReportedJudgements';
+import { ReportedJudgment } from '@/components/Website/ReportedJudgments/ReportedJudgements';
 import ReportedJudgmentsList from '@/components/Website/ReportedJudgments/ReportedJudgmentsList';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Footer from '@/components/Website/Global/Footer/Footer';
@@ -17,83 +10,75 @@ import { Search, Building2, Calendar, RotateCcw } from 'lucide-react';
 const ReportedJudgmentsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [courtFilter, setCourtFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
-  const [filteredJudgments, setFilteredJudgments] = useState<ReportedJudgment[]>([]);
   const [paginationData, setPaginationData] = useState({
     judgments: [] as ReportedJudgment[],
     totalPages: 0,
     currentPage: 1,
     totalCount: 0
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let results = filteredJudgments;
-
-    // Apply search
-    if (searchQuery.trim()) {
-      results = searchJudgments(searchQuery);
-    } else {
-      // Start with all judgments if no search
-      results = [...filteredJudgments];
-    }
-
-    // Apply court filter
-    if (courtFilter) {
-      results = results.filter(judgment => 
-        judgment.court.toLowerCase().includes(courtFilter.toLowerCase())
-      );
-    }
-
-    // Apply year filter
-    if (yearFilter) {
-      results = results.filter(judgment => 
-        judgment.date.includes(yearFilter) || judgment.citation.includes(yearFilter)
-      );
-    }
-
-    // Paginate the filtered results
-    const startIndex = (currentPage - 1) * 10;
-    const endIndex = startIndex + 10;
-    const paginatedResults = results.slice(startIndex, endIndex);
-
-    setPaginationData({
-      judgments: paginatedResults,
-      totalPages: Math.ceil(results.length / 10),
-      currentPage,
-      totalCount: results.length
-    });
-
-    // Reset to page 1 if current page is beyond available pages
-    if (currentPage > Math.ceil(results.length / 10) && Math.ceil(results.length / 10) > 0) {
-      setCurrentPage(1);
-    }
-  }, [searchQuery, courtFilter, yearFilter, currentPage, filteredJudgments]);
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
-    // Load judgments from public folder
+    setCurrentPage(1);
+  }, [debouncedSearch, courtFilter, yearFilter]);
+
+  useEffect(() => {
+    const controller = new AbortController();
     const loadJudgments = async () => {
       try {
-        const response = await fetch('/data/reported-judgments.json');
-        const data = await response.json();
+        setIsLoading(true);
+        setError(null);
 
-        setFilteredJudgments(data);
+        const params = new URLSearchParams();
+        params.set('page', currentPage.toString());
+        params.set('limit', '10');
+        if (debouncedSearch) params.set('search', debouncedSearch);
+        if (courtFilter) params.set('court', courtFilter);
+        if (yearFilter) params.set('year', yearFilter);
 
-        // Set initial pagination data
-        const paginatedResults = data.slice(0, 10);
-        setPaginationData({
-          judgments: paginatedResults,
-          totalPages: Math.ceil(data.length / 10),
-          currentPage: 1,
-          totalCount: data.length
+        const response = await fetch(`/api/reported-judgments?${params.toString()}`, {
+          signal: controller.signal
         });
-      } catch (error) {
-        console.error('Error loading judgments:', error);
+        if (!response.ok) {
+          throw new Error(`Failed to load judgments (HTTP ${response.status})`);
+        }
+
+        const payload = await response.json();
+        const judgments: ReportedJudgment[] = payload.data || [];
+        setPaginationData({
+          judgments,
+          totalPages: payload.pagination?.totalPages || 1,
+          currentPage: payload.pagination?.page || 1,
+          totalCount: payload.pagination?.total || judgments.length
+        });
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+        console.error('Error loading judgments:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load judgments');
+        setPaginationData({
+          judgments: [],
+          totalPages: 0,
+          currentPage: 1,
+          totalCount: 0
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadJudgments();
-  }, []);
+
+    return () => controller.abort();
+  }, [currentPage, debouncedSearch, courtFilter, yearFilter]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -109,18 +94,6 @@ const ReportedJudgmentsPage = () => {
     setCourtFilter('');
     setYearFilter('');
     setCurrentPage(1);
-
-    // Reset to all judgments
-    const allJudgments = getAllJudgments();
-    setFilteredJudgments(allJudgments);
-
-    const paginatedResults = allJudgments.slice(0, 10);
-    setPaginationData({
-      judgments: paginatedResults,
-      totalPages: Math.ceil(allJudgments.length / 10),
-      currentPage: 1,
-      totalCount: allJudgments.length
-    });
   };
 
   return (
@@ -238,12 +211,28 @@ const ReportedJudgmentsPage = () => {
 
           {/* Judgments List */}
           <div className="bg-white rounded-lg shadow-sm">
-            <ReportedJudgmentsList
-              judgments={paginationData.judgments}
-              currentPage={paginationData.currentPage}
-              totalPages={paginationData.totalPages}
-              onPageChange={handlePageChange}
-            />
+            {error ? (
+              <div className="text-center py-12 px-4">
+                <h3 className="text-xl font-medium text-red-600 mb-2">Error</h3>
+                <p className="text-[#666b6f] mb-4">{error}</p>
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  className="px-4 py-2 bg-[#2c415e] text-white rounded-md hover:bg-[#1e2d3f] transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <ReportedJudgmentsList
+                judgments={paginationData.judgments}
+                currentPage={paginationData.currentPage}
+                totalPages={paginationData.totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+            {isLoading && (
+              <div className="p-4 text-sm text-[#666b6f]">Loading judgments...</div>
+            )}
           </div>
         </div>
       </div>

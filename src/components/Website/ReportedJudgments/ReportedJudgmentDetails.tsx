@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getJudgmentById, ReportedJudgment } from '@/components/Website/ReportedJudgments/ReportedJudgements';
-import { ArrowLeft, Printer, Share2, MapPin, Calendar, Scale, Hash, Building2, User, FileText, Tag } from 'lucide-react';
+import { ReportedJudgment } from '@/components/Website/ReportedJudgments/ReportedJudgements';
+import { ArrowLeft, Printer, Share2, Calendar, Scale, Hash, Building2, User, FileText, Tag } from 'lucide-react';
 
 interface ReportedJudgmentDetailsProps {
   id: number;
@@ -13,16 +13,21 @@ const ReportedJudgmentDetails = ({ id }: ReportedJudgmentDetailsProps) => {
   const router = useRouter();
   const [judgmentData, setJudgmentData] = useState<ReportedJudgment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadJudgment = async () => {
       try {
-        const response = await fetch('/data/reported-judgments.json');
-        const data = await response.json();
-        const judgment = data.find((j: ReportedJudgment) => j.id === id);
-        setJudgmentData(judgment || null);
+        setError(null);
+        const response = await fetch(`/api/reported-judgments?id=${id}`);
+        if (!response.ok) {
+          throw new Error(`Failed to load judgment (HTTP ${response.status})`);
+        }
+        const payload = await response.json();
+        setJudgmentData(payload.data || null);
       } catch (error) {
         console.error('Error loading judgment:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load judgment');
         setJudgmentData(null);
       } finally {
         setIsLoading(false);
@@ -48,7 +53,7 @@ const ReportedJudgmentDetails = ({ id }: ReportedJudgmentDetailsProps) => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center py-12 px-4">
           <h3 className="text-2xl font-bold text-[#2c415e] mb-2">Judgment Not Found</h3>
-          <p className="text-[#666b6f] mb-6">The requested judgment could not be found.</p>
+          <p className="text-[#666b6f] mb-6">{error || 'The requested judgment could not be found.'}</p>
           <button
             onClick={() => router.push('/reported-judgments')}
             className="px-6 py-3 bg-[#2c415e] text-white rounded-lg hover:bg-[#1a2e4e] transition-colors"

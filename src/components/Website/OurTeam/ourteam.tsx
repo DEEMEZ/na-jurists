@@ -1,20 +1,70 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image, { StaticImageData } from "next/image";
 
-// Team members data
-const teamMembers = [
+// Import team member images
+import muhammadAliHaider1 from "@/assets/images/DSC04954.jpg";
+import muhammadAliHaider2 from "@/assets/images/DSC04960.jpg";
+import ayeshaRiaz from "@/assets/images/DSC04908.jpg";
+import hijabEZainab from "@/assets/images/RNI-Films-IMG-C2361EA5-BC20-4E6F-865C-C43291D1CB96.jpg";
+import zainHyderMalik from "@/assets/images/DSC05038.jpeg";
+import hinaAhmad from "@/assets/images/DSC04932.jpg";
+import jowariaGariq from "@/assets/images/DSC04918.jpg";
+import ahmedArshad from "@/assets/images/DSC04966.jpg";
+import farhatJamil from "@/assets/images/DSC05000.jpg";
+import ishfaqHussain1 from "@/assets/images/DSC05022.jpg";
+import ishfaqHussain2 from "@/assets/images/DSC05025.jpg";
+import ishfaqHussain3 from "@/assets/images/DSC05027.jpg";
+import mujeebUrRehman from "@/assets/images/DSC05108.jpg";
+
+// Team member type
+type TeamMember = {
+  id: number;
+  name: string;
+  title: string;
+  image: StaticImageData | null;
+  fullBio: string;
+  delay: number;
+};
+
+// Founder data
+const founder: TeamMember = {
+  id: 0,
+  name: "Syed Ishfaq Hussain Naqvi",
+  title: "Founder & Managing Partner",
+  image: ishfaqHussain1,
+  fullBio: "Syed Ishfaq Hussain Naqvi, Advocate Supreme Court, is the Founder and Managing Partner of N&A Jurists. With over 25 years of distinguished legal practice, he has built a reputation for excellence in corporate law, taxation, and constitutional matters. His visionary leadership has established N&A Jurists as one of Pakistan's most respected law firms, known for delivering exceptional legal solutions to clients across diverse sectors.",
+  delay: 0,
+};
+
+// Leadership team (excluding founder)
+const leadership: TeamMember[] = [
   {
     id: 1,
     name: "Muhammad Ali Haider",
     title: "Associate Partner",
+    image: muhammadAliHaider1,
     fullBio: "Mr. Muhammad Ali Haider, Advocate High Court, holds an LL.B. (Hons) from the University of London and his areas of expertise include constitutional law, tax litigation, service matters, and regulatory compliance. He has represented a diverse clientele, including individuals, corporate entities, and government bodies, before the High Courts and specialized tribunals. Renowned for his analytical rigor and structured legal reasoning, he offers effective and result-oriented legal solutions.",
+    delay: 100,
+  },
+];
+
+// Team members data (ordered by seniority)
+const teamMembers: TeamMember[] = [
+  {
+    id: 1,
+    name: "Hina Ahmad",
+    title: "Senior Lawyer | Advocate High Court",
+    image: hinaAhmad,
+    fullBio: "Ms. Hina Ahmed, Advocate High Court, has substantial experience in family law, civil litigation, and property law. She has represented a diverse clientele in complex legal matters before various courts and forums. Her practice is marked by a thorough understanding of procedural and substantive law. She provides clear, effective, and results-driven legal solutions.",
     delay: 100,
   },
   {
     id: 2,
     name: "Hijab E Zainab",
     title: "Associate",
+    image: hijabEZainab,
     fullBio: "Ms. Hijab E Zainab is a law graduate from the University of London, specializing in corporate law, civil and family litigation, and regulatory compliance. With expertise in company incorporation, SECP matters, REITs regulation, and NBFCs, she provides both legal advisory and hands-on services related to corporate structuring, regulatory filings, and compliance with SECP frameworks. Known for her pragmatic and solution-oriented approach, she has extensive experience representing clients before courts and regulatory tribunals, delivering effective and tailored legal solutions.",
     delay: 150,
   },
@@ -22,50 +72,49 @@ const teamMembers = [
     id: 3,
     name: "Zain Hyder Malik",
     title: "Associate",
+    image: zainHyderMalik,
     fullBio: "Mr. Zain Hyder Malik is a committed and skilled legal practitioner with an LLB degree and a strong foundation in both criminal and civil law. He has successfully represented clients in a broad spectrum of serious matters, including murder trials, narcotics offences, financial crimes, and other complex criminal proceedings. Zain has also secured favorable outcomes in numerous bail petitions. His unwavering dedication to justice and sharp courtroom advocacy have earned him the trust of clients and respect within the legal community.",
     delay: 200,
   },
   {
     id: 4,
-    name: "Jabbar Khan",
+    name: "Jowaria Tariq",
     title: "Associate",
-    fullBio: "With over thirteen years of experience in income and sales tax, including service at the Federal Board of Revenue (2010–2023), Mr. Jabbar, Advocate High Court, is highly skilled in income and sales tax, accounting and has represented clients in complex and high-profile matters before the appellate tax forums.",
+    image: jowariaGariq,
+    fullBio: "Ms. Jowaria Tariq is a law graduate from the University of London with expertise in corporate and commercial law, mergers and acquisitions, intellectual property, and arbitration and mediation services. She has experience in handling a broad range of corporate transactions, commercial litigation and regulatory work. She has advised and represented multinational companies and clients, bringing a practical, business-oriented approach to legal problem-solving.",
     delay: 100,
   },
   {
     id: 5,
-    name: "HINA AHMAD",
-    title: "Senior Lawyer  | Advocate High Court",
-    fullBio: "Ms. Hina Ahmed, Advocate High Court, has substantial experience in family law, civil litigation, and property law. She has represented a diverse clientele in complex legal matters before various courts and forums. Her practice is marked by a thorough understanding of procedural and substantive law. She provides clear, effective, and results-driven legal solutions.",
+    name: "Ayesha Riaz",
+    title: "Associate",
+    image: ayeshaRiaz,
+    fullBio: "Ms. Ayesha Riaz is a law graduate of the University of London with a focused practice in criminal litigation. She has handled a wide range of criminal matters, including narcotics prosecutions, white-collar offences, and other intricate criminal trials. Known for her meticulous case preparation and assertive courtroom presence, she is widely regarded for her commitment to safeguarding legal rights and upholding the principles of justice.",
     delay: 150,
   },
   {
     id: 6,
-    name: "Jowaria Tariq",
-    title: "Associate",
-    fullBio: "Ms. Jowaria Tariq is a law graduate from the University of London with expertise in corporate and commercial law, mergers and acquisitions, intellectual property, and arbitration and mediation services. She has experience in handling a broad range of corporate transactions, commercial litigation and regulatory work. She has advised and represented multinational companies and clients, bringing a practical, business-oriented approach to legal problem-solving.",
+    name: "Ahmed Arshad",
+    title: "Intern",
+    image: ahmedArshad,
+    fullBio: "Mr. Ahmed Arshad is currently serving as an Intern at N&A Jurists, where he actively contributes to the preparation of well-researched legal documents for proceedings before the District and High Courts. He is a dedicated team member focused on supporting effective legal strategies and delivering quality assistance in client matters.",
     delay: 200,
   },
   {
     id: 7,
-    name: "Ahmed",
-    title: "Intern",
-    fullBio: "Mr. Ahmad is currently serving as an Intern at N&A Jurists, where he actively contributes to the preparation of well-researched legal documents for proceedings before the District and High Courts. He is a dedicated team member focused on supporting effective legal strategies and delivering quality assistance in client matters.",
+    name: "Farhat Jamil",
+    title: "Office Manager/Clerk",
+    image: farhatJamil,
+    fullBio: "Mr. Farhat Jamil serves as Office Manager and Clerk at N&A Jurists, providing essential administrative support to ensure the smooth operation of the firm and efficient handling of client matters.",
     delay: 100,
   },
   {
     id: 8,
-    name: "Sawaid Ul Hassaan",
-    title: "Intern",
-    fullBio: "Mr. Sawaid Ul Hassan, a law graduate from NUST Islamabad, serves as an Intern at N&A Jurists and plays a key role in drafting comprehensive legal documents for matters before the High Courts and District Courts. He is a valuable member of the team committed to achieving the best results for clients",
+    name: "Mujeeb Ur Rehman",
+    title: "Office Boy",
+    image: mujeebUrRehman,
+    fullBio: "",
     delay: 150,
-  },
-  {
-    id: 9,
-    name: "Farhat Jamil",
-    title: "Office Manager/clerk",
-    fullBio: "Mr. Farhat Jamil serves as Office Manager and Clerk at N&A Jurists, providing essential administrative support to ensure the smooth operation of the firm and efficient handling of client matters.",
-    delay: 200,
   },
 ];
 
@@ -91,7 +140,7 @@ const CloseIcon = () => {
 };
 
 const OurTeam = () => {
-  const [active, setActive] = useState<(typeof teamMembers)[number] | null>(null);
+  const [active, setActive] = useState<TeamMember | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -157,8 +206,8 @@ const OurTeam = () => {
       {active && (
         <>
           {/* Backdrop */}
-          <div 
-            className={`fixed inset-0 bg-black/20 z-[90] transition-opacity duration-300 ${
+          <div
+            className={`fixed inset-0 bg-black/30 z-[90] transition-opacity duration-300 ${
               active ? 'opacity-100' : 'opacity-0'
             }`}
           />
@@ -168,7 +217,7 @@ const OurTeam = () => {
             {/* Modal Content */}
             <div
               ref={modalRef}
-              className={`relative w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-300 ${
+              className={`relative w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] flex flex-col bg-white sm:rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-300 ${
                 active ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
               }`}
             >
@@ -180,23 +229,33 @@ const OurTeam = () => {
               >
                 <CloseIcon />
               </button>
-              {/* Team Member Icon in Modal */}
-              <div className="flex justify-center p-8 bg-gradient-to-br from-[#f8fafc] to-[#e5eaf4]">
+              {/* Team Member Photo in Modal */}
+              <div className="flex justify-center p-8 bg-gradient-to-br from-[#f0f4f8] to-[#d9e2ec]">
                 <div className="relative w-40 h-40 overflow-hidden rounded-full shadow-lg border-4 border-white bg-gray-200 flex items-center justify-center transform hover:scale-105 transition-transform duration-200">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-24 w-24 text-gray-400" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                  {active.image ? (
+                    <Image
+                      src={active.image}
+                      alt={active.name}
+                      fill
+                      className="object-cover object-top scale-110"
+                      style={{ objectPosition: '50% 20%' }}
                     />
-                  </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-24 w-24 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
                 </div>
               </div>
@@ -250,7 +309,7 @@ const OurTeam = () => {
 
             {/* Team Members Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teamMembers.map((member, index) => (
+              {teamMembers.map((member) => (
                 <div
                   key={member.id}
                   onClick={() => setActive(member)}
@@ -261,23 +320,33 @@ const OurTeam = () => {
                     transitionDelay: isVisible ? `${member.delay}ms` : '0ms'
                   }}
                 >
-                  {/* Team Member Icon */}
+                  {/* Team Member Photo */}
                   <div className="flex justify-center mb-4">
                     <div className="relative w-32 h-32 overflow-hidden rounded-full shadow-md border border-gray-100 bg-gray-200 flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        className="h-20 w-20 text-gray-400" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                      {member.image ? (
+                        <Image
+                          src={member.image}
+                          alt={member.name}
+                          fill
+                          className="object-cover object-top scale-110"
+                          style={{ objectPosition: '50% 20%' }}
                         />
-                      </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-20 w-20 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      )}
                       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2c415e] to-[#4a6789]"></div>
                     </div>
                   </div>

@@ -4,94 +4,86 @@ import CasesFilter from '@/components/Website/Cases/CasesFilter';
 import CasesList from '@/components/Website/Cases/CasesList';
 import { LegalCase } from '@/types/LegalCase';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function HomeCases() {
-  const [casesData, setCasesData] = useState<LegalCase[]>([]);
-  const [filteredCases, setFilteredCases] = useState<LegalCase[]>([]);
+  const [cases, setCases] = useState<LegalCase[]>([]);
+  const [totalCases, setTotalCases] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{ searchQuery: string; court: string; subject: string }>({
+    searchQuery: '',
+    court: '',
+    subject: '',
+  });
+  const abortRef = useRef<AbortController | null>(null);
   const casesPerPage = 10;
 
-  useEffect(() => {
-    const loadData = async () => {
+  const fetchCases = useCallback(
+    async (
+      page: number,
+      nextFilters: { searchQuery: string; court: string; subject: string }
+    ) => {
       try {
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+
         setIsLoading(true);
         setError(null);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const params = new URLSearchParams();
+        params.set('page', page.toString());
+        params.set('limit', casesPerPage.toString());
+        if (nextFilters.searchQuery) params.set('search', nextFilters.searchQuery);
+        if (nextFilters.court) params.set('court', nextFilters.court);
+        if (nextFilters.subject) params.set('subject', nextFilters.subject);
 
-        const response = await fetch('/data/cases.json');
+        const response = await fetch(`/api/cases?${params.toString()}`, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to load cases (HTTP ${response.status})`);
         }
 
-        const data = await response.json();
+        const payload = await response.json();
 
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format: expected array of cases');
-        }
-
-        console.log(data);
-
-        setCasesData(data);
-        setFilteredCases(data);
+        setCases(payload.data || []);
+        setTotalCases(payload.pagination?.total || 0);
+        setTotalPages(payload.pagination?.totalPages || 1);
       } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
         console.error('Failed to load cases:', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setCases([]);
+        setTotalCases(0);
+        setTotalPages(1);
       } finally {
         setIsLoading(false);
       }
-    };
+    },
+    []
+  );
 
-    loadData();
-  }, []);
+  useEffect(() => {
+    fetchCases(1, filters);
+    // We intentionally only run this once for initial load
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchCases]);
 
-const courts = [...new Set(casesData.map(caseItem => caseItem.Court).filter(Boolean))].sort();
-const subjects = [...new Set(casesData.map(caseItem => caseItem['Subject/Applicable Law']).filter(Boolean))].sort();
+  const handleFilter = (nextFilters: { searchQuery: string; court: string; subject: string }) => {
+    setFilters(nextFilters);
+    setCurrentPage(1);
+    fetchCases(1, nextFilters);
+  };
 
- const handleFilter = (filters: { searchQuery: string; court: string; subject: string }) => {
-  let results = [...casesData];
-
-  if (filters.court) {
-    results = results.filter(caseItem =>
-      caseItem.Court?.toLowerCase() === filters.court.toLowerCase()
-    );
-  }
-
-  if (filters.subject) {
-    results = results.filter(caseItem =>
-      caseItem['Subject/Applicable Law']?.toLowerCase() === filters.subject.toLowerCase()
-    );
-  }
-
-  if (filters.searchQuery) {
-    const query = filters.searchQuery.toLowerCase();
-    results = results.filter(caseItem => {
-      const searchFields = [
-        caseItem["Case Title"] || '',
-        caseItem["File Unit"] || '',
-        caseItem.Court || '',
-        caseItem.HC || '',
-        caseItem["Party I"] || '',
-        caseItem["Party II"] || '',
-        caseItem["Issue / Revenue"] || ''
-      ].join(' ').toLowerCase();
-
-      return searchFields.includes(query);
-    });
-  }
-
-  setFilteredCases(results);
-  setCurrentPage(1);
-};
-
-  const indexOfLastCase = currentPage * casesPerPage;
-  const indexOfFirstCase = indexOfLastCase - casesPerPage;
-  const currentCases = filteredCases.slice(indexOfFirstCase, indexOfLastCase);
-  const totalPages = Math.ceil(filteredCases.length / casesPerPage);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchCases(page, filters);
+  };
 
   // Loading state
   if (isLoading) {
@@ -164,17 +156,17 @@ const subjects = [...new Set(casesData.map(caseItem => caseItem['Subject/Applica
             <div className="p-6 border-b border-gray-200">
               <CasesFilter
                 onFilter={handleFilter}
-                totalCases={filteredCases.length}
+                totalCases={totalCases}
               />
             </div>
 
             {/* Cases List */}
             <div className="p-6">
               <CasesList
-                cases={currentCases}
+                cases={cases}
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={handlePageChange}
               />
             </div>
             <div className="py-3 flex w-full justify-center items-center">

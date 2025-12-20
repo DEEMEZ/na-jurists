@@ -7,7 +7,7 @@ import CasesList from '@/components/Website/Cases/CasesList';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import { LegalCase } from '@/types/LegalCase';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 
 // Loading fallback component for the filter
@@ -29,144 +29,104 @@ function FilterFallback() {
 // Component to handle search params with Suspense
 function CasesContentWithParams() {
   const searchParams = useSearchParams(); // Use useSearchParams inside Suspense
-  const [casesData, setCasesData] = useState<LegalCase[]>([]);
-  const [filteredCases, setFilteredCases] = useState<LegalCase[]>([]);
+  const [cases, setCases] = useState<LegalCase[]>([]);
+  const [totalCases, setTotalCases] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const casesPerPage = 10;
+  const [filters, setFilters] = useState<{ searchQuery: string; court: string; subject: string }>({
+    searchQuery: '',
+    court: '',
+    subject: '',
+  });
+  const [totalPages, setTotalPages] = useState(1);
+  const abortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
+  const buildQueryString = useCallback(
+    (page: number, nextFilters: { searchQuery: string; court: string; subject: string }) => {
+      const params = new URLSearchParams();
+      params.set('page', page.toString());
+      params.set('limit', casesPerPage.toString());
+      if (nextFilters.searchQuery) params.set('search', nextFilters.searchQuery);
+      if (nextFilters.court) params.set('court', nextFilters.court);
+      if (nextFilters.subject) params.set('subject', nextFilters.subject);
+      return params.toString();
+    },
+    []
+  );
+
+  const fetchCases = useCallback(
+    async (
+      page: number,
+      nextFilters: { searchQuery: string; court: string; subject: string }
+    ) => {
       try {
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+
         setIsLoading(true);
         setError(null);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const response = await fetch('/data/cases.json');
+        const query = buildQueryString(page, nextFilters);
+        const response = await fetch(`/api/cases?${query}`, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to load cases (HTTP ${response.status})`);
         }
 
-        const data = await response.json();
+        const payload = await response.json();
 
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format: expected array of cases');
-        }
-
-        setCasesData(data);
-        setFilteredCases(data);
+        setCases(payload.data || []);
+        setTotalCases(payload.pagination?.total || 0);
+        setTotalPages(payload.pagination?.totalPages || 1);
       } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
         console.error('Failed to load cases:', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setCases([]);
+        setTotalCases(0);
+        setTotalPages(1);
       } finally {
         setIsLoading(false);
       }
-    };
-
-    loadData();
-  }, []);
+    },
+    [buildQueryString]
+  );
 
   useEffect(() => {
-    // Apply filters from search params if present
-    const searchQuery = searchParams?.get('search') || '';
-    const court = searchParams?.get('court') || '';
-    const subject = searchParams?.get('subject') || '';
-
-    let results = [...casesData];
-
-    if (court) {
-      if (court === 'Civil Court & Tribunal') {
-        results = results.filter(caseItem =>
-          caseItem.Court?.toLowerCase().includes('civil court') ||
-          caseItem.Court?.toLowerCase().includes('tribunal')
-        );
-      } else {
-        results = results.filter(caseItem =>
-          caseItem.Court?.toLowerCase().includes(court.toLowerCase())
-        );
-      }
-    }
-
-    if (subject) {
-      results = results.filter(caseItem =>
-        caseItem["Subject/Applicable Law"]?.toLowerCase().includes(subject.toLowerCase())
-      );
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      results = results.filter(caseItem => {
-        const searchFields = [
-          caseItem["Case Title"] || '',
-          caseItem["Case Number"] || '',
-          caseItem["Subject/Applicable Law"] || '',
-          caseItem.Court || '',
-          caseItem.Status || ''
-        ].join(' ').toLowerCase();
-
-        return searchFields.includes(query);
-      });
-    }
-
-    setFilteredCases(results);
+    const initialFilters = {
+      searchQuery: searchParams?.get('search') || '',
+      court: searchParams?.get('court') || '',
+      subject: searchParams?.get('subject') || '',
+    };
+    setFilters(initialFilters);
     setCurrentPage(1);
-  }, [searchParams, casesData]);
+    fetchCases(1, initialFilters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
-  const handleFilter = (filters: { searchQuery: string; court: string; subject: string }) => {
-    let results = [...casesData];
-
-    if (filters.court) {
-      if (filters.court === 'Civil Court & Tribunal') {
-        results = results.filter(caseItem =>
-          caseItem.Court?.toLowerCase().includes('civil court') ||
-          caseItem.Court?.toLowerCase().includes('tribunal')
-        );
-      } else {
-        results = results.filter(caseItem =>
-          caseItem.Court?.toLowerCase().includes(filters.court.toLowerCase())
-        );
-      }
-    }
-
-    if (filters.subject) {
-      results = results.filter(caseItem =>
-        caseItem["Subject/Applicable Law"]?.toLowerCase().includes(filters.subject.toLowerCase())
-      );
-    }
-
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      results = results.filter(caseItem => {
-        const searchFields = [
-          caseItem["Case Title"] || '',
-          caseItem["Case Number"] || '',
-          caseItem["Subject/Applicable Law"] || '',
-          caseItem.Court || '',
-          caseItem.Status || ''
-        ].join(' ').toLowerCase();
-
-        return searchFields.includes(query);
-      });
-    }
-
-    setFilteredCases(results);
+  const handleFilter = (newFilters: { searchQuery: string; court: string; subject: string }) => {
+    setFilters(newFilters);
     setCurrentPage(1);
 
-    // Update URL with search params
     const params = new URLSearchParams();
-    if (filters.searchQuery) params.set('search', filters.searchQuery);
-    if (filters.court) params.set('court', filters.court);
-    if (filters.subject) params.set('subject', filters.subject);
-    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    if (newFilters.searchQuery) params.set('search', newFilters.searchQuery);
+    if (newFilters.court) params.set('court', newFilters.court);
+    if (newFilters.subject) params.set('subject', newFilters.subject);
+    const queryString = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${queryString ? `?${queryString}` : ''}`);
+
+    fetchCases(1, newFilters);
   };
 
-  const indexOfLastCase = currentPage * casesPerPage;
-  const indexOfFirstCase = indexOfLastCase - casesPerPage;
-  const currentCases = filteredCases.slice(indexOfFirstCase, indexOfLastCase);
-  const totalPages = Math.ceil(filteredCases.length / casesPerPage);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchCases(page, filters);
+  };
 
   if (isLoading) {
     return (
@@ -224,7 +184,7 @@ function CasesContentWithParams() {
               <Suspense fallback={<FilterFallback />}>
                 <CasesFilter
                   onFilter={handleFilter}
-                  totalCases={filteredCases.length}
+                  totalCases={totalCases}
                 />
               </Suspense>
             </div>
@@ -232,10 +192,10 @@ function CasesContentWithParams() {
             {/* Cases List */}
             <div className="p-6">
               <CasesList
-                cases={currentCases}
+                cases={cases}
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={handlePageChange}
               />
             </div>
           </div>

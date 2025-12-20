@@ -6,9 +6,8 @@ import {
   MapPin,
   Mail,
   Phone,
-  Linkedin,
   Facebook,
-  Twitter,
+  Linkedin,
   Shield
 } from 'lucide-react';
 
@@ -33,28 +32,16 @@ const Footer = () => {
 
   const legalResources = [
     { name: 'Cases', href: '/cases' },
-    { name: 'Reported Judgments', href: '/reported-judgments' },
+    { name: 'Judgments', href: '/judgments' },
     { name: 'Legal Updates', href: '/legal-updates' },
     { name: 'Publications', href: '/publications' }
   ];
 
   const socialLinks = [
-    {
-      name: 'LinkedIn',
-      href: '#',
-      icon: <Linkedin className="w-5 h-5" />
-    },
-    {
-      name: 'Facebook',
-      href: '#',
-      icon: <Facebook className="w-5 h-5" />
-    },
-    {
-      name: 'Twitter',
-      href: '#',
-      icon: <Twitter className="w-5 h-5" />
-    }
+    { name: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100077795273536&mibextid=wwXIfr&rdid=k9eLgUU5t6Y7H9u9&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1CkmVbxAr1%2F%3Fmibextid%3DwwXIfr%26ref%3D1#', icon: <Facebook className="w-5 h-5" /> },
+    { name: 'LinkedIn', href: 'https://www.linkedin.com/company/najurists/', icon: <Linkedin className="w-5 h-5" /> }
   ];
+
 
 
   return (
@@ -78,8 +65,8 @@ const Footer = () => {
         <div className="py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
             {/* Company Info */}
-            <div className="lg:col-span-2 space-y-6">
-              <div>
+            <div className="lg:col-span-2 space-y-6 text-center md:text-left">
+              <div className="flex justify-center md:justify-start">
                 <Image
                   src="/text-logo.png"
                   alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
@@ -89,13 +76,13 @@ const Footer = () => {
                 />
               </div>
 
-              <p className="text-blue-200 leading-relaxed max-w-md">
+              <p className="text-blue-200 leading-relaxed max-w-md mx-auto md:mx-0">
                 Leading law firm providing comprehensive legal services with unwavering commitment to
                 integrity, excellence, and client success. Trusted by businesses and individuals across Pakistan.
               </p>
 
               {/* Contact Info */}
-              <div className="space-y-3">
+              <div className="space-y-3 flex flex-col items-center md:items-start">
                 <div className="flex items-start space-x-3">
                   <MapPin className="w-5 h-5 mt-1 text-[#4a6789] flex-shrink-0" />
                   <div>
@@ -122,13 +109,15 @@ const Footer = () => {
               </div>
 
               {/* Social Links */}
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 justify-center md:justify-start">
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
                     href={social.href}
                     className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-blue-200 hover:text-white hover:bg-[#4a6789] transition-all duration-300 transform hover:-translate-y-1"
                     aria-label={social.name}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {social.icon}
                   </a>
@@ -137,19 +126,18 @@ const Footer = () => {
             </div>
 
             {/* Quick Links */}
-            <div>
-              <h4 className="text-lg font-bold text-white mb-6 relative">
+            <div className="text-center md:text-left">
+              <h4 className="text-lg font-bold text-white mb-6 relative inline-block">
                 Quick Links
                 <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-[#4a6789] mt-2"></div>
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-3 flex flex-col items-center md:items-start">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm flex items-center group"
+                      className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#4a6789] rounded-full mr-3 group-hover:bg-[#5a7a9b] transition-colors duration-300"></span>
                       {link.name}
                     </Link>
                   </li>
@@ -158,19 +146,18 @@ const Footer = () => {
             </div>
 
             {/* Legal Services */}
-            <div>
-              <h4 className="text-lg font-bold text-white mb-6 relative">
+            <div className="text-center md:text-left">
+              <h4 className="text-lg font-bold text-white mb-6 relative inline-block">
                 Legal Services
                 <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-[#4a6789] mt-2"></div>
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-3 flex flex-col items-center md:items-start">
                 {legalServices.map((service) => (
                   <li key={service.name}>
                     <Link
                       href={service.href}
-                      className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm flex items-center group"
+                      className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#4a6789] rounded-full mr-3 group-hover:bg-[#5a7a9b] transition-colors duration-300"></span>
                       {service.name}
                     </Link>
                   </li>
@@ -179,19 +166,18 @@ const Footer = () => {
             </div>
 
             {/* Legal Resources */}
-            <div>
-              <h4 className="text-lg font-bold text-white mb-6 relative">
+            <div className="text-center md:text-left">
+              <h4 className="text-lg font-bold text-white mb-6 relative inline-block">
                 Legal Resources
                 <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-[#4a6789] mt-2"></div>
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-3 flex flex-col items-center md:items-start">
                 {legalResources.map((resource) => (
                   <li key={resource.name}>
                     <Link
                       href={resource.href}
-                      className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm flex items-center group"
+                      className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#4a6789] rounded-full mr-3 group-hover:bg-[#5a7a9b] transition-colors duration-300"></span>
                       {resource.name}
                     </Link>
                   </li>
@@ -211,18 +197,6 @@ const Footer = () => {
               <p className="text-blue-300 text-xs mt-1">
                 Advocates, Corporate & Legal Consultants
               </p>
-            </div>
-
-            <div className="flex flex-wrap justify-center md:justify-end gap-6 text-xs">
-              <Link href="/privacy-policy" className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300">
-                Privacy Policy
-              </Link>
-              <Link href="/terms-of-service" className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300">
-                Terms of Service
-              </Link>
-              <Link href="/disclaimer" className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300">
-                Legal Disclaimer
-              </Link>
             </div>
           </div>
 

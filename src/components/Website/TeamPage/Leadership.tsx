@@ -1,6 +1,6 @@
 "use client";
 
-import Member1 from '@/assets/images/Member1.jpeg';
+import ishfaqHussain from '@/assets/images/DSC05025.jpg';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
@@ -23,10 +23,11 @@ const TeamLeadership = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2">
             <div className="relative h-80 lg:h-full">
               <Image
-                src={Member1}
+                src={ishfaqHussain}
                 alt="Syed Ishfaq Hussain Naqvi - Managing Partner"
                 fill
                 className="object-cover"
+                style={{ objectPosition: '50% 30%' }}
                 quality={90}
               />
             </div>

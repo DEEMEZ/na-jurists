@@ -1,6 +1,6 @@
 "use client";
 
-import Member1 from '@/assets/images/Member1.jpeg';
+import ishfaqHussain from '@/assets/images/DSC05027.jpg';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
@@ -67,13 +67,13 @@ const ManagingPartner = () => {
             {/* Enhanced Image column */}
             <div className="flex justify-center lg:justify-end">
               <div className="relative group">
-                <div className="relative w-80 h-96 overflow-hidden rounded-2xl shadow-2xl border border-gray-200">
+                <div className="relative w-full max-w-md h-[32rem] overflow-hidden rounded-2xl shadow-2xl border border-gray-200">
                   <Image
-                    src={Member1}
+                    src={ishfaqHussain}
                     alt="Syed Ishfaq Hussain Naqvi - Managing Partner"
-                    width={320}
-                    height={384}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    style={{ objectPosition: '50% 20%' }}
                     quality={95}
                   />
                   {/* Enhanced overlay */}

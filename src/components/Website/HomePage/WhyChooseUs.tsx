@@ -204,12 +204,12 @@ const WhyChooseUs = () => {
               Experience the difference of working with experienced legal professionals who prioritize your success.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-[#1a2b3d] text-white px-8 py-4 rounded-lg hover:bg-[#2c415e] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+              <a href="/contact" className="bg-[#1a2b3d] text-white px-8 py-4 rounded-lg hover:bg-[#2c415e] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block text-center">
                 Schedule Free Consultation
-              </button>
-              <button className="border-2 border-[#4a6789] text-[#4a6789] px-8 py-4 rounded-lg hover:bg-[#4a6789] hover:text-white transition-all duration-300 font-semibold">
+              </a>
+              <a href="/about" className="border-2 border-[#4a6789] text-[#4a6789] px-8 py-4 rounded-lg hover:bg-[#4a6789] hover:text-white transition-all duration-300 font-semibold inline-block text-center">
                 Learn More About Us
-              </button>
+              </a>
             </div>
           </div>
         </div>

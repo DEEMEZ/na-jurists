@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import teamHero from '@/assets/images/team.png';
+import aboutUsHero from '@/assets/images/aboutushero.png';
 import { useEffect, useRef, useState } from 'react';
 
 const TeamHero = () => {
@@ -26,17 +26,18 @@ const TeamHero = () => {
     <section className="relative w-full h-[80vh] md:h-[90vh] overflow-hidden">
       <div ref={heroBgRef} className="absolute inset-0 z-0">
         <Image
-          src={teamHero}
+          src={aboutUsHero}
           alt="Team Background"
           fill
-          className="object-cover"
+          className="object-cover scale-105"
+          style={{ objectPosition: '42% 65%' }}
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/60 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40 z-10" />
       </div>
 
-      <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-[#2c415e]/90 to-transparent z-20" />
-      <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-[#2c415e]/90 to-transparent z-20" />
+      <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-[#2c415e]/60 to-transparent z-20" />
+      <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-[#2c415e]/60 to-transparent z-20" />
 
       <div className="relative z-30 flex items-center justify-center h-full text-center px-4">
         <h1 className="text-white text-4xl md:text-6xl font-bold drop-shadow-lg">

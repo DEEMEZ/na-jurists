@@ -16,7 +16,6 @@ interface PageProps {
 
 export default function CaseDetailPage({ params: paramsPromise }: PageProps) {
   const [decodedId, setDecodedId] = useState<string | null>(null);
-  const [casesData, setCasesData] = useState<LegalCase[]>([]);
   const [currentCase, setCurrentCase] = useState<LegalCase | null>(null);
   const [relatedCases, setRelatedCases] = useState<LegalCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,31 +36,19 @@ export default function CaseDetailPage({ params: paramsPromise }: PageProps) {
         const id = decodeURIComponent(params.id);
         setDecodedId(id);
 
-        // 2. Fetch case data
-        const response = await fetch(`/data/cases.json?t=${new Date().getTime()}`);
+        // 2. Fetch case data from API
+        const response = await fetch(`/api/cases?id=${encodeURIComponent(id)}`);
         if (!response.ok) {
           throw new Error(`Failed to load data (HTTP ${response.status})`);
         }
 
-        const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format: expected array');
-        }
-
-        setCasesData(data);
-        
-        // 3. Find current case
-        const foundCase = data.find((c: LegalCase) => c.id === id);
-        if (!foundCase) {
+        const payload = await response.json();
+        if (!payload?.data) {
           throw new Error('Case not found');
         }
-        setCurrentCase(foundCase);
-        
-        // 4. Find related cases
-        const related = data.filter((c: LegalCase) => 
-          c.category === foundCase.category && c.id !== foundCase.id
-        ).slice(0, 3);
-        setRelatedCases(related);
+
+        setCurrentCase(payload.data);
+        setRelatedCases(payload.related || []);
       } catch (err) {
         console.error('Data loading error:', err);
         setError(err instanceof Error ? err.message : 'Failed to load case data');

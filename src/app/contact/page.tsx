@@ -1,5 +1,4 @@
 import ContactCards from '@/components/Website/ContactPage/ContactCards';
-import ContactForm from '@/components/Website/ContactPage/ContactForm';
 import MapLocation from '@/components/Website/ContactPage/MapLocation';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
@@ -32,23 +31,17 @@ export default function ContactPage() {
         <div className="container mx-auto px-4">
           {/* Contact Cards */}
           <ContactCards />
-          
-          {/* Form and Map Section */}
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <ContactForm />
-            </div>
-            
-            <div>
-              <div className="bg-white p-13 rounded-lg shadow-md">
-                <MapLocation />
-                <div className="mt-4">
-                  <h3 className="font-semibold text-[#2c415e]">Office Hours</h3>
-                  <p className="text-[#666b6f] mt-2">
-                    Monday - Friday: 9:00 AM - 6:00 PM<br />
-                    Saturday - Sunday: Closed
-                  </p>
-                </div>
+
+          {/* Map Section - Full Width */}
+          <div className="mt-12">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <MapLocation />
+              <div className="mt-6 text-center">
+                <h3 className="font-semibold text-[#2c415e] text-xl mb-2">Office Hours</h3>
+                <p className="text-[#666b6f]">
+                  Monday - Friday: 9:00 AM - 6:00 PM<br />
+                  Saturday - Sunday: Closed
+                </p>
               </div>
             </div>
           </div>
