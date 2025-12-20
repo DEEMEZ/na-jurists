@@ -1,8 +1,6 @@
 "use client";
 
 import { CasesListProps } from '@/types/LegalCase';
-import OTPModal from './OTPModal';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const truncateTitle = (title: string, wordLimit: number = 10): string => {
@@ -13,17 +11,10 @@ const truncateTitle = (title: string, wordLimit: number = 10): string => {
 
 const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListProps) => {
   const router = useRouter();
-  const [showOTPModal, setShowOTPModal] = useState(false);
-  const [selectedCaseId, setSelectedCaseId] = useState<string>('');
 
   const handleViewDetails = (caseId: string) => {
-    setSelectedCaseId(caseId);
-    setShowOTPModal(true);
-  };
-
-  const handleOTPVerified = () => {
-    setShowOTPModal(false);
-    router.push(`/cases/${selectedCaseId}`);
+    // Navigate directly to case details
+    router.push(`/cases/${caseId}`);
   };
   if (cases.length === 0) {
     return (
@@ -140,13 +131,6 @@ const CasesList = ({ cases, currentPage, totalPages, onPageChange }: CasesListPr
           </nav>
         </div>
       )}
-
-      <OTPModal
-        isOpen={showOTPModal}
-        onClose={() => setShowOTPModal(false)}
-        onVerified={handleOTPVerified}
-        caseId={selectedCaseId}
-      />
     </div>
   );
 };

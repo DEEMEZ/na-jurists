@@ -1,8 +1,6 @@
 "use client";
 
 import { LegalCase } from '@/types/LegalCase';
-import OTPModal from './OTPModal';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface CaseCardProps {
@@ -11,15 +9,14 @@ interface CaseCardProps {
 
 const CaseCard = ({ caseItem }: CaseCardProps) => {
   const router = useRouter();
-  const [showOTPModal, setShowOTPModal] = useState(false);
+
+  // Check if case is decided (accessible without OTP)
+  const isDecided = caseItem.Status?.toLowerCase().includes('decided') ||
+                    caseItem.Status?.toLowerCase().includes('disposed');
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.preventDefault();
-    setShowOTPModal(true);
-  };
-
-  const handleOTPVerified = () => {
-    setShowOTPModal(false);
+    // Navigate directly to case details
     router.push(`/cases/${caseItem.id}`);
   };
 
@@ -61,13 +58,6 @@ const CaseCard = ({ caseItem }: CaseCardProps) => {
           </div>
         </div>
       </div>
-
-      <OTPModal
-        isOpen={showOTPModal}
-        onClose={() => setShowOTPModal(false)}
-        onVerified={handleOTPVerified}
-        caseId={caseItem.id}
-      />
     </>
   );
 };
