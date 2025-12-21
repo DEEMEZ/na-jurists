@@ -277,7 +277,7 @@ const OurTeam = () => {
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-6 pb-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold text-[#2c415e] mb-2">
                     {active.name}
@@ -286,10 +286,10 @@ const OurTeam = () => {
                     {active.title}
                   </p>
                 </div>
-                
+
                 <div className="relative">
-                  <div className="text-[#666b6f] text-sm leading-relaxed max-h-64 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                    <p>{active.fullBio}</p>
+                  <div className="text-[#666b6f] text-sm leading-relaxed max-h-72 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pr-2">
+                    <p className="pb-4">{active.fullBio}</p>
                   </div>
                 </div>
               </div>
