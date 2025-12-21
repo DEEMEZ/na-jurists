@@ -111,10 +111,10 @@ const Hero = () => {
                   <div className="absolute -left-6 top-0 bottom-0 w-2 bg-gradient-to-b from-[#4a6789] to-[#5a7a9b] rounded-full"></div>
                   <div className="bg-white/5 backdrop-blur-sm rounded-r-3xl pl-12 pr-8 py-8 border-r border-white/20">
                     <div className="text-white">
-                      <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-2">
                         N&A JURISTS
                       </h2>
-                      <p className="text-sm md:text-base text-white/80 font-medium tracking-wider">
+                      <p className="text-xs sm:text-sm md:text-base text-white/80 font-medium tracking-wider">
                         Advocates, Corporate & Legal Consultants
                       </p>
                     </div>
@@ -125,15 +125,15 @@ const Hero = () => {
                 <div className="space-y-4 pl-6">
                   <div className="flex items-center space-x-4">
                     <div className="w-3 h-3 bg-[#4a6789] rounded-full"></div>
-                    <span className="text-white/80 text-sm font-medium">Supreme Court Advocates</span>
+                    <span className="text-white/80 text-xs sm:text-sm font-medium">Supreme Court Advocates</span>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="w-3 h-3 bg-[#5a7a9b] rounded-full"></div>
-                    <span className="text-white/80 text-sm font-medium">Corporate Law Specialists</span>
+                    <span className="text-white/80 text-xs sm:text-sm font-medium">Corporate Law Specialists</span>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="w-3 h-3 bg-[#6a8aab] rounded-full"></div>
-                    <span className="text-white/80 text-sm font-medium">1500+ Cases Handled</span>
+                    <span className="text-white/80 text-xs sm:text-sm font-medium">1500+ Cases Handled</span>
                   </div>
                 </div>
               </div>
@@ -146,7 +146,7 @@ const Hero = () => {
                 <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                   <div className="relative">
                     <div className="absolute -top-2 -left-2 w-6 h-6 border-l-2 border-t-2 border-[#4a6789]"></div>
-                    <p className="text-[#4a6789] font-semibold text-lg md:text-xl tracking-wide uppercase pl-6">
+                    <p className="text-[#4a6789] font-semibold text-sm sm:text-base md:text-lg tracking-wide uppercase pl-6">
                       {heroSlides[currentSlide].subtitle}
                     </p>
                   </div>
@@ -154,10 +154,10 @@ const Hero = () => {
 
                 {/* Large asymmetrical title */}
                 <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[0.9] text-left">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
                     <span className="block">{heroSlides[currentSlide].title.split(' ')[0]}</span>
                     {heroSlides[currentSlide].title.split(' ').length > 1 && (
-                      <span className="block text-right text-white/70 text-4xl md:text-5xl lg:text-6xl ml-8 -mt-2">
+                      <span className="block text-white/70">
                         {heroSlides[currentSlide].title.split(' ').slice(1).join(' ')}
                       </span>
                     )}
@@ -171,7 +171,7 @@ const Hero = () => {
 
                 {/* Description */}
                 <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                  <p className="text-lg md:text-xl text-white/90 leading-relaxed max-w-lg">
+                  <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-lg">
                     {heroSlides[currentSlide].description}
                   </p>
                 </div>

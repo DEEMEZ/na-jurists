@@ -33,8 +33,7 @@ const Footer = () => {
   const legalResources = [
     { name: 'Cases', href: '/cases' },
     { name: 'Judgments', href: '/judgments' },
-    { name: 'Legal Updates', href: '/legal-updates' },
-    { name: 'Publications', href: '/publications' }
+   
   ];
 
   const socialLinks = [
