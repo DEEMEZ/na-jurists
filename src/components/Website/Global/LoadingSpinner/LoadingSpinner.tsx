@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useRef } from 'react';
 
 const LoadingSpinner = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false); // Track client-side mount
+  const hideTimer = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -15,8 +17,12 @@ const LoadingSpinner = () => {
   }, []);
 
   useEffect(() => {
-    if (isMounted) {
-      setIsLoading(false);
+    if (!isMounted) return;
+
+    setIsLoading(false);
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
     }
   }, [pathname, searchParams, isMounted]);
 
@@ -28,13 +34,31 @@ const LoadingSpinner = () => {
       const link = target.closest('a');
       
       // Only show spinner for internal navigation links
-      if (link && link.href && link.href.startsWith(window.location.origin)) {
+      if (!link || !link.href) return;
+
+      // Ignore new-tab links
+      if (link.target === '_blank') return;
+
+      const linkUrl = new URL(link.href);
+      const currentUrl = new URL(window.location.href);
+      const isInternal = linkUrl.origin === currentUrl.origin;
+      const isSameRoute = linkUrl.pathname === currentUrl.pathname && linkUrl.search === currentUrl.search;
+
+      // Avoid locking the spinner when clicking a link to the current page
+      if (isInternal && !isSameRoute) {
         setIsLoading(true);
+        // Fail-safe in case the navigation is cancelled or errors
+        hideTimer.current = setTimeout(() => setIsLoading(false), 2000);
       }
     };
 
     document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+      if (hideTimer.current) {
+        clearTimeout(hideTimer.current);
+      }
+    };
   }, [isMounted]);
 
   // Don't render anything on the server
