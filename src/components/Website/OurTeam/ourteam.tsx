@@ -230,11 +230,11 @@ const OurTeam = () => {
           />
           
           {/* Modal */}
-          <div className="fixed inset-0 grid place-items-center z-[100] p-4">
+          <div className="fixed inset-0 grid place-items-center z-[100] p-4 sm:p-6 md:p-8">
             {/* Modal Content */}
             <div
               ref={modalRef}
-              className={`relative w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] flex flex-col bg-white sm:rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-300 ${
+              className={`relative w-full max-w-[500px] max-h-[95vh] flex flex-col bg-white sm:rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-300 ${
                 active ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
               }`}
             >
@@ -247,8 +247,8 @@ const OurTeam = () => {
                 <CloseIcon />
               </button>
               {/* Team Member Photo in Modal */}
-              <div className="flex justify-center p-8 bg-gradient-to-br from-[#f0f4f8] to-[#d9e2ec]">
-                <div className="relative w-40 h-40 overflow-hidden rounded-full shadow-lg border-4 border-white bg-gray-200 flex items-center justify-center transform hover:scale-105 transition-transform duration-200">
+              <div className="flex justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-[#f0f4f8] to-[#d9e2ec] flex-shrink-0">
+                <div className="relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 overflow-hidden rounded-full shadow-lg border-4 border-white bg-gray-200 flex items-center justify-center transform hover:scale-105 transition-transform duration-200">
                   {active.image ? (
                     <Image
                       src={active.image}
@@ -277,19 +277,19 @@ const OurTeam = () => {
                 </div>
               </div>
 
-              <div className="p-6 pb-8">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-[#2c415e] mb-2">
+              <div className="flex-1 overflow-auto p-4 sm:p-5 md:p-6 pb-6 sm:pb-8">
+                <div className="text-center mb-4 sm:mb-5 md:mb-6">
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#2c415e] mb-2">
                     {active.name}
                   </h3>
-                  <p className="text-[#4a6789] font-medium text-lg">
+                  <p className="text-[#4a6789] font-medium text-base sm:text-lg">
                     {active.title}
                   </p>
                 </div>
 
                 <div className="relative">
-                  <div className="text-[#666b6f] text-sm leading-relaxed max-h-72 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pr-2">
-                    <p className="pb-4">{active.fullBio}</p>
+                  <div className="text-[#666b6f] text-sm leading-relaxed pr-2">
+                    <p className="mb-4">{active.fullBio}</p>
                   </div>
                 </div>
               </div>
