@@ -17,6 +17,7 @@ import ishfaqHussain1 from "@/assets/images/DSC05022.jpg";
 import ishfaqHussain2 from "@/assets/images/DSC05025.jpg";
 import ishfaqHussain3 from "@/assets/images/DSC05027.jpg";
 import mujeebUrRehman from "@/assets/images/DSC05108.jpg";
+import jabbarKhan from "@/assets/images/jabbar.jpeg";
 
 // Team member type
 type TeamMember = {
@@ -80,7 +81,7 @@ const teamMembers: TeamMember[] = [
     id: 4,
     name: "Jabbar Khan",
     title: "Associate",
-    image: null,
+    image: jabbarKhan,
     fullBio: "With over thirteen years of experience in income and sales tax, including service at the Federal Board of Revenue (2010–2023), Mr. Jabbar, Advocate High Court, is highly skilled in income and sales tax, accounting and has represented clients in complex and high-profile matters before the appellate tax forums.",
     delay: 100,
   },
