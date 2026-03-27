@@ -5,14 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-/** Portal Vite app — sign-in at /login (set NEXT_PUBLIC_PORTAL_URL in production). */
-function portalSignInHref(): string {
-  const base = process.env.NEXT_PUBLIC_PORTAL_URL ?? "http://localhost:5173";
-  return `${base.replace(/\/$/, "")}/login`;
-}
-
 const Navbar = () => {
-  const portalLoginHref = portalSignInHref();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLegalResourcesOpen, setIsLegalResourcesOpen] = useState(false);
@@ -31,60 +24,50 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinkClass =
-    "inline-flex h-10 items-center text-sm font-medium text-[#2c415e] transition-colors duration-300 hover:text-[#4a6789]";
-  const portalBtnClass =
-    "inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[#2c415e] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1a2b3d]";
-
   return (
-    <nav
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/95 py-2 shadow-md backdrop-blur-sm"
-          : "bg-white py-3"
-      }`}
-    >
-      <div className="container mx-auto flex min-h-[56px] items-center justify-between gap-4 px-4 sm:px-6">
-        <div className="flex min-w-0 shrink-0 items-center">
-          <Link href="/" className="flex items-center">
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+      scrolled ? 'bg-white/95 backdrop-blur-sm shadow-md py-2' : 'bg-white py-3'
+    }`}>
+      <div className="container mx-auto flex items-center justify-between px-4">
+        <div className="flex items-center">
+          <Link href="/">
             <Image
               src="/text-logo.png"
               alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
               width={160}
               height={55}
-              className={`h-auto transition-all duration-300 ${scrolled ? "w-[140px]" : "w-[160px]"}`}
+              className={`transition-all duration-300 ${scrolled ? 'w-[140px]' : 'w-[160px]'} h-auto`}
               priority
             />
           </Link>
         </div>
-
-        {/* Desktop: links + CTA — same row height, even gaps */}
-        <div className="hidden min-w-0 flex-1 items-center justify-end gap-5 lg:gap-6 md:flex">
-          <Link href="/" className={navLinkClass}>
+        
+        {/* Desktop Menu */}
+        <div className="hidden space-x-6 md:flex">
+          <Link href="/" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Home
           </Link>
-          <Link href="/about" className={navLinkClass}>
+          <Link href="/about" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             About Us
           </Link>
-          <Link href="/team" className={navLinkClass}>
+          <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Team
           </Link>
-
+          
           {/* Legal Resources Dropdown */}
-          <div className="relative flex items-center">
+          <div className="relative group">
             <button
-              type="button"
-              className={`${navLinkClass} gap-0.5`}
+              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300 flex items-center"
               onMouseEnter={() => setIsLegalResourcesOpen(true)}
               onMouseLeave={() => setIsLegalResourcesOpen(false)}
             >
               Legal Resources
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isLegalResourcesOpen ? "rotate-180" : ""}`}
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                className={`ml-1 h-4 w-4 transition-transform duration-200 ${isLegalResourcesOpen ? 'rotate-180' : ''}`}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -114,29 +97,20 @@ const Navbar = () => {
               </div>
             </div>
           </div>
-
-          <Link href="/services" className={navLinkClass}>
+          
+          <Link href="/services" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Services
           </Link>
-          <Link href="/contact" className={navLinkClass}>
+          <Link href="/contact" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Contact Us
           </Link>
-          <a
-            href={portalLoginHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={portalBtnClass}
-          >
-            Client portal
-          </a>
         </div>
-
+        
         {/* Mobile Menu Button */}
-        <div className="flex items-center md:hidden">
-          <button
-            type="button"
+        <div className="flex md:hidden">
+          <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="inline-flex h-10 w-10 items-center justify-center text-[#2c415e]"
+            className="text-[#2c415e]"
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
@@ -211,15 +185,6 @@ const Navbar = () => {
             >
               Contact Us
             </Link>
-            <a
-              href={portalLoginHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit rounded-md bg-[#2c415e] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1a2b3d]"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Client portal
-            </a>
           </div>
         </div>
       )}
