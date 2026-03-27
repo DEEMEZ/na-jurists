@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# law-firm-portal workspaces
+law-firm-portal/**/node_modules
+law-firm-portal/**/dist
+law-firm-portal/**/.env
+law-firm-portal/**/.env.local

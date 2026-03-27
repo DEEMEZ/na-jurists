@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "dev:mono": "concurrently -k -n WEB,PORTAL,API,PROXY -c blue,magenta,green,cyan \"cross-env NEXT_PUBLIC_PORTAL_URL=http://localhost:3000/portal next dev --webpack --port 3001\" \"npm --prefix law-firm-portal/frontend run dev:mono\" \"cross-env FRONTEND_ORIGIN=http://localhost:3000,http://localhost:5173 npm --prefix law-firm-portal/backend run dev\" \"node scripts/mono-proxy.mjs\"",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "extract-judgments": "node scripts/extract-judgments.js"
@@ -26,7 +27,6 @@
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.55.0",
     "react-icons": "^5.5.0",
-    "react-server-dom-webpack": "^19.2.0",
     "uuid": "^11.1.0",
     "xlsx": "^0.18.5",
     "zod": "^3.24.2"
@@ -37,8 +37,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "form-data": "^4.0.5",
+    "http-proxy": "^1.18.1",
     "postcss": "^8.5.6",
     "postcss-custom-properties": "^14.0.6",
     "tailwindcss": "^4.1.11",
