@@ -47,3 +47,4 @@ law-firm-portal/**/node_modules
 law-firm-portal/**/dist
 law-firm-portal/**/.env
 law-firm-portal/**/.env.local
+law-firm-portal/scripts/seed-admin.env

@@ -8,7 +8,8 @@
     "dev:mono": "vite --mode mono --base /portal/",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "seed:admin": "node ../scripts/create-supabase-admin.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.1",

@@ -18,6 +18,24 @@ If triggers fail on `EXECUTE FUNCTION`, try `EXECUTE PROCEDURE` instead (Postgre
 
 ## 3. First admin user
 
+### Option A — from this repo (script)
+
+1. Copy `law-firm-portal/scripts/seed-admin.env.example` → `law-firm-portal/scripts/seed-admin.env` (this file is gitignored).
+2. Fill in:
+   - `SUPABASE_URL` — same as `VITE_SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY` — **Legacy** API key `service_role` (never commit it; never use in the browser)
+   - `ADMIN_EMAIL` / `ADMIN_PASSWORD` (password ≥ 8 characters)
+3. Run **after** the SQL migration has been applied (so `profiles` + trigger exist):
+
+```bash
+cd law-firm-portal/frontend
+npm run seed:admin
+```
+
+If the email already exists in Auth, the script tries to set `profiles.role` to `ADMIN` only.
+
+### Option B — Supabase Dashboard
+
 1. **Authentication → Users → Add user** (email + password).
 2. In SQL Editor:
 
