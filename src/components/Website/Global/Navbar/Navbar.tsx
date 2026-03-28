@@ -5,17 +5,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-/** Portal Vite app — sign-in at /login (set NEXT_PUBLIC_PORTAL_URL in production). */
+/** Portal Vite app — sign-in at /login. See `.env.production` for deploy defaults. */
 function portalSignInHref(): string {
   const configured = process.env.NEXT_PUBLIC_PORTAL_URL?.trim();
-  // In production, avoid localhost fallback; default to same-origin /portal.
-  const base =
-    configured && configured.length > 0
-      ? configured
-      : typeof window !== "undefined"
-        ? `${window.location.origin}/portal`
-        : "http://localhost:5173";
-  return `${base.replace(/\/$/, "")}/login`;
+  if (configured && configured.length > 0) {
+    return `${configured.replace(/\/$/, "")}/login`;
+  }
+  if (typeof window !== "undefined") {
+    return `${window.location.origin.replace(/\/$/, "")}/portal/login`;
+  }
+  // SSR: same-origin /portal when env is empty (matches committed `.env.production`).
+  if (process.env.NODE_ENV === "production") {
+    return "/portal/login";
+  }
+  return "http://localhost:5173/login";
 }
 
 const Navbar = () => {
