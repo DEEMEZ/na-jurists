@@ -1,4 +1,21 @@
 {
+  "redirects": [
+    {
+      "source": "/portal",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/portal/",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/portal/:path*",
+      "destination": "/:path*",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
