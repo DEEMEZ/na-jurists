@@ -2,7 +2,7 @@ import { type FormEvent, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { PortalLogo } from "@/components/brand/PortalLogo";
-import { apiJson } from "@/lib/api";
+import { getSupabase } from "@/lib/supabaseClient";
 
 export function ForgotPasswordPage() {
   const { user, ready } = useAuth();
@@ -28,10 +28,12 @@ export function ForgotPasswordPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await apiJson<{ ok: boolean }>("/auth/forgot-password", {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      });
+      const origin = window.location.origin.replace(/\/$/, "");
+      const { error: supaErr } = await getSupabase().auth.resetPasswordForEmail(
+        email,
+        { redirectTo: `${origin}/reset-password` },
+      );
+      if (supaErr) throw new Error(supaErr.message);
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Request failed");

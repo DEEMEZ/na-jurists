@@ -1,17 +1,28 @@
-import { type FormEvent, useState } from "react";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { type FormEvent, useEffect, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { PortalLogo } from "@/components/brand/PortalLogo";
-import { apiJson } from "@/lib/api";
+import { getSupabase } from "@/lib/supabaseClient";
 
 export function ResetPasswordPage() {
   const { user, ready } = useAuth();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token") ?? "";
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [recoveryReady, setRecoveryReady] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    if (params.get("type") === "recovery") setRecoveryReady(true);
+    const sb = getSupabase();
+    const {
+      data: { subscription },
+    } = sb.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setRecoveryReady(true);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   if (!ready) {
     return (
@@ -21,7 +32,7 @@ export function ResetPasswordPage() {
     );
   }
 
-  if (user) {
+  if (user && !recoveryReady) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -30,11 +41,12 @@ export function ResetPasswordPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await apiJson<{ ok: boolean }>("/auth/reset-password", {
-        method: "POST",
-        body: JSON.stringify({ token, password }),
+      const { error: supaErr } = await getSupabase().auth.updateUser({
+        password,
       });
+      if (supaErr) throw new Error(supaErr.message);
       setDone(true);
+      await getSupabase().auth.signOut();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Reset failed");
     } finally {
@@ -66,9 +78,9 @@ export function ResetPasswordPage() {
             Set new password
           </h1>
 
-          {!token ? (
+          {!recoveryReady ? (
             <p className="mt-4 text-center text-sm text-text-light">
-              Missing reset token. Open the link from your email or{" "}
+              Open the reset link from your email (it expires). Or{" "}
               <Link to="/forgot-password" className="text-accent-blue underline">
                 request a new one
               </Link>

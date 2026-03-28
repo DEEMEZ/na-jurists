@@ -7,23 +7,21 @@ import { defineConfig, loadEnv } from "vite";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ command, mode }) => {
-  // Vite loads .env.* after config is evaluated; use loadEnv so checks see frontend/.env.production.
   const fileEnv = loadEnv(mode, __dirname, "VITE");
-  const viteApiUrl =
-    (fileEnv.VITE_API_URL ?? process.env.VITE_API_URL)?.trim() ?? "";
+  const supabaseUrl =
+    (fileEnv.VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.trim() ?? "";
+  const supabaseAnon =
+    (fileEnv.VITE_SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY)?.trim() ??
+    "";
 
   if (
     command === "build" &&
     mode === "production" &&
     Boolean(process.env.VERCEL)
   ) {
-    if (!viteApiUrl) {
+    if (!supabaseUrl || !supabaseAnon) {
       console.warn(
-        "\n[law-firm-portal] VITE_API_URL is unset. Set frontend/.env.production (committed) to your public API HTTPS origin.\n",
-      );
-    } else if (/localhost|127\.0\.0\.1/i.test(viteApiUrl)) {
-      throw new Error(
-        "VITE_API_URL cannot be localhost on Vercel. Edit frontend/.env.production to your deployed API HTTPS URL.",
+        "\n[law-firm-portal] Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in frontend/.env.production for production builds.\n",
       );
     }
   }

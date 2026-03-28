@@ -1,0 +1,5 @@
+# https://supabase.com/docs/guides/cli/config
+project_id = "local-or-dashboard-id"
+
+[functions.portal-admin-users]
+verify_jwt = true

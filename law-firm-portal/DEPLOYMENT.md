@@ -1,6 +1,16 @@
 # Law firm portal — deployment notes
 
-The portal is two apps under `law-firm-portal/`: **backend** (Express + Prisma) and **frontend** (Vite + React). Deploy them together or on separate hosts; the browser talks to the API via `VITE_API_URL`.
+## Supabase (recommended)
+
+The **frontend** is built to run **without a separate Node API**: it uses **Supabase Auth**, **Postgres + RLS**, and **Storage**. Follow **`SUPABASE.md`** for migrations, env vars, and the `portal-admin-users` Edge Function.
+
+The **backend/** folder (Express + Prisma) remains for reference or local tooling; it is **not required** for the hosted portal when using Supabase.
+
+---
+
+## Legacy: Express + Prisma API
+
+The portal was originally two apps: **backend** (Express + Prisma) and **frontend** (Vite + React) with `VITE_API_URL`. That path is deprecated in favour of Supabase above.
 
 ## Backend (`law-firm-portal/backend`)
 
@@ -50,9 +60,10 @@ The API allows requests from `FRONTEND_ORIGIN` only. If the portal is served fro
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | No | Base URL of the portal API (no trailing slash), e.g. `https://api.portal.example.com`. Defaults to `http://localhost:4000` at build time if unset — **set explicitly for production builds.** |
+| `VITE_SUPABASE_URL` | Yes | Project URL from Supabase (Settings → API). |
+| `VITE_SUPABASE_ANON_KEY` | Yes | **anon** public key (never use the service_role key in the frontend). |
 
-Vite bakes these in at **build time** (`import.meta.env`). Rebuild the frontend after changing them.
+Vite bakes these in at **build time**. Rebuild after changing them. See **`SUPABASE.md`**.
 
 ### Public marketing site (Next.js, repo root)
 
@@ -87,13 +98,9 @@ In the **portal** Vercel project → **Settings → General → Root Directory**
 
 After changing Root Directory, trigger a **new deployment**.
 
-**API URL without the Vercel dashboard:** set **`VITE_API_URL`** in committed **`law-firm-portal/frontend/.env.production`** (HTTPS, no trailing slash). Vite reads it at **build time**; push the edit and redeploy.
+**Supabase env on Vercel:** set **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_ANON_KEY`** (Production + Preview) or commit them in **`frontend/.env.production`**. No separate portal API or CORS setup is required for the browser — Supabase handles auth and PostgREST with RLS.
 
-Optional: you can still override with a Vercel **Environment Variable** (same name) if you prefer — it takes precedence over the file.
-
-If `VITE_API_URL` is missing, the client falls back to `http://localhost:4000` and login shows **Failed to fetch**.
-
-**Backend:** set **`FRONTEND_ORIGIN`** to your portal origin (e.g. `https://law-firm-portal-blush.vercel.app`) or a comma-separated list so **CORS** allows the browser.
+**Admin user management** needs the **`portal-admin-users`** Edge Function deployed (see **`SUPABASE.md`**).
 
 ---
 
@@ -111,7 +118,7 @@ GitHub Actions workflow `.github/workflows/law-firm-portal-ci.yml` runs on chang
 | Piece | Example |
 |--------|---------|
 | Marketing site | `https://najurists.com` (existing Next.js app) |
-| Portal UI | `https://portal.najurists.com` → static `dist/` |
-| Portal API | `https://api.najurists.com` or same origin behind a reverse proxy |
+| Portal UI | `https://portal.najurists.com` → static `dist/` + Supabase project |
+| Data / auth | Supabase (Postgres, Auth, Storage, optional Edge Functions) |
 
-Use HTTPS everywhere; set `FRONTEND_ORIGIN` and `VITE_API_URL` to those public URLs.
+Use HTTPS everywhere; configure Supabase auth redirect URLs for your portal domain.

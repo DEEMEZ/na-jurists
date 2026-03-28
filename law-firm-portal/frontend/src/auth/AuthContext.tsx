@@ -7,16 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  API_BASE_URL,
-  apiFetch,
-  apiJson,
-  clearTokens,
-  getStoredAccessToken,
-  getStoredRefreshToken,
-  setTokens,
-  type AuthUser,
-} from "@/lib/api";
+import { getSupabase } from "@/lib/supabaseClient";
+import type { AuthUser } from "@/lib/api";
 
 type AuthState = {
   user: AuthUser | null;
@@ -31,68 +23,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ready, setReady] = useState(false);
 
-  const loadMe = useCallback(async () => {
-    const data = await apiJson<{ user: AuthUser }>("/auth/me");
-    setUser(data.user);
+  const loadProfile = useCallback(async () => {
+    const sb = getSupabase();
+    const {
+      data: { session },
+    } = await sb.auth.getSession();
+    if (!session?.user) {
+      setUser(null);
+      return;
+    }
+    const { data: p, error } = await sb
+      .from("profiles")
+      .select("id, email, role, disabled")
+      .eq("id", session.user.id)
+      .single();
+    if (error || !p || p.disabled) {
+      await sb.auth.signOut();
+      setUser(null);
+      return;
+    }
+    setUser({
+      id: p.id,
+      email: p.email,
+      role: p.role as "ADMIN" | "CLIENT",
+    });
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (!getStoredAccessToken()) {
-        if (!cancelled) setReady(true);
-        return;
-      }
       try {
-        await loadMe();
-      } catch {
-        setUser(null);
+        await loadProfile();
       } finally {
         if (!cancelled) setReady(true);
       }
     })();
+    const sb = getSupabase();
+    const {
+      data: { subscription },
+    } = sb.auth.onAuthStateChange(() => {
+      void loadProfile();
+    });
     return () => {
       cancelled = true;
+      subscription.unsubscribe();
     };
-  }, [loadMe]);
+  }, [loadProfile]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = (await res.json()) as {
-      accessToken?: string;
-      refreshToken?: string;
-      user?: AuthUser;
-      error?: unknown;
-    };
-    if (!res.ok) {
-      const msg =
-        typeof data.error === "string" ? data.error : "Sign in failed";
-      throw new Error(msg);
-    }
-    if (!data.accessToken || !data.refreshToken || !data.user) {
-      throw new Error("Invalid response from server");
-    }
-    setTokens(data.accessToken, data.refreshToken);
-    setUser(data.user);
-  }, []);
+    const sb = getSupabase();
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+    await loadProfile();
+  }, [loadProfile]);
 
   const logout = useCallback(async () => {
-    const rt = getStoredRefreshToken();
-    if (rt) {
-      try {
-        await apiFetch("/auth/logout", {
-          method: "POST",
-          body: JSON.stringify({ refreshToken: rt }),
-        });
-      } catch {
-        /* ignore */
-      }
-    }
-    clearTokens();
+    await getSupabase().auth.signOut();
     setUser(null);
   }, []);
 

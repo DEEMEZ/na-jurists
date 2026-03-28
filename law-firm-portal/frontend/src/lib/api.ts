@@ -1,120 +1,103 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+import {
+  downloadCaseDocumentBlob,
+  portalApiJson,
+  portalApiUpload,
+  type AuthUser,
+} from "./portalApi";
 
-if (import.meta.env.PROD && typeof window !== "undefined") {
-  const host = window.location.hostname;
-  if (
-    host &&
-    host !== "localhost" &&
-    host !== "127.0.0.1" &&
-    /localhost|127\.0\.0\.1/i.test(API_BASE_URL)
-  ) {
-    console.error(
-      "[law-firm-portal] This build calls localhost for the API. Set VITE_API_URL in frontend/.env.production (or Vercel env) to your public HTTPS API URL, then rebuild.",
-    );
-  }
-}
+export type { AuthUser };
 
-const ACCESS_KEY = "law_firm_portal_access";
-const REFRESH_KEY = "law_firm_portal_refresh";
-
-export type AuthUser = {
-  id: string;
-  email: string;
-  role: "ADMIN" | "CLIENT";
-};
+export const API_BASE_URL = "";
 
 export function getStoredAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_KEY);
+  return null;
 }
 
 export function getStoredRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_KEY);
+  return null;
 }
 
-export function setTokens(access: string, refresh: string): void {
-  localStorage.setItem(ACCESS_KEY, access);
-  localStorage.setItem(REFRESH_KEY, refresh);
-}
+export function setTokens(_access: string, _refresh: string): void {}
 
-export function clearTokens(): void {
-  localStorage.removeItem(ACCESS_KEY);
-  localStorage.removeItem(REFRESH_KEY);
-}
+export function clearTokens(): void {}
 
-async function tryRefresh(): Promise<boolean> {
-  const refresh = getStoredRefreshToken();
-  if (!refresh) return false;
-  const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken: refresh }),
-  });
-  if (!res.ok) {
-    clearTokens();
-    return false;
+function parseJsonBody(init?: RequestInit): unknown {
+  if (!init?.body || typeof init.body !== "string") return undefined;
+  try {
+    return JSON.parse(init.body) as unknown;
+  } catch {
+    return undefined;
   }
-  const data = (await res.json()) as {
-    accessToken: string;
-    refreshToken: string;
-  };
-  setTokens(data.accessToken, data.refreshToken);
-  return true;
-}
-
-export async function apiFetch(
-  path: string,
-  init: RequestInit = {},
-  isRetry = false,
-): Promise<Response> {
-  const headers = new Headers(init.headers);
-  const token = getStoredAccessToken();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-  if (
-    init.body &&
-    !(init.body instanceof FormData) &&
-    !headers.has("Content-Type")
-  ) {
-    headers.set("Content-Type", "application/json");
-  }
-
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers,
-  });
-
-  if (res.status === 401 && !isRetry && path !== "/auth/refresh") {
-    const ok = await tryRefresh();
-    if (ok) {
-      return apiFetch(path, init, true);
-    }
-  }
-
-  return res;
 }
 
 export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await apiFetch(path, init);
-  const text = await res.text();
-  const data = text ? (JSON.parse(text) as unknown) : null;
-  if (!res.ok) {
-    const err = data as { error?: unknown } | null;
-    let message = `Request failed (${res.status})`;
-    if (typeof err?.error === "string") message = err.error;
-    else if (err?.error && typeof err.error === "object")
-      message = JSON.stringify(err.error);
-    throw new Error(message);
-  }
+  const method = init?.method ?? "GET";
+  const body = parseJsonBody(init);
+  const data = await portalApiJson(method, path, body);
   return data as T;
 }
 
-export async function apiBlob(path: string): Promise<Blob> {
-  const res = await apiFetch(path);
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `Download failed (${res.status})`);
+export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const method = init?.method ?? "GET";
+  if (init?.body instanceof FormData) {
+    const m = path.match(/^\/api\/v1\/admin\/cases\/([^/]+)\/documents$/);
+    if (!m || method !== "POST") {
+      return new Response(JSON.stringify({ error: "Unsupported upload path" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const file = init.body.get("file");
+    if (!(file instanceof File)) {
+      return new Response(JSON.stringify({ error: "Missing file" }), { status: 400 });
+    }
+    try {
+      const result = await portalApiUpload(m[1], file);
+      return new Response(JSON.stringify(result), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Upload failed";
+      return new Response(JSON.stringify({ error: msg }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   }
-  return res.blob();
+  const body = parseJsonBody(init);
+  try {
+    const data = await portalApiJson(method, path, body);
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Error";
+    const status =
+      msg === "Unauthorized" ? 401 : msg === "Forbidden" || msg.includes("Forbidden") ? 403 : 400;
+    return new Response(JSON.stringify({ error: msg }), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+export async function apiBlob(path: string): Promise<Blob> {
+  const m = path.match(/^\/api\/v1\/cases\/([^/]+)\/documents\/([^/]+)\/file$/);
+  if (!m) throw new Error("Invalid document path");
+  return downloadCaseDocumentBlob(m[1], m[2]);
+}
+
+if (import.meta.env.PROD && typeof window !== "undefined") {
+  const host = window.location.hostname;
+  if (host && host !== "localhost" && host !== "127.0.0.1") {
+    const url = import.meta.env.VITE_SUPABASE_URL?.trim();
+    const key = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+    if (!url || !key) {
+      console.error(
+        "[law-firm-portal] Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in frontend/.env.production.",
+      );
+    }
+  }
 }
