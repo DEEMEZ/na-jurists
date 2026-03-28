@@ -52,9 +52,18 @@ cd law-firm-portal
 supabase functions deploy portal-admin-users
 ```
 
-Set secrets (Dashboard → Edge Functions → Secrets, or CLI). Supabase usually injects `SUPABASE_URL` and `SUPABASE_ANON_KEY` automatically; you must add:
+Set secrets (Dashboard → Edge Functions → Secrets, or CLI). Supabase usually injects `SUPABASE_URL` and `SUPABASE_ANON_KEY` automatically.
 
-- **`SUPABASE_SERVICE_ROLE_KEY`** — **service_role** key (never expose to the browser)
+You must add the **service_role** JWT (never expose to the browser):
+
+- **Dashboard:** the UI does **not** allow secret names starting with `SUPABASE_`. Add **`SERVICE_ROLE_KEY`** and paste the same value as **Legacy → service_role** in **Settings → API**.
+- **CLI:** `npx supabase secrets set SERVICE_ROLE_KEY=eyJ...` (or `SUPABASE_SERVICE_ROLE_KEY=...` if your CLI allows it).
+
+The function reads **`SERVICE_ROLE_KEY` first**, then falls back to **`SUPABASE_SERVICE_ROLE_KEY`**.
+
+**401 “Invalid JWT” on invoke (but login and `/rest` work):** The Edge **gateway** can reject tokens when your project uses **new JWT signing keys (e.g. ES256)**. This repo sets **`verify_jwt = false`** for `portal-admin-users` in `supabase/config.toml` and relies on **`auth.getUser()` + ADMIN check inside the function**. Redeploy after changing config:
+
+`npx supabase functions deploy portal-admin-users --use-api`
 
 ## 5. Frontend environment
 

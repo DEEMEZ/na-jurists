@@ -43,7 +43,10 @@ const password = process.env.ADMIN_PASSWORD ?? "";
 if (!url || !serviceKey) {
   console.error(
     "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.\n" +
-      "Copy scripts/seed-admin.env.example → scripts/seed-admin.env and fill it in.",
+      "Copy scripts/seed-admin.env.example → scripts/seed-admin.env and fill it in.\n" +
+      (url && !serviceKey
+        ? "Hint: if the key looks right in the editor, save the file — an unsaved buffer is not read by Node."
+        : ""),
   );
   process.exit(1);
 }
@@ -60,6 +63,65 @@ const authHeaders = {
   Authorization: `Bearer ${serviceKey}`,
   "Content-Type": "application/json",
 };
+
+/** Auth admin API: find user id by email (paginated). */
+async function findAuthUserIdByEmail(targetEmail) {
+  const normalized = targetEmail.trim().toLowerCase();
+  let page = 1;
+  const perPage = 200;
+  for (let i = 0; i < 50; i++) {
+    const res = await fetch(
+      `${url}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
+      { headers: authHeaders },
+    );
+    if (!res.ok) {
+      const t = await res.text();
+      console.error("Auth admin list users failed:", res.status, t);
+      return null;
+    }
+    const body = await res.json().catch(() => ({}));
+    const users = Array.isArray(body?.users) ? body.users : [];
+    for (const u of users) {
+      if (String(u?.email ?? "").toLowerCase() === normalized) {
+        return u.id ?? null;
+      }
+    }
+    if (users.length < perPage) break;
+    page += 1;
+  }
+  return null;
+}
+
+/** Ensure a profiles row exists (e.g. user signed up before handle_new_user trigger). */
+async function ensureProfileRow(userId) {
+  const check = await fetch(
+    `${url}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id`,
+    { headers: authHeaders },
+  );
+  const existing = await check.json().catch(() => []);
+  if (Array.isArray(existing) && existing[0]?.id) return;
+
+  const ins = await fetch(`${url}/rest/v1/profiles`, {
+    method: "POST",
+    headers: {
+      ...authHeaders,
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      id: userId,
+      email,
+      role: "CLIENT",
+    }),
+  });
+
+  if (!ins.ok) {
+    const t = await ins.text();
+    // Row already exists (race with trigger or retry) — PATCH will set ADMIN.
+    if (ins.status === 409 || /duplicate|unique/i.test(t)) return;
+    console.error("Could not create profiles row:", ins.status, t);
+    process.exit(1);
+  }
+}
 
 async function main() {
   const createRes = await fetch(`${url}/auth/v1/admin/users`, {
@@ -86,15 +148,33 @@ async function main() {
         `${url}/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id`,
         { headers: authHeaders },
       );
-      const rows = await profRes.json().catch(() => []);
-      const userId = Array.isArray(rows) && rows[0]?.id ? rows[0].id : null;
-      if (!userId) {
+      if (!profRes.ok) {
+        const t = await profRes.text();
         console.error(
-          "Could not find profiles row for this email. Run the SQL migration first, or create the user in the Dashboard.",
-          msg,
+          "REST profiles not available. Apply supabase/migrations/20260328120000_portal_core.sql in the SQL Editor first.\n",
+          profRes.status,
+          t,
         );
         process.exit(1);
       }
+      const rows = await profRes.json().catch(() => []);
+      let userId = Array.isArray(rows) && rows[0]?.id ? rows[0].id : null;
+
+      if (!userId) {
+        console.log(
+          "No profiles row yet (common if this user was created before the DB migration). Looking up Auth user id…",
+        );
+        userId = await findAuthUserIdByEmail(email);
+        if (!userId) {
+          console.error(
+            "Could not find this email in Auth users. Check ADMIN_EMAIL or create the user in the Dashboard.",
+            msg,
+          );
+          process.exit(1);
+        }
+        await ensureProfileRow(userId);
+      }
+
       await setAdminProfile(userId);
       console.log("OK — profile updated to ADMIN for:", email);
       return;

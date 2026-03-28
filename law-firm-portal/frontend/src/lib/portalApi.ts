@@ -1,4 +1,29 @@
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { getSupabase } from "./supabaseClient";
+
+async function edgeFunctionErrorMessage(error: Error): Promise<string> {
+  const fallback =
+    error.message ||
+    "Edge function failed. Deploy `portal-admin-users` (see law-firm-portal/supabase/functions).";
+  if (!(error instanceof FunctionsHttpError) || !(error.context instanceof Response)) {
+    return fallback;
+  }
+  const res = error.context;
+  try {
+    const ct = res.headers.get("content-type") ?? "";
+    if (ct.includes("application/json")) {
+      const j = (await res.json()) as { error?: string; message?: string };
+      if (typeof j?.error === "string") return j.error;
+      if (typeof j?.message === "string") return j.message;
+    } else {
+      const t = await res.text();
+      if (t?.trim()) return t.trim().slice(0, 500);
+    }
+  } catch {
+    /* keep fallback */
+  }
+  return fallback;
+}
 
 export type AuthUser = { id: string; email: string; role: "ADMIN" | "CLIENT" };
 
@@ -37,12 +62,31 @@ function parseUrl(pathWithQuery: string): { pathname: string; q: URLSearchParams
 
 async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const sb = getSupabase();
-  const { data, error } = await sb.functions.invoke("portal-admin-users", { body });
+  // Edge Functions with verify_jwt reject expired/stale tokens; refresh before invoke.
+  const { data: ref } = await sb.auth.refreshSession();
+  let accessToken = ref.session?.access_token;
+  if (!accessToken) {
+    const {
+      data: { session },
+    } = await sb.auth.getSession();
+    accessToken = session?.access_token;
+  }
+  if (!accessToken) {
+    throw new Error("Your session expired. Sign out and sign in again.");
+  }
+
+  const { data, error } = await sb.functions.invoke("portal-admin-users", {
+    body,
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
   if (error) {
-    throw new Error(
-      error.message ||
-        "Edge function failed. Deploy `portal-admin-users` (see law-firm-portal/supabase/functions).",
-    );
+    let msg = await edgeFunctionErrorMessage(error);
+    if (/invalid jwt/i.test(msg)) {
+      msg +=
+        " Try: Sign out, clear site data for this site (or use a private window), sign in again. " +
+        "Confirm VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY match Settings → API for this project.";
+    }
+    throw new Error(msg);
   }
   const res = data as { ok?: boolean; error?: string };
   if (!res?.ok) {

@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 /**
- * Portal sign-in URL.
- * - Split deploy (portal on its own *.vercel.app): set NEXT_PUBLIC_PORTAL_URL to that origin only, e.g. https://na-juristsportal.vercel.app — never add /portal.
- * - Same-origin monorepo: leave NEXT_PUBLIC_PORTAL_URL empty; link stays /portal/login on the marketing host.
+ * Portal sign-in URL. "Client portal" opens in a new tab (target="_blank").
+ * - Production split deploy: set NEXT_PUBLIC_PORTAL_URL to portal origin only, e.g. https://your-portal.vercel.app
+ * - Production same-origin: leave unset; link is /portal/login on the marketing host.
+ * - Local dev: defaults to http://localhost:5173/login (run `npm run dev:with-portal` from repo root).
  */
 function portalSignInHref(): string {
   const raw = process.env.NEXT_PUBLIC_PORTAL_URL?.trim();
@@ -25,15 +26,14 @@ function portalSignInHref(): string {
     return `${base}/login`;
   }
 
-  // Production + unset env: same-origin /portal (marketing site serves /portal). Must run before `window` branch so
-  // we never turn the portal's own origin into …/portal/login (404 on standalone Vite deploy).
+  // Production + unset env: same-origin /portal (marketing site serves /portal).
   if (process.env.NODE_ENV === "production") {
     return "/portal/login";
   }
 
-  if (typeof window !== "undefined") {
-    return `${window.location.origin.replace(/\/$/, "")}/portal/login`;
-  }
+  // Local dev: standalone Vite portal (law-firm-portal/frontend, port 5173).
+  // Use `npm run dev:with-portal` from repo root, or set NEXT_PUBLIC_PORTAL_URL (see .env.example).
+  // For legacy mono proxy + /portal, set NEXT_PUBLIC_PORTAL_URL=http://localhost:3000/portal (see dev:mono).
   return "http://localhost:5173/login";
 }
 
