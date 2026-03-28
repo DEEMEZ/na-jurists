@@ -1,6 +1,20 @@
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
+if (import.meta.env.PROD && typeof window !== "undefined") {
+  const host = window.location.hostname;
+  if (
+    host &&
+    host !== "localhost" &&
+    host !== "127.0.0.1" &&
+    /localhost|127\.0\.0\.1/i.test(API_BASE_URL)
+  ) {
+    console.error(
+      "[law-firm-portal] This build calls localhost for the API. In Vercel → Environment Variables, set VITE_API_URL for Preview and Production to your public API HTTPS URL, then redeploy.",
+    );
+  }
+}
+
 const ACCESS_KEY = "law_firm_portal_access";
 const REFRESH_KEY = "law_firm_portal_refresh";
 
