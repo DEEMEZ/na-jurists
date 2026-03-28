@@ -14,9 +14,14 @@ export default defineConfig(({ command, mode }) => {
     Boolean(process.env.VERCEL)
   ) {
     const url = process.env.VITE_API_URL?.trim() ?? "";
-    if (!url || /localhost|127\.0\.0\.1/i.test(url)) {
+    // Missing → still allow build (e.g. first deploy); login will fail until env is set + redeploy.
+    if (!url) {
+      console.warn(
+        "\n[law-firm-portal] VITE_API_URL is unset. Set it in Vercel (Production + Preview) to your public API HTTPS origin, then redeploy — otherwise the app will call localhost:4000.\n",
+      );
+    } else if (/localhost|127\.0\.0\.1/i.test(url)) {
       throw new Error(
-        "Set VITE_API_URL in the Vercel project (Settings → Environment Variables) to your public HTTPS API origin, e.g. https://api.example.com — not localhost. Then redeploy.",
+        "VITE_API_URL cannot be localhost on Vercel. Use your deployed API HTTPS URL.",
       );
     }
   }
