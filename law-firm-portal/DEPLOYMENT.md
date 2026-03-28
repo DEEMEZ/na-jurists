@@ -74,6 +74,19 @@ npm run build
 
 Serve the `dist/` folder with any static host (nginx, S3+CloudFront, Netlify, etc.). Configure the host to **fallback to `index.html`** for client-side routes (`/dashboard`, `/cases/...`, etc.).
 
+### Vercel (portal frontend)
+
+If `/login` (or every client route) shows **Vercel’s generic 404**, the deployment is almost certainly building the **wrong folder** (for example the repo root Next.js app, which has no `/login`).
+
+In the **portal** Vercel project → **Settings → General → Root Directory**, set **one** of:
+
+| Root Directory | What Vercel uses |
+|----------------|------------------|
+| `law-firm-portal` | `law-firm-portal/vercel.json` — installs and builds `frontend/`, output `frontend/dist`. Use this if the project was linked with an empty root. |
+| `law-firm-portal/frontend` | `law-firm-portal/frontend/vercel.json` — normal Vite SPA; Framework Preset should be **Vite** (or “Other” with Output **dist**). |
+
+After changing Root Directory, trigger a **new deployment**. Set `VITE_API_URL` in that project to your live API URL.
+
 ---
 
 ## CI
