@@ -87,9 +87,11 @@ In the **portal** Vercel project → **Settings → General → Root Directory**
 
 After changing Root Directory, trigger a **new deployment**.
 
-**Required on Vercel (portal frontend):** add **`VITE_API_URL`** = your deployed API’s public origin (HTTPS, no trailing slash), e.g. `https://na-jurists-api.vercel.app`. If this is missing, the client falls back to `http://localhost:4000` and login shows **Failed to fetch**. Vite reads this at **build time** — change the var, then **redeploy**.
+**API URL without the Vercel dashboard:** set **`VITE_API_URL`** in committed **`law-firm-portal/frontend/.env.production`** (HTTPS, no trailing slash). Vite reads it at **build time**; push the edit and redeploy.
 
-When adding the variable, enable it for **Production** and **Preview** (and **Development** if you use `vercel dev`). Branch / PR URLs like `*-git-basit-*.vercel.app` use the **Preview** environment — if `VITE_API_URL` is Production-only, those deployments still embed `localhost:4000`.
+Optional: you can still override with a Vercel **Environment Variable** (same name) if you prefer — it takes precedence over the file.
+
+If `VITE_API_URL` is missing, the client falls back to `http://localhost:4000` and login shows **Failed to fetch**.
 
 **Backend:** set **`FRONTEND_ORIGIN`** to your portal origin (e.g. `https://law-firm-portal-blush.vercel.app`) or a comma-separated list so **CORS** allows the browser.
 

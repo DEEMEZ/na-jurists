@@ -10,7 +10,7 @@ if (import.meta.env.PROD && typeof window !== "undefined") {
     /localhost|127\.0\.0\.1/i.test(API_BASE_URL)
   ) {
     console.error(
-      "[law-firm-portal] This build calls localhost for the API. In Vercel → Environment Variables, set VITE_API_URL for Preview and Production to your public API HTTPS URL, then redeploy.",
+      "[law-firm-portal] This build calls localhost for the API. Set VITE_API_URL in frontend/.env.production (or Vercel env) to your public HTTPS API URL, then rebuild.",
     );
   }
 }
