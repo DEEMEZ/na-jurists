@@ -85,7 +85,11 @@ In the **portal** Vercel project → **Settings → General → Root Directory**
 | `law-firm-portal` | `law-firm-portal/vercel.json` — installs and builds `frontend/`, output `frontend/dist`. Use this if the project was linked with an empty root. |
 | `law-firm-portal/frontend` | `law-firm-portal/frontend/vercel.json` — normal Vite SPA; Framework Preset should be **Vite** (or “Other” with Output **dist**). |
 
-After changing Root Directory, trigger a **new deployment**. Set `VITE_API_URL` in that project to your live API URL.
+After changing Root Directory, trigger a **new deployment**.
+
+**Required on Vercel (portal frontend):** add **`VITE_API_URL`** = your deployed API’s public origin (HTTPS, no trailing slash), e.g. `https://na-jurists-api.vercel.app`. If this is missing, the client falls back to `http://localhost:4000` and login shows **Failed to fetch**. Vite reads this at **build time** — change the var, then **redeploy**.
+
+**Backend:** set **`FRONTEND_ORIGIN`** to your portal origin (e.g. `https://law-firm-portal-blush.vercel.app`) or a comma-separated list so **CORS** allows the browser.
 
 ---
 
