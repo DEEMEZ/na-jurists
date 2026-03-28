@@ -11,8 +11,8 @@
       "permanent": false
     },
     {
-      "source": "/portal/:path*",
-      "destination": "/:path*",
+      "source": "/portal/(.*)",
+      "destination": "/$1",
       "permanent": false
     }
   ],

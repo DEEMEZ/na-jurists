@@ -5,18 +5,34 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-/** Portal Vite app — sign-in at /login. See `.env.production` for deploy defaults. */
+/**
+ * Portal sign-in URL.
+ * - Split deploy (portal on its own *.vercel.app): set NEXT_PUBLIC_PORTAL_URL to that origin only, e.g. https://na-juristsportal.vercel.app — never add /portal.
+ * - Same-origin monorepo: leave NEXT_PUBLIC_PORTAL_URL empty; link stays /portal/login on the marketing host.
+ */
 function portalSignInHref(): string {
-  const configured = process.env.NEXT_PUBLIC_PORTAL_URL?.trim();
-  if (configured && configured.length > 0) {
-    return `${configured.replace(/\/$/, "")}/login`;
+  const raw = process.env.NEXT_PUBLIC_PORTAL_URL?.trim();
+  if (raw) {
+    let base = raw.replace(/\/$/, "");
+    // Common mistake: portal host is already the app root; /portal is only for local mono under the main site.
+    if (
+      process.env.NODE_ENV === "production" &&
+      !/localhost|127\.0\.0\.1/i.test(base) &&
+      /\/portal$/i.test(base)
+    ) {
+      base = base.replace(/\/portal$/i, "");
+    }
+    return `${base}/login`;
   }
-  if (typeof window !== "undefined") {
-    return `${window.location.origin.replace(/\/$/, "")}/portal/login`;
-  }
-  // SSR: same-origin /portal when env is empty (matches committed `.env.production`).
+
+  // Production + unset env: same-origin /portal (marketing site serves /portal). Must run before `window` branch so
+  // we never turn the portal's own origin into …/portal/login (404 on standalone Vite deploy).
   if (process.env.NODE_ENV === "production") {
     return "/portal/login";
+  }
+
+  if (typeof window !== "undefined") {
+    return `${window.location.origin.replace(/\/$/, "")}/portal/login`;
   }
   return "http://localhost:5173/login";
 }
