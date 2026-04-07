@@ -166,7 +166,7 @@ export function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 pb-8">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-navy via-secondary-navy to-[#243652] px-6 py-8 text-background-white shadow-lg sm:px-10 sm:py-10">
+      <section className="portal-dashboard-hero relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-navy via-secondary-navy to-[#243652] px-6 py-8 text-background-white shadow-[0_20px_40px_-15px_rgba(26,43,61,0.35)] ring-1 ring-white/10 sm:px-10 sm:py-10">
         <div
           className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold-accent/10 blur-3xl"
           aria-hidden
@@ -212,7 +212,7 @@ export function DashboardPage() {
       <section className="flex flex-wrap gap-3">
         <Link
           to="/cases"
-          className="rounded-lg border border-border-subtle bg-background-white px-4 py-2 text-sm font-medium text-secondary-navy shadow-sm transition-colors hover:bg-background-light"
+          className="portal-link-chip rounded-xl border border-border-subtle bg-background-white px-4 py-2.5 text-sm font-medium text-secondary-navy shadow-sm hover:bg-background-light"
         >
           Open cases
         </Link>
@@ -220,19 +220,19 @@ export function DashboardPage() {
           <>
             <Link
               to="/cases/new"
-              className="rounded-lg bg-primary-navy px-4 py-2 text-sm font-semibold text-background-white hover:bg-secondary-navy"
+              className="portal-link-chip rounded-xl bg-primary-navy px-4 py-2.5 text-sm font-semibold text-background-white shadow-md hover:bg-secondary-navy hover:shadow-lg"
             >
               New case
             </Link>
             <Link
               to="/admin/alerts"
-              className="rounded-lg border border-border-subtle bg-background-white px-4 py-2 text-sm font-medium text-secondary-navy shadow-sm transition-colors hover:bg-background-light"
+              className="portal-link-chip rounded-xl border border-border-subtle bg-background-white px-4 py-2.5 text-sm font-medium text-secondary-navy shadow-sm hover:bg-background-light"
             >
               Hearing alerts
             </Link>
             <Link
               to="/admin/users"
-              className="rounded-lg border border-border-subtle bg-background-white px-4 py-2 text-sm font-medium text-secondary-navy shadow-sm transition-colors hover:bg-background-light"
+              className="portal-link-chip rounded-xl border border-border-subtle bg-background-white px-4 py-2.5 text-sm font-medium text-secondary-navy shadow-sm hover:bg-background-light"
             >
               Users
             </Link>
@@ -245,10 +245,11 @@ export function DashboardPage() {
         <div
           className={`grid gap-4 ${statItems.length === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}
         >
-          {statItems.map(({ label, value, sub, icon: Icon, gradient }) => (
+          {statItems.map(({ label, value, sub, icon: Icon, gradient }, idx) => (
             <div
               key={label}
-              className="group flex gap-4 rounded-xl border border-border-subtle bg-background-white p-5 shadow-md transition-shadow duration-300 hover:shadow-lg"
+              className="portal-stagger-item portal-stat-tile group flex gap-4 rounded-xl border border-border-subtle/90 bg-background-white p-5 shadow-md"
+              style={{ animationDelay: `${idx * 55}ms` }}
             >
               <div
                 className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-md`}
@@ -284,7 +285,7 @@ export function DashboardPage() {
           user?.role === "ADMIN" ? "Cases and notifications" : "Cases"
         }
       >
-        <article className="relative overflow-hidden rounded-2xl border border-border-subtle bg-background-white shadow-md transition-all duration-300 hover:shadow-xl">
+        <article className="portal-stat-tile relative overflow-hidden rounded-2xl border border-border-subtle/90 bg-background-white shadow-md hover:shadow-xl">
           <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-gold-accent to-gold-accent/40" />
           <div className="p-6 pl-7 sm:p-8 sm:pl-9">
             <div className="flex items-start gap-4">
@@ -303,7 +304,7 @@ export function DashboardPage() {
             <div className="mt-6">
               <Link
                 to="/cases"
-                className="inline-flex rounded-lg bg-primary-navy px-4 py-2 text-sm font-semibold text-background-white hover:bg-secondary-navy"
+                className="portal-link-chip inline-flex rounded-xl bg-primary-navy px-4 py-2.5 text-sm font-semibold text-background-white shadow-sm hover:bg-secondary-navy hover:shadow-md"
               >
                 View cases
               </Link>
@@ -312,7 +313,7 @@ export function DashboardPage() {
         </article>
 
         {user?.role === "ADMIN" && (
-          <article className="relative overflow-hidden rounded-2xl border border-border-subtle bg-background-white shadow-md transition-all duration-300 hover:shadow-xl">
+          <article className="portal-stat-tile relative overflow-hidden rounded-2xl border border-border-subtle/90 bg-background-white shadow-md hover:shadow-xl">
             <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-gold-accent to-gold-accent/40" />
             <div className="p-6 pl-7 sm:p-8 sm:pl-9">
               <div className="flex items-start gap-4">

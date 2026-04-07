@@ -41,7 +41,7 @@ export function CasesListPage() {
       <BackToDashboard />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-primary-navy">
+          <h1 className="text-2xl font-semibold tracking-tight text-primary-navy">
             {user.role === "ADMIN" ? "All matters" : "My matters"}
           </h1>
           <p className="mt-1 text-sm text-text-light">
@@ -53,7 +53,7 @@ export function CasesListPage() {
         {user.role === "ADMIN" && (
           <Link
             to="/cases/new"
-            className="inline-flex items-center justify-center rounded-lg bg-primary-navy px-4 py-2 text-sm font-semibold text-background-white transition-colors hover:bg-secondary-navy"
+            className="portal-link-chip inline-flex items-center justify-center rounded-xl bg-primary-navy px-4 py-2.5 text-sm font-semibold text-background-white shadow-md hover:bg-secondary-navy hover:shadow-lg"
           >
             New case
           </Link>
@@ -67,13 +67,34 @@ export function CasesListPage() {
       )}
 
       {loading ? (
-        <p className="text-text-light">Loading…</p>
+        <div
+          className="overflow-hidden rounded-2xl border border-border-subtle/90 bg-background-white shadow-sm"
+          aria-busy
+          aria-label="Loading cases"
+        >
+          <div className="border-b border-border-subtle/80 bg-background-light/50 px-4 py-3">
+            <div className="portal-skeleton h-4 w-40 max-w-full" />
+          </div>
+          <div className="divide-y divide-border-subtle/80">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 px-4 py-4"
+                style={{ animationDelay: `${i * 40}ms` }}
+              >
+                <div className="portal-skeleton h-4 flex-1" />
+                <div className="portal-skeleton hidden h-4 w-24 sm:block" />
+                <div className="portal-skeleton h-4 w-20" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : cases.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border-subtle bg-background-white p-8 text-center text-text-light">
           No cases yet.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border-subtle bg-background-white shadow-sm">
+        <div className="overflow-x-auto rounded-2xl border border-border-subtle/90 bg-background-white shadow-[0_4px_24px_-8px_rgba(26,43,61,0.12)]">
           <table className="w-full min-w-[640px] table-fixed text-left text-sm">
             <colgroup>
               <col className="w-[18%]" />

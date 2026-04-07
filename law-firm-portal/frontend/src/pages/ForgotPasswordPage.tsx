@@ -1,8 +1,11 @@
 import { type FormEvent, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
-import { PortalLogo } from "@/components/brand/PortalLogo";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { getSupabase } from "@/lib/supabaseClient";
+
+const inputClass =
+  "mt-1 w-full rounded-xl border border-secondary-navy/15 bg-background-light/90 px-3.5 py-2.5 text-text-dark outline-none ring-accent-blue/20 transition-shadow duration-200 focus:border-accent-blue/40 focus:bg-background-white focus:ring-2";
 
 export function ForgotPasswordPage() {
   const { user, ready } = useAuth();
@@ -13,8 +16,9 @@ export function ForgotPasswordPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background-light text-text-light">
-        Loading…
+      <div className="portal-shell flex min-h-screen flex-col items-center justify-center gap-4 bg-background-light text-text-light">
+        <div className="portal-spinner" aria-hidden />
+        <p className="text-sm font-medium text-secondary-navy">Loading…</p>
       </div>
     );
   }
@@ -43,72 +47,66 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="portal-shell flex min-h-screen flex-col">
-      <header className="border-b border-border-subtle bg-background-white/95 shadow-sm backdrop-blur-sm">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <PortalLogo />
-          <Link
-            to="/login"
-            className="text-sm font-medium text-secondary-navy hover:text-accent-blue"
-          >
-            Back to sign in
-          </Link>
-        </div>
-        <div
-          className="h-0.5 w-full bg-gradient-to-r from-transparent via-gold-accent to-transparent"
-          aria-hidden
-        />
-      </header>
-
-      <div className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-xl border border-border-subtle bg-background-white p-8 shadow-lg">
-          <h1 className="text-center text-xl font-semibold text-primary-navy">
-            Forgot password
-          </h1>
-          <p className="mt-2 text-center text-sm text-text-light">
-            Enter your email and we&apos;ll send a reset link if an account exists.
-          </p>
-
-          {done ? (
-            <p className="mt-4 rounded-lg border border-border-subtle bg-background-light px-3 py-3 text-sm text-text-dark">
-              If this email is registered, you will receive instructions shortly.
-              Check your inbox and spam folder.
-            </p>
-          ) : (
-            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-              {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                  {error}
-                </div>
-              )}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-text-dark"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 bg-background-light px-3 py-2 text-text-dark outline-none ring-accent-blue/30 focus:ring-2"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full rounded-lg bg-primary-navy px-4 py-2.5 text-sm font-semibold text-background-white hover:bg-secondary-navy disabled:opacity-60"
-              >
-                {submitting ? "Sending…" : "Send reset link"}
-              </button>
-            </form>
-          )}
-        </div>
+    <AuthShell
+      headerRight={
+        <Link
+          to="/login"
+          className="portal-nav-link text-sm font-medium text-secondary-navy hover:text-accent-blue"
+        >
+          Back to sign in
+        </Link>
+      }
+    >
+      <div className="text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-blue">
+          Account recovery
+        </p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-primary-navy">
+          Forgot password
+        </h1>
+        <p className="mt-2 text-sm text-text-light">
+          Enter your email and we&apos;ll send a reset link if an account exists.
+        </p>
       </div>
-    </div>
+
+      {done ? (
+        <p className="mt-8 rounded-xl border border-border-subtle bg-background-light/90 px-4 py-3.5 text-center text-sm leading-relaxed text-text-dark shadow-sm">
+          If this email is registered, you will receive instructions shortly.
+          Check your inbox and spam folder.
+        </p>
+      ) : (
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-xl border border-red-200/80 bg-red-50/95 px-3.5 py-2.5 text-sm text-red-800 shadow-sm">
+              {error}
+            </div>
+          )}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-text-dark"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={inputClass}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full rounded-xl bg-primary-navy px-4 py-3 text-sm font-semibold text-background-white shadow-md transition-all duration-200 hover:bg-secondary-navy hover:shadow-lg disabled:opacity-60"
+          >
+            {submitting ? "Sending…" : "Send reset link"}
+          </button>
+        </form>
+      )}
+    </AuthShell>
   );
 }
