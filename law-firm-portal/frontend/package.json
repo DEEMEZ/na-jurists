@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:mono": "vite --mode mono --base /portal/",
     "build": "tsc -b && vite build",
+    "build:mono": "tsc -b && vite build --base /portal/",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "seed:admin": "node ../scripts/create-supabase-admin.mjs"

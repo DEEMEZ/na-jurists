@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "dev:with-portal": "concurrently -n SITE,PORTAL -c blue,magenta \"next dev --webpack\" \"npm --prefix law-firm-portal/frontend run dev\"",
     "dev:mono": "concurrently -k -n WEB,PORTAL,API,PROXY -c blue,magenta,green,cyan \"cross-env NEXT_PUBLIC_PORTAL_URL=http://localhost:3000/portal next dev --webpack --port 3001\" \"npm --prefix law-firm-portal/frontend run dev:mono\" \"cross-env FRONTEND_ORIGIN=http://localhost:3000,http://localhost:5173 npm --prefix law-firm-portal/backend run dev\" \"node scripts/mono-proxy.mjs\"",
-    "build": "next build --webpack",
+    "build:portal": "node scripts/run-portal-build.mjs",
+    "build": "npm run build:portal && next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "extract-judgments": "node scripts/extract-judgments.js"

@@ -4,6 +4,16 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['placehold.co'],
   },
+  /** SPA fallback for embedded Vite portal at /portal (see npm run build:portal). */
+  async rewrites() {
+    return {
+      afterFiles: [
+        { source: "/portal", destination: "/portal/index.html" },
+        { source: "/portal/", destination: "/portal/index.html" },
+        { source: "/portal/:path*", destination: "/portal/index.html" },
+      ],
+    };
+  },
   async headers() {
     return [
       {
