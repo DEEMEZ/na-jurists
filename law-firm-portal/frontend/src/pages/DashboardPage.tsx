@@ -14,10 +14,27 @@ import { useAuth } from "@/auth/AuthContext";
 import { apiJson } from "@/lib/api";
 
 type ClientDash = {
+  /** All matters assigned to you (open + archived). */
   activeMatters: number;
+  /** Non-archived assigned matters (optional on older API). */
+  openMatters?: number;
   upcomingHearings30d: number;
   unreadNotifications: number;
   messagesFromFirm: number;
+  nextHearings?: Array<{
+    id: string;
+    caseId: string;
+    caseTitle: string;
+    scheduledAt: string;
+    venue: string | null;
+  }>;
+  recentFirmMessages?: Array<{
+    id: string;
+    caseId: string;
+    caseTitle: string;
+    body: string;
+    createdAt: string;
+  }>;
 };
 
 type AdminDash = {
@@ -82,11 +99,22 @@ export function DashboardPage() {
       ];
     }
     if (user?.role === "CLIENT" && clientStats) {
+      const open = clientStats.openMatters ?? clientStats.activeMatters;
+      const archived =
+        clientStats.openMatters !== undefined
+          ? Math.max(0, clientStats.activeMatters - clientStats.openMatters)
+          : 0;
+      const mattersSub =
+        clientStats.openMatters !== undefined
+          ? archived > 0
+            ? `${open} open · ${archived} archived`
+            : `${open} open`
+          : "Assigned to you";
       return [
         {
-          label: "Active matters",
+          label: "Your matters",
           value: String(clientStats.activeMatters),
-          sub: "Assigned to you",
+          sub: mattersSub,
           icon: Briefcase,
           gradient: "from-[#1a2b3d] to-[#2c415e]",
         },
@@ -138,7 +166,7 @@ export function DashboardPage() {
     ];
     const loadingClient = [
       {
-        label: "Active matters",
+        label: "Your matters",
         value: "—",
         sub: "Loading…",
         icon: Briefcase,
@@ -270,9 +298,89 @@ export function DashboardPage() {
         </div>
       </section>
 
+      {user?.role === "CLIENT" && clientStats && (clientStats.nextHearings?.length ?? 0) > 0 && (
+        <section
+          className="rounded-2xl border border-border-subtle/90 bg-background-white p-6 shadow-md"
+          aria-label="Upcoming hearings"
+        >
+          <h2 className="text-lg font-semibold text-primary-navy">
+            Your upcoming hearings
+          </h2>
+          <p className="mt-1 text-sm text-text-light">
+            Open the matter for full details, documents, and messages.
+          </p>
+          <ul className="mt-4 divide-y divide-border-subtle text-sm">
+            {clientStats.nextHearings!.map((h) => (
+              <li
+                key={h.id}
+                className="flex flex-col gap-1 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium text-text-dark">
+                    {new Date(h.scheduledAt).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                    {h.venue ? ` · ${h.venue}` : ""}
+                  </p>
+                  <p className="text-text-light">{h.caseTitle}</p>
+                </div>
+                <Link
+                  to={`/cases/${h.caseId}`}
+                  className="shrink-0 text-sm font-semibold text-accent-blue hover:underline"
+                >
+                  View matter
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {user?.role === "CLIENT" && clientStats && (clientStats.recentFirmMessages?.length ?? 0) > 0 && (
+        <section
+          className="rounded-2xl border border-border-subtle/90 bg-background-white p-6 shadow-md"
+          aria-label="Messages from your legal team"
+        >
+          <h2 className="text-lg font-semibold text-primary-navy">
+            Recent messages from your legal team
+          </h2>
+          <p className="mt-1 text-sm text-text-light">
+            Open the matter to reply or see the full thread.
+          </p>
+          <ul className="mt-4 space-y-3 text-sm">
+            {clientStats.recentFirmMessages!.map((m) => (
+              <li
+                key={m.id}
+                className="rounded-xl border border-border-subtle/80 bg-background-light/50 p-4"
+              >
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-medium text-secondary-navy">{m.caseTitle}</span>
+                  <span className="text-xs text-text-light">
+                    {new Date(m.createdAt).toLocaleString(undefined, {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                  </span>
+                </div>
+                <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-text-dark">
+                  {m.body}
+                </p>
+                <Link
+                  to={`/cases/${m.caseId}`}
+                  className="mt-2 inline-block text-sm font-semibold text-accent-blue hover:underline"
+                >
+                  Open messages
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {user?.role === "CLIENT" && clientStats && (
         <p className="text-sm text-text-light">
-          Messages from your legal team on your matters:{" "}
+          Total messages from your legal team (all matters):{" "}
           <span className="font-semibold text-text-dark">
             {clientStats.messagesFromFirm}
           </span>

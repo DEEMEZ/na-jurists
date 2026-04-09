@@ -201,16 +201,29 @@ export async function portalApiJson(
     const now = new Date();
     const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const { data: assigns } = await sb.from("case_assignments").select("case_id").eq("user_id", uid);
-    const caseIds = (assigns ?? []).map((a: { case_id: string }) => a.case_id);
+    const caseIds = [
+      ...new Set(
+        (assigns ?? [])
+          .map((a: { case_id: string | null }) => a.case_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
     if (caseIds.length === 0) {
       return {
         activeMatters: 0,
+        openMatters: 0,
         upcomingHearings30d: 0,
         unreadNotifications: 0,
         messagesFromFirm: 0,
+        nextHearings: [],
+        recentFirmMessages: [],
       };
     }
-    const { count: activeMatters } = await sb
+    const { count: assignedMatters } = await sb
+      .from("cases")
+      .select("id", { count: "exact", head: true })
+      .in("id", caseIds);
+    const { count: openMatters } = await sb
       .from("cases")
       .select("id", { count: "exact", head: true })
       .in("id", caseIds)
@@ -226,16 +239,61 @@ export async function portalApiJson(
       .select("id", { count: "exact", head: true })
       .eq("user_id", uid)
       .eq("read", false);
-    const { data: msgs } = await sb
+    const { count: messagesFromFirm } = await sb
       .from("messages")
-      .select("id")
+      .select("id", { count: "exact", head: true })
       .in("case_id", caseIds)
       .neq("sender_id", uid);
+
+    const { data: hearRaw } = await sb
+      .from("hearings")
+      .select("id, scheduled_at, venue, case_id, cases(id, title, archived)")
+      .in("case_id", caseIds)
+      .gte("scheduled_at", now.toISOString())
+      .order("scheduled_at", { ascending: true })
+      .limit(12);
+
+    const nextHearings = (hearRaw ?? [])
+      .map((row: Record<string, unknown>) => {
+        const cs = row.cases as { id: string; title: string; archived: boolean } | null;
+        return { row, cs };
+      })
+      .filter(({ cs }) => !cs?.archived)
+      .map(({ row, cs }) => ({
+        id: row.id as string,
+        caseId: row.case_id as string,
+        caseTitle: cs?.title ?? "Matter",
+        scheduledAt: row.scheduled_at as string,
+        venue: (row.venue as string | null) ?? null,
+      }));
+
+    const { data: msgRaw } = await sb
+      .from("messages")
+      .select("id, body, created_at, case_id, cases(id, title)")
+      .in("case_id", caseIds)
+      .neq("sender_id", uid)
+      .order("created_at", { ascending: false })
+      .limit(6);
+
+    const recentFirmMessages = (msgRaw ?? []).map((row: Record<string, unknown>) => {
+      const cs = row.cases as { id: string; title: string } | null;
+      return {
+        id: row.id as string,
+        caseId: row.case_id as string,
+        caseTitle: cs?.title ?? "Matter",
+        body: row.body as string,
+        createdAt: row.created_at as string,
+      };
+    });
+
     return {
-      activeMatters: activeMatters ?? 0,
+      activeMatters: assignedMatters ?? 0,
+      openMatters: openMatters ?? 0,
       upcomingHearings30d: upcomingHearings30d ?? 0,
       unreadNotifications: unreadNotifications ?? 0,
-      messagesFromFirm: msgs?.length ?? 0,
+      messagesFromFirm: messagesFromFirm ?? 0,
+      nextHearings,
+      recentFirmMessages,
     };
   }
 
@@ -283,7 +341,13 @@ export async function portalApiJson(
       .select("case_id")
       .eq("user_id", uid);
     if (e1) throw new Error(e1.message);
-    const ids = (assigns ?? []).map((a: { case_id: string }) => a.case_id);
+    const ids = [
+      ...new Set(
+        (assigns ?? [])
+          .map((a: { case_id: string | null }) => a.case_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
     if (ids.length === 0) return { cases: [] };
     const { data: rows, error: e2 } = await sb
       .from("cases")
@@ -303,7 +367,16 @@ export async function portalApiJson(
 
   const meCase = pathname.match(/^\/api\/v1\/me\/cases\/([^/]+)$/);
   if (meCase && m === "GET") {
-    await requireProfile();
+    const x = await requireProfile();
+    if (x.role === "CLIENT") {
+      const { data: row } = await x.sb
+        .from("case_assignments")
+        .select("case_id")
+        .eq("user_id", x.uid)
+        .eq("case_id", meCase[1])
+        .maybeSingle();
+      if (!row) throw new Error("Not found");
+    }
     return buildCaseDetail(getSupabase(), meCase[1]);
   }
 

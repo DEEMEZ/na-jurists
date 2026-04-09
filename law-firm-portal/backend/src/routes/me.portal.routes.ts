@@ -17,18 +17,24 @@ router.get("/dashboard", async (req, res) => {
     where: { userId },
     select: { caseId: true },
   });
-  const caseIds = assignments.map((a) => a.caseId);
+  const caseIds = [...new Set(assignments.map((a) => a.caseId))];
   if (caseIds.length === 0) {
     res.json({
       activeMatters: 0,
+      openMatters: 0,
       upcomingHearings30d: 0,
       unreadNotifications: 0,
       messagesFromFirm: 0,
+      nextHearings: [],
+      recentFirmMessages: [],
     });
     return;
   }
 
-  const activeMatters = await prisma.case.count({
+  const assignedMatters = await prisma.case.count({
+    where: { id: { in: caseIds } },
+  });
+  const openMatters = await prisma.case.count({
     where: { id: { in: caseIds }, archived: false },
   });
   const upcomingHearings30d = await prisma.hearing.count({
@@ -47,11 +53,54 @@ router.get("/dashboard", async (req, res) => {
     },
   });
 
+  const hearRows = await prisma.hearing.findMany({
+    where: {
+      caseId: { in: caseIds },
+      scheduledAt: { gte: now },
+    },
+    orderBy: { scheduledAt: "asc" },
+    take: 12,
+    include: {
+      case: { select: { id: true, title: true, archived: true } },
+    },
+  });
+  const nextHearings = hearRows
+    .filter((h) => !h.case.archived)
+    .map((h) => ({
+      id: h.id,
+      caseId: h.caseId,
+      caseTitle: h.case.title,
+      scheduledAt: h.scheduledAt.toISOString(),
+      venue: h.venue,
+    }));
+
+  const msgRows = await prisma.message.findMany({
+    where: {
+      caseId: { in: caseIds },
+      senderId: { not: userId },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+    include: {
+      case: { select: { id: true, title: true } },
+    },
+  });
+  const recentFirmMessages = msgRows.map((m) => ({
+    id: m.id,
+    caseId: m.caseId,
+    caseTitle: m.case.title,
+    body: m.body,
+    createdAt: m.createdAt.toISOString(),
+  }));
+
   res.json({
-    activeMatters,
+    activeMatters: assignedMatters,
+    openMatters,
     upcomingHearings30d,
     unreadNotifications,
     messagesFromFirm,
+    nextHearings,
+    recentFirmMessages,
   });
 });
 
