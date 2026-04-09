@@ -8,7 +8,10 @@ import { paramStr } from "../lib/httpParams.js";
 import { prisma } from "../lib/prisma.js";
 import { emailField } from "../lib/userEmail.js";
 import { hashPassword } from "../lib/password.js";
-import { notifyAssignedClients } from "../lib/notifyStatus.js";
+import {
+  emailAssignedClientsForNewHearing,
+  notifyAssignedClients,
+} from "../lib/notifyStatus.js";
 import { createCaseUpload } from "../lib/uploadMulter.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
@@ -227,6 +230,7 @@ const createCaseBody = z.object({
   title: z.string().min(1),
   reference: z.string().optional(),
   status: z.string().optional(),
+  displayOnWebsite: z.boolean().optional(),
 });
 
 router.post("/cases", async (req, res) => {
@@ -240,6 +244,7 @@ router.post("/cases", async (req, res) => {
       title: parsed.data.title,
       reference: parsed.data.reference,
       status: parsed.data.status ?? "open",
+      displayOnWebsite: parsed.data.displayOnWebsite ?? false,
     },
   });
   res.status(201).json({ case: c });
@@ -280,6 +285,7 @@ const patchCaseBody = z.object({
   title: z.string().min(1).optional(),
   reference: z.string().nullable().optional(),
   archived: z.boolean().optional(),
+  displayOnWebsite: z.boolean().optional(),
 });
 
 router.patch("/cases/:caseId", async (req, res) => {
@@ -293,10 +299,21 @@ router.patch("/cases/:caseId", async (req, res) => {
     res.status(400).json({ error: parsed.error.flatten() });
     return;
   }
+  const data: {
+    title?: string;
+    reference?: string | null;
+    archived?: boolean;
+    displayOnWebsite?: boolean;
+  } = {};
+  if (parsed.data.title !== undefined) data.title = parsed.data.title;
+  if (parsed.data.reference !== undefined) data.reference = parsed.data.reference;
+  if (parsed.data.archived !== undefined) data.archived = parsed.data.archived;
+  if (parsed.data.displayOnWebsite !== undefined)
+    data.displayOnWebsite = parsed.data.displayOnWebsite;
   try {
     const c = await prisma.case.update({
       where: { id: caseId },
-      data: parsed.data,
+      data,
     });
     res.json({ case: c });
   } catch {
@@ -490,6 +507,12 @@ router.post("/cases/:caseId/hearings", async (req, res) => {
       notes: parsed.data.notes,
     },
   });
+  void emailAssignedClientsForNewHearing(
+    caseId,
+    exists.title,
+    when,
+    parsed.data.venue ?? null,
+  ).catch((e) => console.error("[emailAssignedClientsForNewHearing]", e));
   res.status(201).json({ hearing: h });
 });
 

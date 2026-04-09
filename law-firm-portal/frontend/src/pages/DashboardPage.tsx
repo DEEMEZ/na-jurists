@@ -117,6 +117,7 @@ export function DashboardPage() {
           sub: mattersSub,
           icon: Briefcase,
           gradient: "from-[#1a2b3d] to-[#2c415e]",
+          to: "/cases",
         },
         {
           label: "Upcoming hearings",
@@ -124,6 +125,7 @@ export function DashboardPage() {
           sub: "Next 30 days",
           icon: CalendarDays,
           gradient: "from-[#2c415e] to-[#4a6789]",
+          to: "/cases",
         },
         {
           label: "Unread notifications",
@@ -131,6 +133,7 @@ export function DashboardPage() {
           sub: "Status and matter alerts",
           icon: MessageSquare,
           gradient: "from-[#4a6789] to-[#5a7a9b]",
+          to: "/notifications",
         },
       ];
     }
@@ -273,28 +276,49 @@ export function DashboardPage() {
         <div
           className={`grid gap-4 ${statItems.length === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}
         >
-          {statItems.map(({ label, value, sub, icon: Icon, gradient }, idx) => (
-            <div
-              key={label}
-              className="portal-stagger-item portal-stat-tile group flex gap-4 rounded-xl border border-border-subtle/90 bg-background-white p-5 shadow-md"
-              style={{ animationDelay: `${idx * 55}ms` }}
-            >
-              <div
-                className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-md`}
+          {statItems.map((item, idx) => {
+            const { label, value, sub, icon: Icon, gradient } = item;
+            const to = "to" in item ? item.to : undefined;
+            const inner = (
+              <>
+                <div
+                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-md`}
+                >
+                  <Icon className="h-7 w-7" strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-text-light">
+                    {label}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-primary-navy">
+                    {value}
+                  </p>
+                  <p className="mt-0.5 text-xs text-text-light">{sub}</p>
+                </div>
+              </>
+            );
+            const className =
+              "portal-stagger-item portal-stat-tile group flex gap-4 rounded-xl border border-border-subtle/90 bg-background-white p-5 shadow-md" +
+              (to ? " cursor-pointer transition-shadow hover:shadow-lg hover:ring-1 hover:ring-accent-blue/20" : "");
+            return to ? (
+              <Link
+                key={label}
+                to={to}
+                className={className}
+                style={{ animationDelay: `${idx * 55}ms` }}
               >
-                <Icon className="h-7 w-7" strokeWidth={1.5} />
+                {inner}
+              </Link>
+            ) : (
+              <div
+                key={label}
+                className={className}
+                style={{ animationDelay: `${idx * 55}ms` }}
+              >
+                {inner}
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-wide text-text-light">
-                  {label}
-                </p>
-                <p className="mt-1 text-2xl font-semibold tabular-nums text-primary-navy">
-                  {value}
-                </p>
-                <p className="mt-0.5 text-xs text-text-light">{sub}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

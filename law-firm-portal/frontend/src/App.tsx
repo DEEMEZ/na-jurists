@@ -24,6 +24,11 @@ const AdminAlertsPage = lazy(() =>
 const AdminUsersPage = lazy(() =>
   import("@/pages/AdminUsersPage").then((m) => ({ default: m.AdminUsersPage })),
 );
+const ClientNotificationsPage = lazy(() =>
+  import("@/pages/ClientNotificationsPage").then((m) => ({
+    default: m.ClientNotificationsPage,
+  })),
+);
 
 export default function App() {
   return (
@@ -43,7 +48,7 @@ export default function App() {
         <Route path="/cases" element={<CasesListPage />} />
         <Route path="/cases/new" element={<CaseCreatePage />} />
         <Route path="/cases/:caseId" element={<CaseDetailPage />} />
-        <Route path="/notifications" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/notifications" element={<ClientNotificationsPage />} />
         <Route path="/admin/alerts" element={<AdminAlertsPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
       </Route>

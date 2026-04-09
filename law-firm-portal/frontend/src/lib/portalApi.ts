@@ -98,6 +98,16 @@ function parseUrl(pathWithQuery: string): { pathname: string; q: URLSearchParams
   return { pathname: u.pathname, q: u.searchParams };
 }
 
+/** Hearing/message rows may embed `cases`; ensure we always have a real case UUID for links. */
+function caseIdFromEmbeddedRow(row: Record<string, unknown>): string {
+  const cid = row.case_id;
+  if (cid != null && String(cid).length > 0) return String(cid);
+  const emb = row.cases as { id?: string } | { id?: string }[] | null | undefined;
+  if (emb && !Array.isArray(emb) && emb.id) return emb.id;
+  if (Array.isArray(emb) && emb[0]?.id) return emb[0].id;
+  return "";
+}
+
 async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const sb = getSupabase();
   // Edge Functions with verify_jwt reject expired/stale tokens; refresh before invoke.
@@ -201,6 +211,7 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
       reference: c.reference,
       status: c.status,
       archived: c.archived,
+      displayOnWebsite: Boolean((c as Record<string, unknown>).display_on_website),
       assignments,
       statusHistory,
       documents,
@@ -257,23 +268,24 @@ export async function portalApiJson(
         recentFirmMessages: [],
       };
     }
+    const { data: caseRowsForCounts, error: caseCountErr } = await sb
+      .from("cases")
+      .select("id, archived")
+      .in("id", caseIds);
+    if (caseCountErr) throw new Error(caseCountErr.message);
+    const rowsOk = caseRowsForCounts ?? [];
+    const activeMatters = rowsOk.length;
+    const openMatters = rowsOk.filter((r: { archived?: boolean }) => !r.archived).length;
+
     const nowIso = now.toISOString();
     const in30Iso = in30.toISOString();
     const [
-      { count: assignedMatters },
-      { count: openMatters },
       { count: upcomingHearings30d },
       { count: unreadNotifications },
       { count: messagesFromFirm },
       { data: hearRaw },
       { data: msgRaw },
     ] = await Promise.all([
-      sb.from("cases").select("id", { count: "exact", head: true }).in("id", caseIds),
-      sb
-        .from("cases")
-        .select("id", { count: "exact", head: true })
-        .in("id", caseIds)
-        .eq("archived", false),
       sb
         .from("hearings")
         .select("id", { count: "exact", head: true })
@@ -312,19 +324,23 @@ export async function portalApiJson(
         return { row, cs };
       })
       .filter(({ cs }) => !cs?.archived)
-      .map(({ row, cs }) => ({
-        id: row.id as string,
-        caseId: row.case_id as string,
-        caseTitle: cs?.title ?? "Matter",
-        scheduledAt: row.scheduled_at as string,
-        venue: (row.venue as string | null) ?? null,
-      }));
+      .map(({ row, cs }) => {
+        const cid = caseIdFromEmbeddedRow(row);
+        return {
+          id: row.id as string,
+          caseId: cid || (cs?.id ?? ""),
+          caseTitle: cs?.title ?? "Matter",
+          scheduledAt: row.scheduled_at as string,
+          venue: (row.venue as string | null) ?? null,
+        };
+      });
 
     const recentFirmMessages = (msgRaw ?? []).map((row: Record<string, unknown>) => {
       const cs = row.cases as { id: string; title: string } | null;
+      const cid = caseIdFromEmbeddedRow(row);
       return {
         id: row.id as string,
-        caseId: row.case_id as string,
+        caseId: cid || (cs?.id ?? ""),
         caseTitle: cs?.title ?? "Matter",
         body: row.body as string,
         createdAt: row.created_at as string,
@@ -332,8 +348,8 @@ export async function portalApiJson(
     });
 
     return {
-      activeMatters: assignedMatters ?? 0,
-      openMatters: openMatters ?? 0,
+      activeMatters,
+      openMatters,
       upcomingHearings30d: upcomingHearings30d ?? 0,
       unreadNotifications: unreadNotifications ?? 0,
       messagesFromFirm: messagesFromFirm ?? 0,
@@ -425,16 +441,22 @@ export async function portalApiJson(
   const meCase = pathname.match(/^\/api\/v1\/me\/cases\/([^/]+)$/);
   if (meCase && m === "GET") {
     const x = await requireProfile();
+    let caseIdParam = meCase[1];
+    try {
+      caseIdParam = decodeURIComponent(caseIdParam).trim();
+    } catch {
+      caseIdParam = caseIdParam.trim();
+    }
     if (x.role === "CLIENT") {
       const { data: row } = await x.sb
         .from("case_assignments")
         .select("case_id")
         .eq("user_id", x.uid)
-        .eq("case_id", meCase[1])
+        .eq("case_id", caseIdParam)
         .maybeSingle();
       if (!row) throw new Error("Not found");
     }
-    return buildCaseDetail(getSupabase(), meCase[1]);
+    return buildCaseDetail(getSupabase(), caseIdParam);
   }
 
   if (pathname === "/api/v1/admin/dashboard" && m === "GET") {
@@ -619,6 +641,7 @@ export async function portalApiJson(
       reference: c.reference,
       status: c.status,
       archived: c.archived,
+      displayOnWebsite: Boolean(c.display_on_website),
     }));
     return { cases };
   }
@@ -626,13 +649,19 @@ export async function portalApiJson(
   if (pathname === "/api/v1/admin/cases" && m === "POST") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
-    const b = body as { title?: string; reference?: string; status?: string };
+    const b = body as {
+      title?: string;
+      reference?: string;
+      status?: string;
+      displayOnWebsite?: boolean;
+    };
     const { data, error } = await x.sb
       .from("cases")
       .insert({
         title: b.title ?? "",
         reference: b.reference ?? null,
         status: b.status ?? "open",
+        display_on_website: b.displayOnWebsite ?? false,
       })
       .select()
       .single();
@@ -655,15 +684,20 @@ export async function portalApiJson(
   if (adminCase && m === "PATCH") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
-    const b = body as { title?: string; reference?: string | null; archived?: boolean };
+    const b = body as {
+      title?: string;
+      reference?: string | null;
+      archived?: boolean;
+      displayOnWebsite?: boolean;
+    };
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (b.title !== undefined) patch.title = b.title;
+    if (b.reference !== undefined) patch.reference = b.reference;
+    if (b.archived !== undefined) patch.archived = b.archived;
+    if (b.displayOnWebsite !== undefined) patch.display_on_website = b.displayOnWebsite;
     const { data, error } = await x.sb
       .from("cases")
-      .update({
-        title: b.title,
-        reference: b.reference,
-        archived: b.archived,
-        updated_at: new Date().toISOString(),
-      })
+      .update(patch)
       .eq("id", adminCase[1])
       .select()
       .single();

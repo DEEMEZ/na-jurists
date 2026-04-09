@@ -34,6 +34,7 @@ type CaseDetail = {
   reference: string | null;
   status: string;
   archived: boolean;
+  displayOnWebsite?: boolean;
   assignments: { user: { id: string; email: string } }[];
   statusHistory: {
     id: string;
@@ -66,6 +67,7 @@ export function CaseDetailPage() {
   const [titleEdit, setTitleEdit] = useState("");
   const [refEdit, setRefEdit] = useState("");
   const [archivedEdit, setArchivedEdit] = useState(false);
+  const [displayOnWebEdit, setDisplayOnWebEdit] = useState(false);
 
   const loadCase = useCallback(async () => {
     if (!user?.id || !caseId) return;
@@ -78,6 +80,7 @@ export function CaseDetailPage() {
     setTitleEdit(data.case.title);
     setRefEdit(data.case.reference ?? "");
     setArchivedEdit(data.case.archived);
+    setDisplayOnWebEdit(Boolean(data.case.displayOnWebsite));
   }, [caseId, user?.id, user?.role]);
 
   const loadMessages = useCallback(async () => {
@@ -167,6 +170,7 @@ export function CaseDetailPage() {
           title: titleEdit,
           reference: refEdit || null,
           archived: archivedEdit,
+          displayOnWebsite: displayOnWebEdit,
         }),
       });
       await loadCase();
@@ -342,6 +346,18 @@ export function CaseDetailPage() {
                 onChange={(e) => setArchivedEdit(e.target.checked)}
               />
               <span className="text-sm">Archived</span>
+            </label>
+            <label className="flex items-start gap-2 sm:col-span-2">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={displayOnWebEdit}
+                onChange={(e) => setDisplayOnWebEdit(e.target.checked)}
+              />
+              <span className="text-sm text-text-dark">
+                Show this matter on the public website (cases listing). Only non-archived matters
+                with this option appear when enabled in site settings.
+              </span>
             </label>
             <button
               type="submit"

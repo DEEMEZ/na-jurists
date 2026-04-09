@@ -3,5 +3,11 @@ export function paramStr(
   value: string | string[] | undefined,
 ): string | undefined {
   if (value === undefined) return undefined;
-  return typeof value === "string" ? value : value[0];
+  const raw = typeof value === "string" ? value : value[0];
+  if (raw === undefined || raw === "") return undefined;
+  try {
+    return decodeURIComponent(raw).trim();
+  } catch {
+    return raw.trim();
+  }
 }

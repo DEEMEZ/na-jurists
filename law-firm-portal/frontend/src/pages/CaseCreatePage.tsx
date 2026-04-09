@@ -11,6 +11,7 @@ export function CaseCreatePage() {
   const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [reference, setReference] = useState("");
+  const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,6 +30,7 @@ export function CaseCreatePage() {
         body: JSON.stringify({
           title,
           reference: reference.trim() || undefined,
+          displayOnWebsite,
         }),
       });
       showToast("Case created.");
@@ -76,6 +78,17 @@ export function CaseCreatePage() {
             className="mt-1 w-full rounded-lg border border-secondary-navy/20 bg-background-light px-3 py-2 text-text-dark outline-none ring-accent-blue/30 focus:ring-2"
           />
         </div>
+        <label className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={displayOnWebsite}
+            onChange={(e) => setDisplayOnWebsite(e.target.checked)}
+          />
+          <span className="text-sm text-text-dark">
+            Display on public website (firm cases page) when published
+          </span>
+        </label>
         <div className="flex gap-3">
           <button
             type="submit"

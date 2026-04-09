@@ -4,6 +4,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { getEnv } from "../config/env.js";
 import { assertCaseAccess } from "../lib/caseAccess.js";
+import { emailAssignedClientsForNewMessage } from "../lib/notifyStatus.js";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 import { paramStr } from "../lib/httpParams.js";
@@ -61,6 +62,10 @@ router.post("/:caseId/messages", async (req, res) => {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
+  const caseRow = await prisma.case.findUnique({
+    where: { id: caseId },
+    select: { title: true },
+  });
   const msg = await prisma.message.create({
     data: {
       caseId,
@@ -71,6 +76,12 @@ router.post("/:caseId/messages", async (req, res) => {
       sender: { select: { id: true, email: true, role: true } },
     },
   });
+  void emailAssignedClientsForNewMessage(
+    caseId,
+    caseRow?.title ?? "Matter",
+    msg.sender.role,
+    parsed.data.body,
+  ).catch((e) => console.error("[emailAssignedClientsForNewMessage]", e));
   res.status(201).json({ message: msg });
 });
 

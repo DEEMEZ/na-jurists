@@ -2,8 +2,62 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { LegalCase } from '@/types/LegalCase';
+import { createClient } from '@supabase/supabase-js';
 
 let cachedCases: LegalCase[] | null = null;
+
+/** Matters marked “display on website” in the law firm portal (Supabase). */
+async function loadPortalWebsiteCases(): Promise<LegalCase[]> {
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return [];
+
+  const sb = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await sb
+    .from('cases')
+    .select('id,title,reference,status')
+    .eq('display_on_website', true)
+    .eq('archived', false);
+  if (error || !data?.length) return [];
+
+  return data.map((row) => ({
+    id: String(row.id),
+    'Case Title': String(row.title ?? ''),
+    'Case Number': row.reference ? String(row.reference) : '—',
+    'Subject/Applicable Law': `Client matter (${String(row.status ?? 'open')})`,
+    Court: 'N&A Jurists',
+    Status: row.status != null ? String(row.status) : null,
+    portalPublished: true,
+  }));
+}
+
+async function loadPortalCaseById(id: string): Promise<LegalCase | null> {
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return null;
+  const sb = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await sb
+    .from('cases')
+    .select('id,title,reference,status')
+    .eq('id', id)
+    .eq('display_on_website', true)
+    .eq('archived', false)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    id: String(data.id),
+    'Case Title': String(data.title ?? ''),
+    'Case Number': data.reference ? String(data.reference) : '—',
+    'Subject/Applicable Law': `Client matter (${String(data.status ?? 'open')})`,
+    Court: 'N&A Jurists',
+    Status: data.status != null ? String(data.status) : null,
+    portalPublished: true,
+  };
+}
 
 async function loadCases(): Promise<LegalCase[]> {
   if (cachedCases) return cachedCases;
@@ -78,10 +132,17 @@ export async function GET(request: NextRequest) {
   const subject = searchParams.get('subject') || '';
   const id = searchParams.get('id');
 
-  const cases = await loadCases();
+  const [jsonCases, portalCases] = await Promise.all([
+    loadCases(),
+    loadPortalWebsiteCases(),
+  ]);
+  const cases = [...portalCases, ...jsonCases];
 
   if (id) {
-    const found = cases.find((item) => item.id === id);
+    const found =
+      jsonCases.find((item) => item.id === id) ??
+      portalCases.find((item) => item.id === id) ??
+      (await loadPortalCaseById(id));
     if (!found) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }

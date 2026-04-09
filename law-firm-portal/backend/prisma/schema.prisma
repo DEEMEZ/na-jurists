@@ -52,13 +52,15 @@ model PasswordResetToken {
 }
 
 model Case {
-  id              String              @id @default(cuid())
-  title           String
-  reference       String?
-  status          String              @default("open")
-  archived        Boolean             @default(false)
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id                 String              @id @default(cuid())
+  title              String
+  reference          String?
+  status             String              @default("open")
+  archived           Boolean             @default(false)
+  /// When true, this matter may be listed on the public website (merged into /api/cases).
+  displayOnWebsite   Boolean             @default(false) @map("display_on_website")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   assignments     CaseAssignment[]
   statusHistory   CaseStatusHistory[]
   documents       Document[]
