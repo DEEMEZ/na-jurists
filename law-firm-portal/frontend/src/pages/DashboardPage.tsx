@@ -349,12 +349,21 @@ export function DashboardPage() {
                   </p>
                   <p className="text-text-light">{h.caseTitle}</p>
                 </div>
-                <Link
-                  to={`/cases/${h.caseId}`}
-                  className="shrink-0 text-sm font-semibold text-accent-blue hover:underline"
-                >
-                  View matter
-                </Link>
+                {h.caseId ? (
+                  <Link
+                    to={`/cases/${h.caseId}`}
+                    className="shrink-0 text-sm font-semibold text-accent-blue hover:underline"
+                  >
+                    View matter
+                  </Link>
+                ) : (
+                  <Link
+                    to="/cases"
+                    className="shrink-0 text-sm font-semibold text-accent-blue hover:underline"
+                  >
+                    View matter
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -390,12 +399,21 @@ export function DashboardPage() {
                 <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-text-dark">
                   {m.body}
                 </p>
-                <Link
-                  to={`/cases/${m.caseId}`}
-                  className="mt-2 inline-block text-sm font-semibold text-accent-blue hover:underline"
-                >
-                  Open messages
-                </Link>
+                {m.caseId ? (
+                  <Link
+                    to={`/cases/${m.caseId}`}
+                    className="mt-2 inline-block text-sm font-semibold text-accent-blue hover:underline"
+                  >
+                    Open messages
+                  </Link>
+                ) : (
+                  <Link
+                    to="/cases"
+                    className="mt-2 inline-block text-sm font-semibold text-accent-blue hover:underline"
+                  >
+                    Open messages
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

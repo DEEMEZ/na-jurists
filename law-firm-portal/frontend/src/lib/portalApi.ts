@@ -98,14 +98,9 @@ function parseUrl(pathWithQuery: string): { pathname: string; q: URLSearchParams
   return { pathname: u.pathname, q: u.searchParams };
 }
 
-/** Hearing/message rows may embed `cases`; ensure we always have a real case UUID for links. */
-function caseIdFromEmbeddedRow(row: Record<string, unknown>): string {
+function rowCaseId(row: Record<string, unknown>): string {
   const cid = row.case_id;
-  if (cid != null && String(cid).length > 0) return String(cid);
-  const emb = row.cases as { id?: string } | { id?: string }[] | null | undefined;
-  if (emb && !Array.isArray(emb) && emb.id) return emb.id;
-  if (Array.isArray(emb) && emb[0]?.id) return emb[0].id;
-  return "";
+  return cid != null ? String(cid) : "";
 }
 
 async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -144,7 +139,11 @@ async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string
 }
 
 async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: string) {
-  const { data: c, error: ce } = await sb.from("cases").select("*").eq("id", caseId).single();
+  const { data: c, error: ce } = await sb
+    .from("cases")
+    .select("*")
+    .eq("id", caseId)
+    .maybeSingle();
   if (ce || !c) throw new Error("Not found");
 
   const [asg, hist, docs, hear] = await Promise.all([
@@ -274,8 +273,10 @@ export async function portalApiJson(
       .in("id", caseIds);
     if (caseCountErr) throw new Error(caseCountErr.message);
     const rowsOk = caseRowsForCounts ?? [];
-    const activeMatters = rowsOk.length;
-    const openMatters = rowsOk.filter((r: { archived?: boolean }) => !r.archived).length;
+    const activeMatters = caseIds.length;
+    const openMatters = rowsOk.length
+      ? rowsOk.filter((r: { archived?: boolean }) => !r.archived).length
+      : activeMatters;
 
     const nowIso = now.toISOString();
     const in30Iso = in30.toISOString();
@@ -304,48 +305,75 @@ export async function portalApiJson(
         .neq("sender_id", uid),
       sb
         .from("hearings")
-        .select("id, scheduled_at, venue, case_id, cases(id, title, archived)")
+        .select("id, scheduled_at, venue, case_id")
         .in("case_id", caseIds)
         .gte("scheduled_at", nowIso)
         .order("scheduled_at", { ascending: true })
         .limit(12),
       sb
         .from("messages")
-        .select("id, body, created_at, case_id, cases(id, title)")
+        .select("id, body, created_at, case_id")
         .in("case_id", caseIds)
         .neq("sender_id", uid)
         .order("created_at", { ascending: false })
         .limit(6),
     ]);
 
+    const involvedCaseIds = [
+      ...new Set(
+        [...(hearRaw ?? []), ...(msgRaw ?? [])]
+          .map((row: Record<string, unknown>) => rowCaseId(row))
+          .filter((id) => id.length > 0),
+      ),
+    ];
+    const caseMeta =
+      involvedCaseIds.length === 0
+        ? []
+        : (
+            await sb
+              .from("cases")
+              .select("id, title, archived")
+              .in("id", involvedCaseIds)
+          ).data ?? [];
+    const caseById = new Map(
+      caseMeta.map((c: Record<string, unknown>) => [
+        String(c.id),
+        {
+          title: String(c.title ?? "Matter"),
+          archived: Boolean(c.archived),
+        },
+      ]),
+    );
+
     const nextHearings = (hearRaw ?? [])
       .map((row: Record<string, unknown>) => {
-        const cs = row.cases as { id: string; title: string; archived: boolean } | null;
-        return { row, cs };
-      })
-      .filter(({ cs }) => !cs?.archived)
-      .map(({ row, cs }) => {
-        const cid = caseIdFromEmbeddedRow(row);
+        const caseId = rowCaseId(row);
+        const meta = caseById.get(caseId);
         return {
           id: row.id as string,
-          caseId: cid || (cs?.id ?? ""),
-          caseTitle: cs?.title ?? "Matter",
+          caseId,
+          caseTitle: meta?.title ?? "Matter",
+          archived: meta?.archived ?? false,
           scheduledAt: row.scheduled_at as string,
           venue: (row.venue as string | null) ?? null,
         };
-      });
+      })
+      .filter((h) => h.caseId.length > 0 && !h.archived)
+      .map(({ archived: _archived, ...h }) => h);
 
-    const recentFirmMessages = (msgRaw ?? []).map((row: Record<string, unknown>) => {
-      const cs = row.cases as { id: string; title: string } | null;
-      const cid = caseIdFromEmbeddedRow(row);
-      return {
-        id: row.id as string,
-        caseId: cid || (cs?.id ?? ""),
-        caseTitle: cs?.title ?? "Matter",
-        body: row.body as string,
-        createdAt: row.created_at as string,
-      };
-    });
+    const recentFirmMessages = (msgRaw ?? [])
+      .map((row: Record<string, unknown>) => {
+        const caseId = rowCaseId(row);
+        const meta = caseById.get(caseId);
+        return {
+          id: row.id as string,
+          caseId,
+          caseTitle: meta?.title ?? "Matter",
+          body: row.body as string,
+          createdAt: row.created_at as string,
+        };
+      })
+      .filter((m) => m.caseId.length > 0);
 
     return {
       activeMatters,
@@ -411,30 +439,22 @@ export async function portalApiJson(
     const { sb, uid } = await requireProfile();
     const { data: assigns, error: e1 } = await sb
       .from("case_assignments")
-      .select("case_id")
+      .select(
+        "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived)",
+      )
       .eq("user_id", uid);
     if (e1) throw new Error(e1.message);
-    const ids = [
-      ...new Set(
-        (assigns ?? [])
-          .map((a: { case_id: string | null }) => a.case_id)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
-    if (ids.length === 0) return { cases: [] };
-    const { data: rows, error: e2 } = await sb
-      .from("cases")
-      .select("id, title, reference, status, archived, updated_at")
-      .in("id", ids)
-      .order("updated_at", { ascending: false });
-    if (e2) throw new Error(e2.message);
-    const cases = (rows ?? []).map((c: Record<string, unknown>) => ({
-      id: c.id,
-      title: c.title,
-      reference: c.reference,
-      status: c.status,
-      archived: c.archived,
-    }));
+    const cases = (assigns ?? []).map((a: Record<string, unknown>) => {
+      const c = a.cases as Record<string, unknown> | null;
+      const cid = (a.case_id as string | null) ?? "";
+      return {
+        id: (c?.id as string | undefined) ?? cid,
+        title: (c?.title as string | undefined) ?? "Matter",
+        reference: (c?.reference as string | null | undefined) ?? null,
+        status: (c?.status as string | undefined) ?? "open",
+        archived: Boolean(c?.archived),
+      };
+    }).filter((c) => c.id.length > 0);
     return { cases };
   }
 
@@ -456,7 +476,75 @@ export async function portalApiJson(
         .maybeSingle();
       if (!row) throw new Error("Not found");
     }
-    return buildCaseDetail(getSupabase(), caseIdParam);
+    try {
+      return await buildCaseDetail(getSupabase(), caseIdParam);
+    } catch {
+      // Fallback for environments where direct `cases` select is restricted
+      // but assignment exists; still load key sections for case detail view.
+      const { data: asg } = await x.sb
+        .from("case_assignments")
+        .select(
+          "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived, display_on_website)",
+        )
+        .eq("user_id", x.uid)
+        .eq("case_id", caseIdParam)
+        .maybeSingle();
+      if (!asg) throw new Error("Not found");
+      const c = (asg as Record<string, unknown> | null)?.cases as Record<string, unknown> | null;
+      const [hearRes, docRes, histRes] = await Promise.all([
+        x.sb
+          .from("hearings")
+          .select("id, scheduled_at, venue, notes")
+          .eq("case_id", caseIdParam)
+          .order("scheduled_at", { ascending: true }),
+        x.sb
+          .from("documents")
+          .select("id, original_name, size, created_at")
+          .eq("case_id", caseIdParam)
+          .order("created_at", { ascending: false }),
+        x.sb
+          .from("case_status_history")
+          .select("id, from_status, to_status, note, created_at")
+          .eq("case_id", caseIdParam)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      const hearings = (hearRes.data ?? []).map((h: Record<string, unknown>) => ({
+        id: h.id,
+        scheduledAt: h.scheduled_at,
+        venue: (h.venue as string | null) ?? null,
+        notes: (h.notes as string | null) ?? null,
+      }));
+      const documents = (docRes.data ?? []).map((d: Record<string, unknown>) => ({
+        id: d.id,
+        originalName: d.original_name,
+        size: d.size,
+        createdAt: d.created_at,
+        uploadedBy: { email: "" },
+      }));
+      const statusHistory = (histRes.data ?? []).map((h: Record<string, unknown>) => ({
+        id: h.id,
+        fromStatus: (h.from_status as string | null) ?? null,
+        toStatus: (h.to_status as string) ?? "open",
+        note: (h.note as string | null) ?? null,
+        createdAt: h.created_at as string,
+        author: { email: "" },
+      }));
+      return {
+        case: {
+          id: caseIdParam,
+          title: (c?.title as string | undefined) ?? "Matter",
+          reference: (c?.reference as string | null | undefined) ?? null,
+          status: (c?.status as string | undefined) ?? "open",
+          archived: Boolean(c?.archived),
+          displayOnWebsite: Boolean(c?.display_on_website),
+          assignments: [],
+          statusHistory,
+          documents,
+          hearings,
+        },
+      };
+    }
   }
 
   if (pathname === "/api/v1/admin/dashboard" && m === "GET") {
