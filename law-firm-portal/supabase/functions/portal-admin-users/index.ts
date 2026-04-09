@@ -13,6 +13,15 @@ function json(data: unknown, status = 200) {
   });
 }
 
+/** Same shape as frontend `parseValidEmail` / Zod `.email()` (not Gmail-only). */
+function normalizeValidEmail(raw: string): string | null {
+  const email = raw.trim().toLowerCase();
+  if (!email || email.length > 254) return null;
+  const re =
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  return re.test(email) ? email : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: cors });
@@ -65,12 +74,16 @@ Deno.serve(async (req) => {
   const action = payload.action as string;
 
   if (action === "create") {
-    const email = String(payload.email ?? "");
+    const normalized = normalizeValidEmail(String(payload.email ?? ""));
     const password = String(payload.password ?? "");
     const role = (payload.role as string) === "ADMIN" ? "ADMIN" : "CLIENT";
-    if (!email || password.length < 8) {
-      return json({ ok: false, error: "Invalid email or password" }, 400);
+    if (!normalized || password.length < 8) {
+      return json(
+        { ok: false, error: "Enter a valid email and password (min 8 characters)" },
+        400,
+      );
     }
+    const email = normalized;
     const { data: created, error: cErr } = await admin.auth.admin.createUser({
       email,
       password,
@@ -125,8 +138,12 @@ Deno.serve(async (req) => {
       if (pe) return json({ ok: false, error: pe.message }, 400);
     }
     if (email !== undefined && email.length > 0) {
+      const normalized = normalizeValidEmail(email);
+      if (!normalized) {
+        return json({ ok: false, error: "Enter a valid email address" }, 400);
+      }
       const { error: ee } = await admin.auth.admin.updateUserById(userId, {
-        email,
+        email: normalized,
       });
       if (ee) return json({ ok: false, error: ee.message }, 400);
     }

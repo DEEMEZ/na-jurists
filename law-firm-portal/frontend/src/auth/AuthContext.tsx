@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { invalidatePortalProfileCache } from "@/lib/portalApi";
 import { getSupabase } from "@/lib/supabaseClient";
 import type { AuthUser } from "@/lib/api";
 
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await getSupabase().auth.signOut();
+    invalidatePortalProfileCache();
     setUser(null);
   }, []);
 

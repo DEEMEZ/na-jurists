@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getEnv } from "../config/env.js";
 import { paramStr } from "../lib/httpParams.js";
 import { prisma } from "../lib/prisma.js";
+import { emailField } from "../lib/userEmail.js";
 import { hashPassword } from "../lib/password.js";
 import { notifyAssignedClients } from "../lib/notifyStatus.js";
 import { createCaseUpload } from "../lib/uploadMulter.js";
@@ -64,7 +65,7 @@ router.get("/clients", async (_req, res) => {
 });
 
 const createUserBody = z.object({
-  email: z.string().email(),
+  email: emailField,
   password: z.string().min(8),
   role: z.nativeEnum(Role),
 });
@@ -110,7 +111,7 @@ router.post("/users", async (req, res) => {
 });
 
 const patchUserBody = z.object({
-  email: z.string().email().optional(),
+  email: emailField.optional(),
   role: z.nativeEnum(Role).optional(),
   disabled: z.boolean().optional(),
   password: z.string().min(8).optional(),

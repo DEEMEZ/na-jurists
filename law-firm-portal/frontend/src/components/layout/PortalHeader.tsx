@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { PortalLogo } from "@/components/brand/PortalLogo";
 import { ClientNotificationDropdown } from "@/components/layout/ClientNotificationDropdown";
+import { useToast } from "@/components/ui/ToastProvider";
 
 const navLinkClass =
   "portal-nav-link text-secondary-navy hover:text-accent-blue";
@@ -13,6 +14,7 @@ const mobileRowClass =
 
 export function PortalHeader() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -92,7 +94,10 @@ export function PortalHeader() {
             <button
               type="button"
               onClick={() => {
-                void logout().then(() => navigate("/login", { replace: true }));
+                void logout().then(() => {
+                  showToast("Signed out.");
+                  navigate("/login", { replace: true });
+                });
               }}
               className="portal-nav-link rounded-md px-2 text-text-light hover:text-secondary-navy lg:px-3"
             >
@@ -189,7 +194,10 @@ export function PortalHeader() {
               className={`${mobileRowClass} w-full text-left text-text-light hover:text-secondary-navy`}
               onClick={() => {
                 closeMobile();
-                void logout().then(() => navigate("/login", { replace: true }));
+                void logout().then(() => {
+                  showToast("Signed out.");
+                  navigate("/login", { replace: true });
+                });
               }}
             >
               Sign out

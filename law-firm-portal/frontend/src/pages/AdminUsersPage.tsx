@@ -2,7 +2,9 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
+import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
+import { parseValidEmail } from "@/lib/emailValidation";
 
 type UserRow = {
   id: string;
@@ -14,6 +16,7 @@ type UserRow = {
 
 export function AdminUsersPage() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [rows, setRows] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,13 +57,20 @@ export function AdminUsersPage() {
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
+    const emailOk = parseValidEmail(newEmail);
+    if (!emailOk) {
+      const m = "Enter a valid email address.";
+      setError(m);
+      showToast(m, "error");
+      return;
+    }
     setCreating(true);
     setError(null);
     try {
       await apiJson<{ user: UserRow }>("/api/v1/admin/users", {
         method: "POST",
         body: JSON.stringify({
-          email: newEmail,
+          email: emailOk,
           password: newPassword,
           role: newRole,
         }),
@@ -69,8 +79,11 @@ export function AdminUsersPage() {
       setNewPassword("");
       setNewRole("CLIENT");
       await load();
+      showToast("User created.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Create failed");
+      const m = err instanceof Error ? err.message : "Create failed";
+      setError(m);
+      showToast(m, "error");
     } finally {
       setCreating(false);
     }
@@ -87,10 +100,17 @@ export function AdminUsersPage() {
   async function saveEdit(e: FormEvent) {
     e.preventDefault();
     if (!editingId) return;
+    const emailOk = parseValidEmail(editEmail);
+    if (!emailOk) {
+      const m = "Enter a valid email address.";
+      setError(m);
+      showToast(m, "error");
+      return;
+    }
     setError(null);
     try {
       const body: Record<string, unknown> = {
-        email: editEmail,
+        email: emailOk,
         role: editRole,
         disabled: editDisabled,
       };
@@ -101,8 +121,11 @@ export function AdminUsersPage() {
       });
       setEditingId(null);
       await load();
+      showToast("User updated.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed");
+      const m = err instanceof Error ? err.message : "Update failed";
+      setError(m);
+      showToast(m, "error");
     }
   }
 
@@ -112,8 +135,11 @@ export function AdminUsersPage() {
     try {
       await apiJson(`/api/v1/admin/users/${id}`, { method: "DELETE" });
       await load();
+      showToast("User deleted.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
+      const m = err instanceof Error ? err.message : "Delete failed";
+      setError(m);
+      showToast(m, "error");
     }
   }
 

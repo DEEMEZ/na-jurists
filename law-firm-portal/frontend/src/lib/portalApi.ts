@@ -34,12 +34,44 @@ type Ctx = {
   email: string;
 };
 
+/** Avoid N× profile fetches when many API calls run in parallel (e.g. case detail). */
+let profileCache: { userId: string; ctx: Ctx; expires: number } | null = null;
+const PROFILE_CACHE_TTL_MS = 20_000;
+let authInvalidationStarted = false;
+
+function ensureProfileCacheInvalidation(): void {
+  if (authInvalidationStarted) return;
+  authInvalidationStarted = true;
+  getSupabase().auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT" || event === "SIGNED_IN" || event === "USER_UPDATED") {
+      profileCache = null;
+    }
+  });
+}
+
+/** Call after logout so the next session never reuses cached profile. */
+export function invalidatePortalProfileCache(): void {
+  profileCache = null;
+}
+
 async function requireProfile(): Promise<Ctx> {
+  ensureProfileCacheInvalidation();
   const sb = getSupabase();
   const {
     data: { session },
   } = await sb.auth.getSession();
-  if (!session?.user) throw new Error("Unauthorized");
+  if (!session?.user) {
+    profileCache = null;
+    throw new Error("Unauthorized");
+  }
+  const now = Date.now();
+  if (
+    profileCache &&
+    profileCache.userId === session.user.id &&
+    profileCache.expires > now
+  ) {
+    return profileCache.ctx;
+  }
   const { data: p, error } = await sb
     .from("profiles")
     .select("id, email, role, disabled")
@@ -47,12 +79,18 @@ async function requireProfile(): Promise<Ctx> {
     .single();
   if (error || !p) throw new Error("Unauthorized");
   if (p.disabled) throw new Error("Account disabled");
-  return {
+  const ctx: Ctx = {
     sb,
     uid: p.id,
     role: p.role as "ADMIN" | "CLIENT",
     email: p.email,
   };
+  profileCache = {
+    userId: session.user.id,
+    ctx,
+    expires: now + PROFILE_CACHE_TTL_MS,
+  };
+  return ctx;
 }
 
 function parseUrl(pathWithQuery: string): { pathname: string; q: URLSearchParams } {
@@ -219,39 +257,54 @@ export async function portalApiJson(
         recentFirmMessages: [],
       };
     }
-    const { count: assignedMatters } = await sb
-      .from("cases")
-      .select("id", { count: "exact", head: true })
-      .in("id", caseIds);
-    const { count: openMatters } = await sb
-      .from("cases")
-      .select("id", { count: "exact", head: true })
-      .in("id", caseIds)
-      .eq("archived", false);
-    const { count: upcomingHearings30d } = await sb
-      .from("hearings")
-      .select("id", { count: "exact", head: true })
-      .in("case_id", caseIds)
-      .gte("scheduled_at", now.toISOString())
-      .lte("scheduled_at", in30.toISOString());
-    const { count: unreadNotifications } = await sb
-      .from("notifications")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", uid)
-      .eq("read", false);
-    const { count: messagesFromFirm } = await sb
-      .from("messages")
-      .select("id", { count: "exact", head: true })
-      .in("case_id", caseIds)
-      .neq("sender_id", uid);
-
-    const { data: hearRaw } = await sb
-      .from("hearings")
-      .select("id, scheduled_at, venue, case_id, cases(id, title, archived)")
-      .in("case_id", caseIds)
-      .gte("scheduled_at", now.toISOString())
-      .order("scheduled_at", { ascending: true })
-      .limit(12);
+    const nowIso = now.toISOString();
+    const in30Iso = in30.toISOString();
+    const [
+      { count: assignedMatters },
+      { count: openMatters },
+      { count: upcomingHearings30d },
+      { count: unreadNotifications },
+      { count: messagesFromFirm },
+      { data: hearRaw },
+      { data: msgRaw },
+    ] = await Promise.all([
+      sb.from("cases").select("id", { count: "exact", head: true }).in("id", caseIds),
+      sb
+        .from("cases")
+        .select("id", { count: "exact", head: true })
+        .in("id", caseIds)
+        .eq("archived", false),
+      sb
+        .from("hearings")
+        .select("id", { count: "exact", head: true })
+        .in("case_id", caseIds)
+        .gte("scheduled_at", nowIso)
+        .lte("scheduled_at", in30Iso),
+      sb
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", uid)
+        .eq("read", false),
+      sb
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .in("case_id", caseIds)
+        .neq("sender_id", uid),
+      sb
+        .from("hearings")
+        .select("id, scheduled_at, venue, case_id, cases(id, title, archived)")
+        .in("case_id", caseIds)
+        .gte("scheduled_at", nowIso)
+        .order("scheduled_at", { ascending: true })
+        .limit(12),
+      sb
+        .from("messages")
+        .select("id, body, created_at, case_id, cases(id, title)")
+        .in("case_id", caseIds)
+        .neq("sender_id", uid)
+        .order("created_at", { ascending: false })
+        .limit(6),
+    ]);
 
     const nextHearings = (hearRaw ?? [])
       .map((row: Record<string, unknown>) => {
@@ -266,14 +319,6 @@ export async function portalApiJson(
         scheduledAt: row.scheduled_at as string,
         venue: (row.venue as string | null) ?? null,
       }));
-
-    const { data: msgRaw } = await sb
-      .from("messages")
-      .select("id, body, created_at, case_id, cases(id, title)")
-      .in("case_id", caseIds)
-      .neq("sender_id", uid)
-      .order("created_at", { ascending: false })
-      .limit(6);
 
     const recentFirmMessages = (msgRaw ?? []).map((row: Record<string, unknown>) => {
       const cs = row.cases as { id: string; title: string } | null;
@@ -387,40 +432,47 @@ export async function portalApiJson(
     const now = new Date();
     const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const sevenAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const { count: openCases } = await sb
-      .from("cases")
-      .select("id", { count: "exact", head: true })
-      .eq("archived", false);
-    const { count: upcomingHearings30d } = await sb
-      .from("hearings")
-      .select("id", { count: "exact", head: true })
-      .gte("scheduled_at", now.toISOString())
-      .lte("scheduled_at", in30.toISOString());
-    const { data: allOpen } = await sb
-      .from("cases")
-      .select("id")
-      .eq("archived", false);
+    const nowIso = now.toISOString();
+    const in30Iso = in30.toISOString();
+    const sevenAgoIso = sevenAgo.toISOString();
+    const [{ count: openCases }, { count: upcomingHearings30d }, { data: allOpen }, { data: clientIds }] =
+      await Promise.all([
+        sb.from("cases").select("id", { count: "exact", head: true }).eq("archived", false),
+        sb
+          .from("hearings")
+          .select("id", { count: "exact", head: true })
+          .gte("scheduled_at", nowIso)
+          .lte("scheduled_at", in30Iso),
+        sb.from("cases").select("id").eq("archived", false),
+        sb.from("profiles").select("id").eq("role", "CLIENT"),
+      ]);
     const openIds = (allOpen ?? []).map((c: { id: string }) => c.id);
     let casesMissingUpcomingHearing = 0;
+    let recentClientMessages = 0;
+    const cids = (clientIds ?? []).map((p: { id: string }) => p.id);
+    const [futureHRes, msgCountRes] = await Promise.all([
+      openIds.length
+        ? sb
+            .from("hearings")
+            .select("case_id")
+            .in("case_id", openIds)
+            .gte("scheduled_at", nowIso)
+        : Promise.resolve({ data: [] as { case_id: string }[] }),
+      cids.length
+        ? sb
+            .from("messages")
+            .select("id", { count: "exact", head: true })
+            .in("sender_id", cids)
+            .gte("created_at", sevenAgoIso)
+        : Promise.resolve({ count: 0 }),
+    ]);
+    const futureH = futureHRes.data;
     if (openIds.length) {
-      const { data: futureH } = await sb
-        .from("hearings")
-        .select("case_id")
-        .in("case_id", openIds)
-        .gte("scheduled_at", now.toISOString());
       const withFuture = new Set((futureH ?? []).map((h: { case_id: string }) => h.case_id));
       casesMissingUpcomingHearing = openIds.filter((id) => !withFuture.has(id)).length;
     }
-    const { data: clientIds } = await sb.from("profiles").select("id").eq("role", "CLIENT");
-    const cids = (clientIds ?? []).map((p: { id: string }) => p.id);
-    let recentClientMessages = 0;
     if (cids.length) {
-      const { count } = await sb
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .in("sender_id", cids)
-        .gte("created_at", sevenAgo.toISOString());
-      recentClientMessages = count ?? 0;
+      recentClientMessages = msgCountRes.count ?? 0;
     }
     return {
       openCases: openCases ?? 0,

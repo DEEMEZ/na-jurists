@@ -2,12 +2,14 @@ import { type FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { useToast } from "@/components/ui/ToastProvider";
 
 const inputClass =
   "mt-1 w-full rounded-xl border border-secondary-navy/15 bg-background-light/90 px-3.5 py-2.5 text-text-dark outline-none ring-accent-blue/20 transition-shadow duration-200 placeholder:text-text-light/60 focus:border-accent-blue/40 focus:bg-background-white focus:ring-2";
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { user, ready, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +35,7 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       await login(email, password);
+      showToast("Signed in successfully.");
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");

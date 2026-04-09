@@ -2,11 +2,13 @@ import { type FormEvent, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
+import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
 
 export function CaseCreatePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [reference, setReference] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,9 +31,12 @@ export function CaseCreatePage() {
           reference: reference.trim() || undefined,
         }),
       });
+      showToast("Case created.");
       navigate(`/cases/${res.case.id}`, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed");
+      const m = err instanceof Error ? err.message : "Failed";
+      setError(m);
+      showToast(m, "error");
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import { Bell } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
 
 type NotificationRow = {
@@ -13,6 +14,7 @@ type NotificationRow = {
 };
 
 export function ClientNotificationDropdown() {
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,10 +57,15 @@ export function ClientNotificationDropdown() {
   }, []);
 
   async function markRead(id: string) {
-    await apiJson(`/api/v1/me/notifications/${id}/read`, { method: "PATCH" });
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
+    try {
+      await apiJson(`/api/v1/me/notifications/${id}/read`, { method: "PATCH" });
+      setItems((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      );
+      showToast("Marked as read.");
+    } catch {
+      showToast("Could not update notification.", "error");
+    }
   }
 
   const unread = items.filter((n) => !n.read).length;

@@ -2,12 +2,14 @@ import { type FormEvent, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { useToast } from "@/components/ui/ToastProvider";
 import { getSupabase } from "@/lib/supabaseClient";
 
 const inputClass =
   "mt-1 w-full rounded-xl border border-secondary-navy/15 bg-background-light/90 px-3.5 py-2.5 text-text-dark outline-none ring-accent-blue/20 transition-shadow duration-200 focus:border-accent-blue/40 focus:bg-background-white focus:ring-2";
 
 export function ForgotPasswordPage() {
+  const { showToast } = useToast();
   const { user, ready } = useAuth();
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
@@ -39,6 +41,10 @@ export function ForgotPasswordPage() {
       );
       if (supaErr) throw new Error(supaErr.message);
       setDone(true);
+      showToast(
+        "If this email is registered, you will receive reset instructions shortly.",
+        "info",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Request failed");
     } finally {

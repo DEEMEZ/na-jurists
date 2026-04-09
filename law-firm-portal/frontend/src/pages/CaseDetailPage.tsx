@@ -2,6 +2,7 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
+import { useToast } from "@/components/ui/ToastProvider";
 import { apiBlob, apiFetch, apiJson } from "@/lib/api";
 import { formatCaseStatus } from "@/lib/formatCaseStatus";
 
@@ -49,6 +50,7 @@ type CaseDetail = {
 export function CaseDetailPage() {
   const { caseId } = useParams<{ caseId: string }>();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [c, setC] = useState<CaseDetail | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -90,84 +92,109 @@ export function CaseDetailPage() {
     if (!caseId || !user?.id) return;
     setLoading(true);
     setErr(null);
-    loadCase()
-      .then(() => loadMessages())
+    const tasks: Promise<unknown>[] = [loadCase(), loadMessages()];
+    if (user.role === "ADMIN") {
+      tasks.push(
+        apiJson<{ clients: { id: string; email: string }[] }>(
+          "/api/v1/admin/clients",
+        ).then((d) => setClients(d.clients)),
+      );
+    }
+    Promise.all(tasks)
       .catch((e: Error) => setErr(e.message))
       .finally(() => setLoading(false));
-  }, [caseId, user?.id, loadCase, loadMessages]);
-
-  useEffect(() => {
-    if (user?.role !== "ADMIN") return;
-    apiJson<{ clients: { id: string; email: string }[] }>("/api/v1/admin/clients")
-      .then((d) => setClients(d.clients))
-      .catch(() => {});
-  }, [user?.role]);
+  }, [caseId, user?.id, user?.role, loadCase, loadMessages]);
 
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
     if (!caseId || !msgText.trim()) return;
-    await apiJson(`/api/v1/cases/${caseId}/messages`, {
-      method: "POST",
-      body: JSON.stringify({ body: msgText.trim() }),
-    });
-    setMsgText("");
-    await loadMessages();
+    try {
+      await apiJson(`/api/v1/cases/${caseId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ body: msgText.trim() }),
+      });
+      setMsgText("");
+      await loadMessages();
+      showToast("Message sent.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Could not send message", "error");
+    }
   }
 
   async function updateStatus(e: FormEvent) {
     e.preventDefault();
     if (!caseId || !statusText.trim()) return;
-    await apiJson(`/api/v1/admin/cases/${caseId}/status`, {
-      method: "POST",
-      body: JSON.stringify({ status: statusText.trim(), note: statusNote || undefined }),
-    });
-    setStatusText("");
-    setStatusNote("");
-    await loadCase();
+    try {
+      await apiJson(`/api/v1/admin/cases/${caseId}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status: statusText.trim(), note: statusNote || undefined }),
+      });
+      setStatusText("");
+      setStatusNote("");
+      await loadCase();
+      showToast("Case status updated.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Update failed", "error");
+    }
   }
 
   async function assignClient(e: FormEvent) {
     e.preventDefault();
     if (!caseId || !assignUserId) return;
-    await apiJson<{ assignment: unknown }>(
-      `/api/v1/admin/cases/${caseId}/assign`,
-      {
-        method: "POST",
-        body: JSON.stringify({ userId: assignUserId }),
-      },
-    );
-    setAssignUserId("");
-    await loadCase();
+    try {
+      await apiJson<{ assignment: unknown }>(
+        `/api/v1/admin/cases/${caseId}/assign`,
+        {
+          method: "POST",
+          body: JSON.stringify({ userId: assignUserId }),
+        },
+      );
+      setAssignUserId("");
+      await loadCase();
+      showToast("Client has been assigned to this case.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Assignment failed", "error");
+    }
   }
 
   async function saveMeta(e: FormEvent) {
     e.preventDefault();
     if (!caseId) return;
-    await apiJson(`/api/v1/admin/cases/${caseId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        title: titleEdit,
-        reference: refEdit || null,
-        archived: archivedEdit,
-      }),
-    });
-    await loadCase();
+    try {
+      await apiJson(`/api/v1/admin/cases/${caseId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          title: titleEdit,
+          reference: refEdit || null,
+          archived: archivedEdit,
+        }),
+      });
+      await loadCase();
+      showToast("Case details saved.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Save failed", "error");
+    }
   }
 
   async function addHearing(e: FormEvent) {
     e.preventDefault();
     if (!caseId || !hearingWhen) return;
     const iso = new Date(hearingWhen).toISOString();
-    await apiJson(`/api/v1/admin/cases/${caseId}/hearings`, {
-      method: "POST",
-      body: JSON.stringify({
-        scheduledAt: iso,
-        venue: hearingVenue || undefined,
-      }),
-    });
-    setHearingWhen("");
-    setHearingVenue("");
-    await loadCase();
+    try {
+      await apiJson(`/api/v1/admin/cases/${caseId}/hearings`, {
+        method: "POST",
+        body: JSON.stringify({
+          scheduledAt: iso,
+          venue: hearingVenue || undefined,
+        }),
+      });
+      setHearingWhen("");
+      setHearingVenue("");
+      await loadCase();
+      showToast("Hearing added.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Could not add hearing", "error");
+    }
   }
 
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -180,11 +207,14 @@ export function CaseDetailPage() {
       body: fd,
     });
     if (!res.ok) {
-      setErr(await res.text());
+      const t = await res.text();
+      setErr(t);
+      showToast(t || "Upload failed", "error");
       return;
     }
     e.target.value = "";
     await loadCase();
+    showToast("File uploaded.");
   }
 
   async function downloadDoc(doc: DocRow) {
@@ -206,16 +236,28 @@ export function CaseDetailPage() {
       `/api/v1/admin/cases/${caseId}/assign/${userId}`,
       { method: "DELETE" },
     );
-    if (!res.ok) setErr(await res.text());
+    if (!res.ok) {
+      const t = await res.text();
+      setErr(t);
+      showToast(t || "Could not remove assignment", "error");
+      return;
+    }
     await loadCase();
+    showToast("Assignment removed.");
   }
 
   async function deleteHearing(id: string) {
     const res = await apiFetch(`/api/v1/admin/hearings/${id}`, {
       method: "DELETE",
     });
-    if (!res.ok) setErr(await res.text());
+    if (!res.ok) {
+      const t = await res.text();
+      setErr(t);
+      showToast(t || "Could not delete hearing", "error");
+      return;
+    }
     await loadCase();
+    showToast("Hearing removed.");
   }
 
   async function deleteDoc(docId: string) {
@@ -224,8 +266,14 @@ export function CaseDetailPage() {
       `/api/v1/admin/cases/${caseId}/documents/${docId}`,
       { method: "DELETE" },
     );
-    if (!res.ok) setErr(await res.text());
+    if (!res.ok) {
+      const t = await res.text();
+      setErr(t);
+      showToast(t || "Could not delete document", "error");
+      return;
+    }
     await loadCase();
+    showToast("Document removed.");
   }
 
   if (!user || !caseId) return null;
