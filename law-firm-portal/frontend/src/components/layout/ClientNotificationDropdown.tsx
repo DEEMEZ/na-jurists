@@ -1,7 +1,6 @@
 import { Bell } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
 
 type NotificationRow = {
@@ -14,7 +13,6 @@ type NotificationRow = {
 };
 
 export function ClientNotificationDropdown() {
-  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,11 +35,6 @@ export function ClientNotificationDropdown() {
   }, [load]);
 
   useEffect(() => {
-    if (!open) return;
-    void load();
-  }, [open, load]);
-
-  useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     }
@@ -56,36 +49,23 @@ export function ClientNotificationDropdown() {
     };
   }, []);
 
-  async function markRead(id: string) {
-    try {
-      await apiJson(`/api/v1/me/notifications/${id}/read`, { method: "PATCH" });
-      setItems((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-      );
-      showToast("Marked as read.");
-    } catch {
-      showToast("Could not update notification.", "error");
-    }
-  }
-
-  const unread = items.filter((n) => !n.read).length;
-
   return (
     <div className="relative" ref={wrapRef}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((prev) => {
+            const next = !prev;
+            if (next) void load();
+            return next;
+          });
+        }}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-secondary-navy transition-colors hover:bg-primary-navy/5 hover:text-accent-blue"
         aria-expanded={open}
         aria-haspopup="true"
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5" strokeWidth={1.75} />
-        {unread > 0 && (
-          <span className="absolute right-1 top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">
-            {unread > 99 ? "99+" : unread}
-          </span>
-        )}
       </button>
 
       {open && (
@@ -111,10 +91,7 @@ export function ClientNotificationDropdown() {
             ) : (
               <ul className="divide-y divide-border-subtle">
                 {items.map((n) => (
-                  <li
-                    key={n.id}
-                    className={`px-4 py-3 ${n.read ? "opacity-75" : "bg-background-light/50"}`}
-                  >
+                  <li key={n.id} className="px-4 py-3">
                     <div className="text-sm font-medium text-secondary-navy">
                       {n.title}
                     </div>
@@ -134,15 +111,6 @@ export function ClientNotificationDropdown() {
                         >
                           View matter
                         </Link>
-                      )}
-                      {!n.read && (
-                        <button
-                          type="button"
-                          onClick={() => void markRead(n.id)}
-                          className="font-medium text-accent-blue hover:underline"
-                        >
-                          Mark read
-                        </button>
                       )}
                     </div>
                   </li>

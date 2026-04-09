@@ -363,6 +363,18 @@ export async function portalApiJson(
     return { notifications };
   }
 
+  if (pathname === "/api/v1/me/notifications/read-all" && m === "POST") {
+    const { sb, uid } = await requireProfile();
+    const { data, error } = await sb
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", uid)
+      .eq("read", false)
+      .select("id");
+    if (error) throw new Error(error.message);
+    return { ok: true, count: (data ?? []).length };
+  }
+
   const readNotif = pathname.match(/^\/api\/v1\/me\/notifications\/([^/]+)\/read$/);
   if (readNotif && m === "PATCH") {
     const { sb, uid } = await requireProfile();

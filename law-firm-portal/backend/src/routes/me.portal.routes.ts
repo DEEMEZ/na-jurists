@@ -113,6 +113,15 @@ router.get("/notifications", async (req, res) => {
   res.json({ notifications });
 });
 
+/** Mark all notifications read for this client (e.g. when opening the bell menu). */
+router.post("/notifications/read-all", async (req, res) => {
+  const result = await prisma.notification.updateMany({
+    where: { userId: req.user!.id, read: false },
+    data: { read: true },
+  });
+  res.json({ ok: true, count: result.count });
+});
+
 router.patch("/notifications/:notificationId/read", async (req, res) => {
   const nid = paramStr(req.params.notificationId);
   if (!nid) {
