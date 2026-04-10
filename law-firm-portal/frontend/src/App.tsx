@@ -1,39 +1,17 @@
-import { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { PortalLayout } from "@/components/layout/PortalLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
-
-const DashboardPage = lazy(() =>
-  import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
-);
-const CasesListPage = lazy(() =>
-  import("@/pages/CasesListPage").then((m) => ({ default: m.CasesListPage })),
-);
-const CaseCreatePage = lazy(() =>
-  import("@/pages/CaseCreatePage").then((m) => ({ default: m.CaseCreatePage })),
-);
-const CaseDetailPage = lazy(() =>
-  import("@/pages/CaseDetailPage").then((m) => ({ default: m.CaseDetailPage })),
-);
-const AdminAlertsPage = lazy(() =>
-  import("@/pages/AdminAlertsPage").then((m) => ({ default: m.AdminAlertsPage })),
-);
-const AdminUsersPage = lazy(() =>
-  import("@/pages/AdminUsersPage").then((m) => ({ default: m.AdminUsersPage })),
-);
-const ClientNotificationsPage = lazy(() =>
-  import("@/pages/ClientNotificationsPage").then((m) => ({
-    default: m.ClientNotificationsPage,
-  })),
-);
-const ClientHearingsPage = lazy(() =>
-  import("@/pages/ClientHearingsPage").then((m) => ({
-    default: m.ClientHearingsPage,
-  })),
-);
+import { DashboardPage } from "@/pages/DashboardPage";
+import { CasesListPage } from "@/pages/CasesListPage";
+import { CaseCreatePage } from "@/pages/CaseCreatePage";
+import { CaseDetailPage } from "@/pages/CaseDetailPage";
+import { AdminAlertsPage } from "@/pages/AdminAlertsPage";
+import { AdminUsersPage } from "@/pages/AdminUsersPage";
+import { ClientNotificationsPage } from "@/pages/ClientNotificationsPage";
+import { ClientHearingsPage } from "@/pages/ClientHearingsPage";
 
 export default function App() {
   return (

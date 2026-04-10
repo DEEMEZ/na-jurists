@@ -103,6 +103,31 @@ function rowCaseId(row: Record<string, unknown>): string {
   return cid != null ? String(cid) : "";
 }
 
+/** PostgREST may return snake_case or camelCase for FK columns. */
+function assignmentRowCaseId(row: Record<string, unknown>): string {
+  const v = row.case_id ?? row.caseId;
+  return v != null && String(v).trim() !== "" ? String(v).trim() : "";
+}
+
+function normCaseId(id: unknown): string {
+  return id != null ? String(id).trim() : "";
+}
+
+/** Map PostgREST row (snake_case columns). */
+function mapCaseRow(c: Record<string, unknown>) {
+  const id = normCaseId(c.id);
+  const titleRaw = c.title ?? c["Case Title"];
+  const refRaw = c.reference ?? c["Case Number"];
+  const statusRaw = c.status ?? c.Status;
+  return {
+    id,
+    title: titleRaw != null && String(titleRaw).trim() !== "" ? String(titleRaw) : "Matter",
+    reference: refRaw != null && String(refRaw).trim() !== "" ? String(refRaw) : null,
+    status: statusRaw != null && String(statusRaw).trim() !== "" ? String(statusRaw) : "open",
+    archived: Boolean(c.archived),
+  };
+}
+
 /** Fresh access token for Edge Function invokes (JWT gateway rejects stale tokens). */
 async function getFreshAccessToken(): Promise<string | null> {
   const sb = getSupabase();
@@ -468,34 +493,64 @@ export async function portalApiJson(
 
   if (pathname === "/api/v1/me/cases" && m === "GET") {
     const { sb, uid } = await requireProfile();
+    // Prefer embedded `cases` via FK (same path as me/cases/:id fallback) so list matches
+    // detail when a plain `cases` select returns no row under RLS.
     const { data: assigns, error: e1 } = await sb
       .from("case_assignments")
-      .select("case_id")
+      .select(
+        "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived, display_on_website)",
+      )
       .eq("user_id", uid);
     if (e1) throw new Error(e1.message);
-    const caseIds = [
-      ...new Set(
-        (assigns ?? [])
-          .map((a: { case_id: string | null }) => a.case_id)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
-    if (caseIds.length === 0) {
+
+    const orderedRaw: string[] = [];
+    const seenKey = new Set<string>();
+    const caseById = new Map<string, Record<string, unknown>>();
+
+    for (const row of assigns ?? []) {
+      const r = row as Record<string, unknown>;
+      const cid = assignmentRowCaseId(r);
+      if (!cid) continue;
+      const key = cid.trim();
+      const dedupeKey = key.toLowerCase();
+      if (seenKey.has(dedupeKey)) continue;
+      seenKey.add(dedupeKey);
+      orderedRaw.push(key);
+
+      let emb = r.cases as Record<string, unknown> | Record<string, unknown>[] | null | undefined;
+      if (Array.isArray(emb)) emb = emb[0] ?? null;
+      if (emb && typeof emb === "object") {
+        caseById.set(key, emb as Record<string, unknown>);
+      }
+    }
+    if (orderedRaw.length === 0) {
       return { cases: [] };
     }
-    const { data: rows, error: e2 } = await sb
-      .from("cases")
-      .select("id, title, reference, status, archived")
-      .in("id", caseIds)
-      .order("updated_at", { ascending: false });
-    if (e2) throw new Error(e2.message);
-    const cases = (rows ?? []).map((c: Record<string, unknown>) => ({
-      id: String(c.id),
-      title: (c.title as string) ?? "Matter",
-      reference: (c.reference as string | null) ?? null,
-      status: (c.status as string) ?? "open",
-      archived: Boolean(c.archived),
-    }));
+
+    const missing = orderedRaw.filter((id) => !caseById.has(id));
+    if (missing.length > 0) {
+      const results = await Promise.all(
+        missing.map((caseId) => sb.from("cases").select("*").eq("id", caseId).maybeSingle()),
+      );
+      missing.forEach((caseId, i) => {
+        const { data, error } = results[i];
+        if (error) console.warn("[me/cases] case fetch", caseId, error.message);
+        if (data) caseById.set(caseId, data as Record<string, unknown>);
+      });
+    }
+
+    const cases = orderedRaw.map((caseId) => {
+      const data = caseById.get(caseId);
+      if (data) return mapCaseRow(data);
+      console.warn("[me/cases] no case row for assignment", caseId);
+      return {
+        id: caseId,
+        title: "Matter",
+        reference: null,
+        status: "open",
+        archived: false,
+      };
+    });
     return { cases };
   }
 
@@ -512,8 +567,8 @@ export async function portalApiJson(
     const caseIds = [
       ...new Set(
         (assigns ?? [])
-          .map((a: { case_id: string | null }) => a.case_id)
-          .filter((id): id is string => Boolean(id)),
+          .map((a) => assignmentRowCaseId(a as Record<string, unknown>))
+          .filter((id) => id.length > 0),
       ),
     ];
     if (caseIds.length === 0) {

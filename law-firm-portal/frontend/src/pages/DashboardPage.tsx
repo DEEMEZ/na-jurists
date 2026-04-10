@@ -63,7 +63,7 @@ export function DashboardPage() {
         else setClientStats(data as ClientDash);
       })
       .catch((e: Error) => setLoadErr(e.message));
-  }, [user]);
+  }, [user?.id, user?.role]);
 
   const statItems = useMemo(() => {
     if (user?.role === "ADMIN" && adminStats) {

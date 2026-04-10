@@ -100,6 +100,8 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 
 Configure **Authentication → URL configuration** (site URL) and **email templates** so password reset links point to your deployed portal (e.g. `https://your-app.vercel.app/reset-password`).
 
+**JWT lifetime:** In **Authentication → Settings** (or **Project Settings → API**), the default access token lifetime is **not** one minute. If sessions feel short, check **JWT expiry** / **Time-boxed sessions** in the dashboard — the portal uses `autoRefreshToken: true` in code; very short expiry must be relaxed in Supabase, not only in the app.
+
 ## 7. Storage
 
 Migration creates private bucket `case-files`. Policies allow admins to upload and assigned users + admins to download via signed URLs (handled in the app).

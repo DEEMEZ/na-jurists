@@ -43,11 +43,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       return;
     }
-    setUser({
+    const next: AuthUser = {
       id: p.id,
       email: p.email,
       role: p.role as "ADMIN" | "CLIENT",
-    });
+    };
+    // Avoid new object identity on silent token refresh → stops /cases re-fetch loops.
+    setUser((prev) =>
+      prev &&
+      prev.id === next.id &&
+      prev.email === next.email &&
+      prev.role === next.role
+        ? prev
+        : next,
+    );
   }, []);
 
   useEffect(() => {
@@ -62,7 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const sb = getSupabase();
     const {
       data: { subscription },
-    } = sb.auth.onAuthStateChange(() => {
+    } = sb.auth.onAuthStateChange((event) => {
+      // TOKEN_REFRESHED fires often; profile row does not change — skip to avoid re-renders + refetch loops.
+      if (event === "TOKEN_REFRESHED") return;
       void loadProfile();
     });
     return () => {

@@ -32,7 +32,8 @@ export function CasesListPage() {
       .then((data) => setCases(data.cases))
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [user]);
+    // Stable deps: `user` object identity changes on every auth tick otherwise.
+  }, [user?.id, user?.role]);
 
   if (!user) return null;
 
