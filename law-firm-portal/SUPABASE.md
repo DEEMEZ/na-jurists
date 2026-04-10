@@ -16,6 +16,8 @@ Or use the CLI: `supabase db push` (with project linked).
 
 If triggers fail on `EXECUTE FUNCTION`, try `EXECUTE PROCEDURE` instead (Postgres version differences).
 
+**Public website (`/api/cases`) without `service_role` on Vercel:** after the core migration, run **`supabase/migrations/20260410180000_cases_public_website_anon_read.sql`** in the SQL Editor (or append to your push). It lets the **anon** key read only rows with `display_on_website = true` and `archived = false`. The Next.js app then uses **`NEXT_PUBLIC_SUPABASE_URL`** + **`NEXT_PUBLIC_SUPABASE_ANON_KEY`** from committed `.env.production` — no extra Vercel secrets required for that feature.
+
 ## 3. First admin user
 
 ### Option A — from this repo (script)
@@ -64,6 +66,24 @@ The function reads **`SERVICE_ROLE_KEY` first**, then falls back to **`SUPABASE_
 **401 “Invalid JWT” on invoke (but login and `/rest` work):** The Edge **gateway** can reject tokens when your project uses **new JWT signing keys (e.g. ES256)**. This repo sets **`verify_jwt = false`** for `portal-admin-users` in `supabase/config.toml` and relies on **`auth.getUser()` + ADMIN check inside the function**. Redeploy after changing config:
 
 `npx supabase functions deploy portal-admin-users --use-api`
+
+### Client email alerts (status / messages / hearings)
+
+When an **admin** updates matter status, posts a **message**, or adds a **hearing**, the app invokes the **`portal-notify-email`** Edge Function so assigned **clients** can get an email (in addition to in-app notifications where applicable).
+
+1. Deploy:
+
+   ```bash
+   npx supabase functions deploy portal-notify-email --use-api
+   ```
+
+2. Secrets (same project as `portal-admin-users`):
+
+   - **`SERVICE_ROLE_KEY`** (or `SUPABASE_SERVICE_ROLE_KEY`) — required; used to load recipient profile emails.
+   - **`RESEND_API_KEY`** — [Resend](https://resend.com) API key. If omitted, the function logs the would-be send and returns `{ skipped: true }` (no error).
+   - **`NOTIFY_EMAIL_FROM`** or **`EMAIL_FROM`** — sender, e.g. `N&A Jurists <portal@yourdomain.com>`. Resend requires a verified domain (or use their test sender for development).
+
+`verify_jwt` is **false** in `supabase/config.toml` for this function; the handler still requires a valid **Bearer** token and **`profiles.role === 'ADMIN'`**.
 
 ## 5. Frontend environment
 

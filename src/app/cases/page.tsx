@@ -185,6 +185,7 @@ function CasesContentWithParams() {
                 <CasesFilter
                   onFilter={handleFilter}
                   totalCases={totalCases}
+                  filterValues={filters}
                 />
               </Suspense>
             </div>

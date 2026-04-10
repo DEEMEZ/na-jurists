@@ -125,7 +125,7 @@ export function DashboardPage() {
           sub: "Next 30 days",
           icon: CalendarDays,
           gradient: "from-[#2c415e] to-[#4a6789]",
-          to: "/cases",
+          to: "/hearings",
         },
         {
           label: "Unread notifications",
@@ -331,7 +331,7 @@ export function DashboardPage() {
             Your upcoming hearings
           </h2>
           <p className="mt-1 text-sm text-text-light">
-            Open the matter for full details, documents, and messages.
+            See all hearings on the hearings page; open a matter when you need documents or messages.
           </p>
           <ul className="mt-4 divide-y divide-border-subtle text-sm">
             {clientStats.nextHearings!.map((h) => (
@@ -349,21 +349,12 @@ export function DashboardPage() {
                   </p>
                   <p className="text-text-light">{h.caseTitle}</p>
                 </div>
-                {h.caseId ? (
-                  <Link
-                    to={`/cases/${h.caseId}`}
-                    className="shrink-0 text-sm font-semibold text-accent-blue hover:underline"
-                  >
-                    View matter
-                  </Link>
-                ) : (
-                  <Link
-                    to="/cases"
-                    className="shrink-0 text-sm font-semibold text-accent-blue hover:underline"
-                  >
-                    View matter
-                  </Link>
-                )}
+                <Link
+                  to="/hearings"
+                  className="shrink-0 text-sm font-semibold text-accent-blue hover:underline"
+                >
+                  All hearings
+                </Link>
               </li>
             ))}
           </ul>
@@ -451,13 +442,21 @@ export function DashboardPage() {
                 </p>
               </div>
             </div>
-            <div className="mt-6">
+            <div className="mt-6 flex flex-wrap gap-2">
               <Link
                 to="/cases"
                 className="portal-link-chip inline-flex rounded-xl bg-primary-navy px-4 py-2.5 text-sm font-semibold text-background-white shadow-sm hover:bg-secondary-navy hover:shadow-md"
               >
                 View cases
               </Link>
+              {user?.role === "CLIENT" && (
+                <Link
+                  to="/hearings"
+                  className="portal-link-chip inline-flex rounded-xl border border-border-subtle bg-background-white px-4 py-2.5 text-sm font-semibold text-secondary-navy shadow-sm hover:bg-background-light"
+                >
+                  Hearings
+                </Link>
+              )}
             </div>
           </div>
         </article>

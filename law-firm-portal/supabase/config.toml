@@ -5,3 +5,7 @@ project_id = "local-or-dashboard-id"
 # This function still enforces auth: createClient + auth.getUser() + profiles.role === ADMIN.
 [functions.portal-admin-users]
 verify_jwt = false
+
+# Same as portal-admin-users: gateway JWT check can 401 with some key setups; auth is enforced in the function.
+[functions.portal-notify-email]
+verify_jwt = false

@@ -19,6 +19,12 @@ export interface CasesFilterProps {
     subject: string;
   }) => void;
   totalCases: number;
+  /** Active filters from parent/URL so dropdowns stay in sync after pagination or remount */
+  filterValues: {
+    searchQuery: string;
+    court: string;
+    subject: string;
+  };
 }
 
 export interface CasesListProps {

@@ -1,11 +1,17 @@
 // CasesFilter.tsx
 import { CasesFilterProps } from '@/types/LegalCase';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const CasesFilter = ({ onFilter, totalCases }: CasesFilterProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [court, setCourt] = useState('');
-  const [subject, setSubject] = useState('');
+const CasesFilter = ({ onFilter, totalCases, filterValues }: CasesFilterProps) => {
+  const [searchQuery, setSearchQuery] = useState(filterValues.searchQuery);
+  const [court, setCourt] = useState(filterValues.court);
+  const [subject, setSubject] = useState(filterValues.subject);
+
+  useEffect(() => {
+    setSearchQuery(filterValues.searchQuery);
+    setCourt(filterValues.court);
+    setSubject(filterValues.subject);
+  }, [filterValues.searchQuery, filterValues.court, filterValues.subject]);
 
   const courts = [
     'Supreme Court',

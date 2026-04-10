@@ -4,23 +4,58 @@ import path from 'path';
 import { LegalCase } from '@/types/LegalCase';
 import { createClient } from '@supabase/supabase-js';
 
+/** Portal-published cases change when admins toggle visibility; avoid long-lived CDN cache of empty merges. */
+export const dynamic = 'force-dynamic';
+
 let cachedCases: LegalCase[] | null = null;
+let warnedMissingPortalEnv = false;
+
+function getSupabaseUrl(): string | undefined {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    process.env.VITE_SUPABASE_URL
+  );
+}
+
+/** Prefer anon key + RLS (migration `cases_select_public_website`); else service_role fallback. */
+function createPortalCasesSupabase() {
+  const url = getSupabaseUrl();
+  if (!url) return null;
+  const anonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.VITE_SUPABASE_ANON_KEY ??
+    process.env.SUPABASE_ANON_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = anonKey ?? serviceKey;
+  if (!key) return null;
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 /** Matters marked “display on website” in the law firm portal (Supabase). */
 async function loadPortalWebsiteCases(): Promise<LegalCase[]> {
-  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return [];
-
-  const sb = createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const sb = createPortalCasesSupabase();
+  if (!sb) {
+    if (process.env.NODE_ENV === 'development' && !warnedMissingPortalEnv) {
+      warnedMissingPortalEnv = true;
+      console.warn(
+        '[api/cases] Add NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY (or VITE_* in .env.production) and run SQL migration `20260410180000_cases_public_website_anon_read.sql` — or set SUPABASE_SERVICE_ROLE_KEY. Otherwise portal “display on website” cases will not merge.',
+      );
+    }
+    return [];
+  }
   const { data, error } = await sb
     .from('cases')
     .select('id,title,reference,status')
     .eq('display_on_website', true)
     .eq('archived', false);
-  if (error || !data?.length) return [];
+  if (error) {
+    console.error('[api/cases] loadPortalWebsiteCases:', error.message);
+    return [];
+  }
+  if (!data?.length) return [];
 
   return data.map((row) => ({
     id: String(row.id),
@@ -34,12 +69,8 @@ async function loadPortalWebsiteCases(): Promise<LegalCase[]> {
 }
 
 async function loadPortalCaseById(id: string): Promise<LegalCase | null> {
-  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return null;
-  const sb = createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const sb = createPortalCasesSupabase();
+  if (!sb) return null;
   const { data, error } = await sb
     .from('cases')
     .select('id,title,reference,status')
@@ -162,7 +193,7 @@ export async function GET(request: NextRequest) {
       {
         headers: {
           'Cache-Control':
-            'public, s-maxage=3600, stale-while-revalidate=7200',
+            'public, s-maxage=120, stale-while-revalidate=300',
         },
       }
     );
@@ -187,7 +218,7 @@ export async function GET(request: NextRequest) {
     {
       headers: {
         'Cache-Control':
-          'public, s-maxage=3600, stale-while-revalidate=7200',
+          'public, s-maxage=120, stale-while-revalidate=300',
       },
     }
   );

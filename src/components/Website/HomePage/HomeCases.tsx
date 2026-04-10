@@ -157,6 +157,7 @@ export default function HomeCases() {
               <CasesFilter
                 onFilter={handleFilter}
                 totalCases={totalCases}
+                filterValues={filters}
               />
             </div>
 

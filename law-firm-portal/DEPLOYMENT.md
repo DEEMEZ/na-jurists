@@ -73,6 +73,9 @@ The main website navbar includes a **Client portal** button. Set in the Next.js 
 |----------|-------------|
 | `NEXT_PUBLIC_PORTAL_URL` | Base URL of the portal UI (no trailing slash), e.g. `https://portal.example.com`. Defaults to `http://localhost:5173`. Sign-in uses `{NEXT_PUBLIC_PORTAL_URL}/login`. |
 
+| `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` | In root **`.env.production`** (committed): enough for `/api/cases` to merge portal matters when **SQL policy** `cases_select_public_website` is applied (`supabase/migrations/20260410180000_cases_public_website_anon_read.sql`). **No Vercel env UI needed** if you deploy with that file. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Optional legacy: server-only merge without the anon RLS migration. Prefer anon + migration so production needs no extra secrets. |
+
 Copy root `.env.example` or add `NEXT_PUBLIC_PORTAL_URL` to `.env.local` for local dev.
 
 ### Build and host

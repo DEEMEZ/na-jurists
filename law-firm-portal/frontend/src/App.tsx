@@ -29,6 +29,11 @@ const ClientNotificationsPage = lazy(() =>
     default: m.ClientNotificationsPage,
   })),
 );
+const ClientHearingsPage = lazy(() =>
+  import("@/pages/ClientHearingsPage").then((m) => ({
+    default: m.ClientHearingsPage,
+  })),
+);
 
 export default function App() {
   return (
@@ -49,6 +54,7 @@ export default function App() {
         <Route path="/cases/new" element={<CaseCreatePage />} />
         <Route path="/cases/:caseId" element={<CaseDetailPage />} />
         <Route path="/notifications" element={<ClientNotificationsPage />} />
+        <Route path="/hearings" element={<ClientHearingsPage />} />
         <Route path="/admin/alerts" element={<AdminAlertsPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
       </Route>

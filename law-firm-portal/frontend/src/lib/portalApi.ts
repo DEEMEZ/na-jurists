@@ -103,9 +103,9 @@ function rowCaseId(row: Record<string, unknown>): string {
   return cid != null ? String(cid) : "";
 }
 
-async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+/** Fresh access token for Edge Function invokes (JWT gateway rejects stale tokens). */
+async function getFreshAccessToken(): Promise<string | null> {
   const sb = getSupabase();
-  // Edge Functions with verify_jwt reject expired/stale tokens; refresh before invoke.
   const { data: ref } = await sb.auth.refreshSession();
   let accessToken = ref.session?.access_token;
   if (!accessToken) {
@@ -114,6 +114,37 @@ async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string
     } = await sb.auth.getSession();
     accessToken = session?.access_token;
   }
+  return accessToken ?? null;
+}
+
+/**
+ * Email assigned clients when an admin action occurs (status, message, hearing).
+ * Requires deployed `portal-notify-email` + Resend secrets (see law-firm-portal/DEPLOYMENT.md).
+ */
+async function notifyClientByEmail(payload: {
+  recipientUserId: string;
+  subject: string;
+  text: string;
+}): Promise<void> {
+  try {
+    const sb = getSupabase();
+    const accessToken = await getFreshAccessToken();
+    if (!accessToken) return;
+    const { error } = await sb.functions.invoke("portal-notify-email", {
+      body: payload,
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (error) {
+      console.warn("[portal-notify-email]", error.message);
+    }
+  } catch (e) {
+    console.warn("[portal-notify-email]", e instanceof Error ? e.message : e);
+  }
+}
+
+async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const sb = getSupabase();
+  const accessToken = await getFreshAccessToken();
   if (!accessToken) {
     throw new Error("Your session expired. Sign out and sign in again.");
   }
@@ -439,23 +470,96 @@ export async function portalApiJson(
     const { sb, uid } = await requireProfile();
     const { data: assigns, error: e1 } = await sb
       .from("case_assignments")
-      .select(
-        "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived)",
-      )
+      .select("case_id")
       .eq("user_id", uid);
     if (e1) throw new Error(e1.message);
-    const cases = (assigns ?? []).map((a: Record<string, unknown>) => {
-      const c = a.cases as Record<string, unknown> | null;
-      const cid = (a.case_id as string | null) ?? "";
-      return {
-        id: (c?.id as string | undefined) ?? cid,
-        title: (c?.title as string | undefined) ?? "Matter",
-        reference: (c?.reference as string | null | undefined) ?? null,
-        status: (c?.status as string | undefined) ?? "open",
-        archived: Boolean(c?.archived),
-      };
-    }).filter((c) => c.id.length > 0);
+    const caseIds = [
+      ...new Set(
+        (assigns ?? [])
+          .map((a: { case_id: string | null }) => a.case_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    if (caseIds.length === 0) {
+      return { cases: [] };
+    }
+    const { data: rows, error: e2 } = await sb
+      .from("cases")
+      .select("id, title, reference, status, archived")
+      .in("id", caseIds)
+      .order("updated_at", { ascending: false });
+    if (e2) throw new Error(e2.message);
+    const cases = (rows ?? []).map((c: Record<string, unknown>) => ({
+      id: String(c.id),
+      title: (c.title as string) ?? "Matter",
+      reference: (c.reference as string | null) ?? null,
+      status: (c.status as string) ?? "open",
+      archived: Boolean(c.archived),
+    }));
     return { cases };
+  }
+
+  if (pathname === "/api/v1/me/hearings" && m === "GET") {
+    const { sb, uid, role } = await requireProfile();
+    if (role !== "CLIENT") {
+      throw new Error("Forbidden");
+    }
+    const { data: assigns, error: e1 } = await sb
+      .from("case_assignments")
+      .select("case_id")
+      .eq("user_id", uid);
+    if (e1) throw new Error(e1.message);
+    const caseIds = [
+      ...new Set(
+        (assigns ?? [])
+          .map((a: { case_id: string | null }) => a.case_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    if (caseIds.length === 0) {
+      return { hearings: [] };
+    }
+    const { data: hearRows, error: e2 } = await sb
+      .from("hearings")
+      .select("id, scheduled_at, venue, notes, case_id")
+      .in("case_id", caseIds)
+      .order("scheduled_at", { ascending: true })
+      .limit(200);
+    if (e2) throw new Error(e2.message);
+    const hCaseIds = [
+      ...new Set(
+        (hearRows ?? [])
+          .map((h: Record<string, unknown>) => String(h.case_id ?? ""))
+          .filter((id) => id.length > 0),
+      ),
+    ];
+    const { data: caseRows } =
+      hCaseIds.length === 0
+        ? { data: [] as Record<string, unknown>[] }
+        : await sb.from("cases").select("id, title, reference").in("id", hCaseIds);
+    const caseById = new Map(
+      (caseRows ?? []).map((c: Record<string, unknown>) => [
+        String(c.id),
+        {
+          title: String(c.title ?? ""),
+          reference: (c.reference as string | null) ?? null,
+        },
+      ]),
+    );
+    const hearings = (hearRows ?? []).map((h: Record<string, unknown>) => {
+      const caseId = String(h.case_id ?? "");
+      const meta = caseById.get(caseId);
+      return {
+        id: h.id as string,
+        caseId,
+        scheduledAt: h.scheduled_at as string,
+        venue: (h.venue as string | null) ?? null,
+        notes: (h.notes as string | null) ?? null,
+        caseTitle: meta?.title ?? "Matter",
+        caseReference: meta?.reference ?? null,
+      };
+    });
+    return { hearings };
   }
 
   const meCase = pathname.match(/^\/api\/v1\/me\/cases\/([^/]+)$/);
@@ -859,12 +963,24 @@ export async function portalApiJson(
     const { data: assigns } = await x.sb.from("case_assignments").select("user_id").eq("case_id", caseId);
     const title = "Case status updated";
     const bodyText = `Status changed from "${fromStatus}" to "${toStatus}".${b.note ? ` Note: ${b.note}` : ""}`;
+    const { data: caseRow } = await x.sb
+      .from("cases")
+      .select("title, reference")
+      .eq("id", caseId)
+      .maybeSingle();
+    const matterLabel = [caseRow?.reference, caseRow?.title].filter(Boolean).join(" — ") || "your matter";
     for (const a of assigns ?? []) {
+      const assignUserId = (a as { user_id: string }).user_id;
       await x.sb.from("notifications").insert({
-        user_id: (a as { user_id: string }).user_id,
+        user_id: assignUserId,
         case_id: caseId,
         title,
         body: bodyText,
+      });
+      void notifyClientByEmail({
+        recipientUserId: assignUserId,
+        subject: `[N&A Jurists] ${title}`,
+        text: `Update for ${matterLabel}:\n\n${bodyText}\n\nSign in to the client portal to view your matter.`,
       });
     }
     const { data: updated } = await x.sb.from("cases").select("*").eq("id", caseId).single();
@@ -901,6 +1017,31 @@ export async function portalApiJson(
       .select()
       .single();
     if (error) throw new Error(error.message);
+    const caseId = adminHearings[1];
+    const { data: caseRow } = await x.sb
+      .from("cases")
+      .select("title, reference")
+      .eq("id", caseId)
+      .maybeSingle();
+    const matterLabel = [caseRow?.reference, caseRow?.title].filter(Boolean).join(" — ") || "your matter";
+    const whenStr = new Date((data as { scheduled_at: string }).scheduled_at).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+    const venueStr = (data as { venue?: string | null }).venue
+      ? `\nVenue: ${(data as { venue: string }).venue}`
+      : "";
+    const { data: assigns } = await x.sb.from("case_assignments").select("user_id").eq("case_id", caseId);
+    for (const a of assigns ?? []) {
+      const assignUserId = (a as { user_id: string }).user_id;
+      const { data: prof } = await x.sb.from("profiles").select("role").eq("id", assignUserId).maybeSingle();
+      if ((prof as { role?: string } | null)?.role !== "CLIENT") continue;
+      void notifyClientByEmail({
+        recipientUserId: assignUserId,
+        subject: `[N&A Jurists] Hearing scheduled — ${matterLabel}`,
+        text: `A hearing was scheduled for ${matterLabel}.\n\nDate & time: ${whenStr}${venueStr}\n\nSign in to the client portal for full details.`,
+      });
+    }
     return { hearing: data };
   }
 
@@ -1018,6 +1159,28 @@ export async function portalApiJson(
       .single();
     if (error) throw new Error(error.message);
     const s = (data as Record<string, unknown>).profiles as { email: string; role: string };
+    if (x.role === "ADMIN") {
+      const caseId = caseMsgs[1];
+      const { data: caseRow } = await x.sb
+        .from("cases")
+        .select("title, reference")
+        .eq("id", caseId)
+        .maybeSingle();
+      const matterLabel = [caseRow?.reference, caseRow?.title].filter(Boolean).join(" — ") || "your matter";
+      const preview =
+        (b.body ?? "").length > 400 ? `${(b.body ?? "").slice(0, 400)}…` : (b.body ?? "");
+      const { data: assigns } = await x.sb.from("case_assignments").select("user_id").eq("case_id", caseId);
+      for (const a of assigns ?? []) {
+        const assignUserId = (a as { user_id: string }).user_id;
+        const { data: prof } = await x.sb.from("profiles").select("role").eq("id", assignUserId).maybeSingle();
+        if ((prof as { role?: string } | null)?.role !== "CLIENT") continue;
+        void notifyClientByEmail({
+          recipientUserId: assignUserId,
+          subject: `[N&A Jurists] New message — ${matterLabel}`,
+          text: `Your legal team sent a message regarding ${matterLabel}:\n\n${preview}\n\nSign in to the client portal to read and reply.`,
+        });
+      }
+    }
     return {
       message: {
         id: (data as Record<string, unknown>).id,

@@ -88,6 +88,12 @@ export function PortalHeader() {
                 <Link to="/cases" className={linkClass(navActive("/cases"))}>
                   Cases
                 </Link>
+                <Link
+                  to="/hearings"
+                  className={linkClass(navActive("/hearings"))}
+                >
+                  Hearings
+                </Link>
                 <ClientNotificationDropdown />
               </>
             )}
@@ -186,6 +192,13 @@ export function PortalHeader() {
                   onClick={closeMobile}
                 >
                   Cases
+                </Link>
+                <Link
+                  to="/hearings"
+                  className={`${mobileRowClass} ${navActive("/hearings") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
+                  onClick={closeMobile}
+                >
+                  Hearings
                 </Link>
               </>
             )}
