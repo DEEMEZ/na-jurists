@@ -64,6 +64,18 @@ export function PortalHeader() {
                   Cases
                 </Link>
                 <Link
+                  to="/admin/hearings"
+                  className={linkClass(navActive("/admin/hearings"))}
+                >
+                  Upcoming hearings
+                </Link>
+                <Link
+                  to="/admin/messages"
+                  className={linkClass(navActive("/admin/messages"))}
+                >
+                  Client messages
+                </Link>
+                <Link
                   to="/admin/alerts"
                   className={linkClass(navActive("/admin/alerts"))}
                 >
@@ -160,6 +172,20 @@ export function PortalHeader() {
                   onClick={closeMobile}
                 >
                   Cases
+                </Link>
+                <Link
+                  to="/admin/hearings"
+                  className={`${mobileRowClass} ${navActive("/admin/hearings") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
+                  onClick={closeMobile}
+                >
+                  Upcoming hearings
+                </Link>
+                <Link
+                  to="/admin/messages"
+                  className={`${mobileRowClass} ${navActive("/admin/messages") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
+                  onClick={closeMobile}
+                >
+                  Client messages
                 </Link>
                 <Link
                   to="/admin/alerts"

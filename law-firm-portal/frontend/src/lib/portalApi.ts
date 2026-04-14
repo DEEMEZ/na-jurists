@@ -802,6 +802,122 @@ export async function portalApiJson(
     };
   }
 
+  /** Same date window as `upcomingHearings30d` on admin dashboard — list those hearings (not “missing date” alerts). */
+  if (pathname === "/api/v1/admin/hearings/upcoming-30d" && m === "GET") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const { sb } = x;
+    const now = new Date();
+    const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const nowIso = now.toISOString();
+    const in30Iso = in30.toISOString();
+    const { data: hearRows, error: e2 } = await sb
+      .from("hearings")
+      .select("id, scheduled_at, venue, notes, case_id")
+      .gte("scheduled_at", nowIso)
+      .lte("scheduled_at", in30Iso)
+      .order("scheduled_at", { ascending: true })
+      .limit(500);
+    if (e2) throw new Error(e2.message);
+    const hCaseIds = [
+      ...new Set(
+        (hearRows ?? [])
+          .map((h: Record<string, unknown>) => String(h.case_id ?? ""))
+          .filter((id) => id.length > 0),
+      ),
+    ];
+    const { data: caseRows } =
+      hCaseIds.length === 0
+        ? { data: [] as Record<string, unknown>[] }
+        : await sb.from("cases").select("id, title, reference, archived").in("id", hCaseIds);
+    const caseById = new Map(
+      (caseRows ?? []).map((c: Record<string, unknown>) => [
+        String(c.id),
+        {
+          title: String(c.title ?? ""),
+          reference: (c.reference as string | null) ?? null,
+          archived: Boolean(c.archived),
+        },
+      ]),
+    );
+    const hearings = (hearRows ?? []).map((h: Record<string, unknown>) => {
+      const caseId = String(h.case_id ?? "");
+      const meta = caseById.get(caseId);
+      return {
+        id: h.id as string,
+        caseId,
+        scheduledAt: h.scheduled_at as string,
+        venue: (h.venue as string | null) ?? null,
+        notes: (h.notes as string | null) ?? null,
+        caseTitle: meta?.title ?? "Matter",
+        caseReference: meta?.reference ?? null,
+        caseArchived: meta?.archived ?? false,
+      };
+    });
+    return { hearings };
+  }
+
+  /** Client-authored case messages in the last 7 days — matches dashboard `recentClientMessages`. */
+  if (pathname === "/api/v1/admin/messages/client-recent" && m === "GET") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const { sb } = x;
+    const sevenAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const sevenAgoIso = sevenAgo.toISOString();
+    const { data: clientProfiles, error: ep } = await sb
+      .from("profiles")
+      .select("id")
+      .eq("role", "CLIENT");
+    if (ep) throw new Error(ep.message);
+    const cids = (clientProfiles ?? []).map((p: { id: string }) => p.id);
+    if (cids.length === 0) {
+      return { messages: [] };
+    }
+    const { data: rows, error } = await sb
+      .from("messages")
+      .select("id, body, created_at, case_id, profiles!messages_sender_id_fkey(email, role)")
+      .in("sender_id", cids)
+      .gte("created_at", sevenAgoIso)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    const caseIds = [
+      ...new Set(
+        (rows ?? [])
+          .map((r: Record<string, unknown>) => String(r.case_id ?? ""))
+          .filter((id) => id.length > 0),
+      ),
+    ];
+    const { data: caseRows } =
+      caseIds.length === 0
+        ? { data: [] as Record<string, unknown>[] }
+        : await sb.from("cases").select("id, title, reference").in("id", caseIds);
+    const caseById = new Map(
+      (caseRows ?? []).map((c: Record<string, unknown>) => [
+        String(c.id),
+        {
+          title: String(c.title ?? ""),
+          reference: (c.reference as string | null) ?? null,
+        },
+      ]),
+    );
+    const messages = (rows ?? []).map((row: Record<string, unknown>) => {
+      const s = row.profiles as { email: string; role: string };
+      const caseId = String(row.case_id ?? "");
+      const meta = caseById.get(caseId);
+      return {
+        id: row.id as string,
+        caseId,
+        body: String(row.body ?? ""),
+        createdAt: row.created_at as string,
+        senderEmail: s?.email ?? "",
+        caseTitle: meta?.title ?? "Matter",
+        caseReference: meta?.reference ?? null,
+      };
+    });
+    return { messages };
+  }
+
   if (pathname === "/api/v1/admin/clients" && m === "GET") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");

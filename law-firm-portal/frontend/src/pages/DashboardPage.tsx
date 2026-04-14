@@ -74,6 +74,7 @@ export function DashboardPage() {
           sub: "Non-archived cases",
           icon: Briefcase,
           gradient: "from-[#1a2b3d] to-[#2c415e]",
+          to: "/cases",
         },
         {
           label: "Upcoming hearings",
@@ -81,6 +82,7 @@ export function DashboardPage() {
           sub: "Next 30 days",
           icon: CalendarDays,
           gradient: "from-[#2c415e] to-[#4a6789]",
+          to: "/admin/hearings",
         },
         {
           label: "Need hearing date",
@@ -88,6 +90,7 @@ export function DashboardPage() {
           sub: "Open matters, no future hearing",
           icon: MessageSquare,
           gradient: "from-[#4a6789] to-[#5a7a9b]",
+          to: "/admin/alerts",
         },
         {
           label: "Client messages",
@@ -95,6 +98,7 @@ export function DashboardPage() {
           sub: "Last 7 days",
           icon: Mail,
           gradient: "from-[#5a7a9b] to-[#6b8bab]",
+          to: "/admin/messages",
         },
       ];
     }
@@ -144,6 +148,7 @@ export function DashboardPage() {
         sub: "Loading…",
         icon: Briefcase,
         gradient: "from-[#1a2b3d] to-[#2c415e]",
+        to: "/cases",
       },
       {
         label: "Upcoming hearings",
@@ -151,6 +156,7 @@ export function DashboardPage() {
         sub: "Next 30 days",
         icon: CalendarDays,
         gradient: "from-[#2c415e] to-[#4a6789]",
+        to: "/admin/hearings",
       },
       {
         label: "Need hearing date",
@@ -158,6 +164,7 @@ export function DashboardPage() {
         sub: "—",
         icon: MessageSquare,
         gradient: "from-[#4a6789] to-[#5a7a9b]",
+        to: "/admin/alerts",
       },
       {
         label: "Client messages",
@@ -165,6 +172,7 @@ export function DashboardPage() {
         sub: "Last 7 days",
         icon: Mail,
         gradient: "from-[#5a7a9b] to-[#6b8bab]",
+        to: "/admin/messages",
       },
     ];
     const loadingClient = [

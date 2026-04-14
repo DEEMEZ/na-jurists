@@ -58,6 +58,62 @@ router.get("/dashboard", async (_req, res) => {
   });
 });
 
+/** Hearings in the next 30 days (matches dashboard `upcomingHearings30d`). */
+router.get("/hearings/upcoming-30d", async (_req, res) => {
+  const now = new Date();
+  const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const rows = await prisma.hearing.findMany({
+    where: {
+      scheduledAt: { gte: now, lte: in30 },
+      case: { archived: false },
+    },
+    orderBy: { scheduledAt: "asc" },
+    include: {
+      case: { select: { id: true, title: true, reference: true, archived: true } },
+    },
+  });
+  res.json({
+    hearings: rows.map((h) => ({
+      id: h.id,
+      caseId: h.caseId,
+      scheduledAt: h.scheduledAt.toISOString(),
+      venue: h.venue,
+      notes: h.notes,
+      caseTitle: h.case.title,
+      caseReference: h.case.reference,
+      caseArchived: h.case.archived,
+    })),
+  });
+});
+
+/** Case messages from clients in the last 7 days (matches dashboard `recentClientMessages`). */
+router.get("/messages/client-recent", async (_req, res) => {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const rows = await prisma.message.findMany({
+    where: {
+      sender: { role: Role.CLIENT },
+      createdAt: { gte: sevenDaysAgo },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 200,
+    include: {
+      case: { select: { id: true, title: true, reference: true } },
+      sender: { select: { email: true } },
+    },
+  });
+  res.json({
+    messages: rows.map((m) => ({
+      id: m.id,
+      caseId: m.caseId,
+      body: m.body,
+      createdAt: m.createdAt.toISOString(),
+      senderEmail: m.sender.email,
+      caseTitle: m.case.title,
+      caseReference: m.case.reference,
+    })),
+  });
+});
+
 router.get("/clients", async (_req, res) => {
   const clients = await prisma.user.findMany({
     where: { role: Role.CLIENT, disabled: false },

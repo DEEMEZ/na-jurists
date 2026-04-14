@@ -61,6 +61,22 @@ export function PortalFooter() {
                 <>
                   <li>
                     <Link
+                      to="/admin/hearings"
+                      className="transition-colors hover:text-white"
+                    >
+                      Upcoming hearings
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/admin/messages"
+                      className="transition-colors hover:text-white"
+                    >
+                      Client messages
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
                       to="/admin/alerts"
                       className="transition-colors hover:text-white"
                     >

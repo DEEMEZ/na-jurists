@@ -9,6 +9,8 @@ import { CasesListPage } from "@/pages/CasesListPage";
 import { CaseCreatePage } from "@/pages/CaseCreatePage";
 import { CaseDetailPage } from "@/pages/CaseDetailPage";
 import { AdminAlertsPage } from "@/pages/AdminAlertsPage";
+import { AdminHearingsPage } from "@/pages/AdminHearingsPage";
+import { AdminClientMessagesPage } from "@/pages/AdminClientMessagesPage";
 import { AdminUsersPage } from "@/pages/AdminUsersPage";
 import { ClientNotificationsPage } from "@/pages/ClientNotificationsPage";
 import { ClientHearingsPage } from "@/pages/ClientHearingsPage";
@@ -33,6 +35,8 @@ export default function App() {
         <Route path="/cases/:caseId" element={<CaseDetailPage />} />
         <Route path="/notifications" element={<ClientNotificationsPage />} />
         <Route path="/hearings" element={<ClientHearingsPage />} />
+        <Route path="/admin/hearings" element={<AdminHearingsPage />} />
+        <Route path="/admin/messages" element={<AdminClientMessagesPage />} />
         <Route path="/admin/alerts" element={<AdminAlertsPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
       </Route>
