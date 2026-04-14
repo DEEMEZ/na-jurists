@@ -10,7 +10,8 @@ const inputClass =
 export function LoginPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { user, ready, login } = useAuth();
+  const { user, ready, login, signUp } = useAuth();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -34,11 +35,26 @@ export function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
+      if (mode === "signup") {
+        if (password.length < 8) {
+          setError("Password must be at least 8 characters.");
+          return;
+        }
+        const { needsEmailConfirmation } = await signUp(email, password);
+        showToast(
+          needsEmailConfirmation
+            ? "Check your email to confirm your account, then sign in."
+            : "Account created. Sign in with your email and password.",
+        );
+        setMode("signin");
+        setPassword("");
+        return;
+      }
       await login(email, password);
       showToast("Signed in successfully.");
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      setError(err instanceof Error ? err.message : mode === "signup" ? "Sign up failed" : "Sign in failed");
     } finally {
       setSubmitting(false);
     }
@@ -48,13 +64,15 @@ export function LoginPage() {
     <AuthShell>
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-blue">
-          Welcome back
+          {mode === "signup" ? "New client" : "Welcome back"}
         </p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-primary-navy">
-          Sign in
+          {mode === "signup" ? "Create account" : "Sign in"}
         </h1>
         <p className="mt-2 text-sm text-text-light">
-          Access your cases and messages securely.
+          {mode === "signup"
+            ? "Use the email where you want case updates and messages."
+            : "Access your cases and messages securely."}
         </p>
       </div>
 
@@ -96,7 +114,7 @@ export function LoginPage() {
             id="password"
             name="password"
             type="password"
-            autoComplete="current-password"
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={inputClass}
@@ -108,16 +126,55 @@ export function LoginPage() {
           disabled={submitting}
           className="w-full rounded-xl bg-primary-navy px-4 py-3 text-sm font-semibold text-background-white shadow-md transition-all duration-200 hover:bg-secondary-navy hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-blue disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Signing in…" : "Sign in"}
+          {submitting
+            ? mode === "signup"
+              ? "Creating account…"
+              : "Signing in…"
+            : mode === "signup"
+              ? "Create account"
+              : "Sign in"}
         </button>
-        <p className="text-center text-sm">
-          <Link
-            to="/forgot-password"
-            className="font-medium text-accent-blue underline-offset-4 transition-colors hover:text-secondary-navy hover:underline"
-          >
-            Forgot password?
-          </Link>
+        <p className="text-center text-sm text-text-light">
+          {mode === "signup" ? (
+            <>
+              Already have an account?{" "}
+              <button
+                type="button"
+                className="font-medium text-accent-blue underline-offset-4 hover:text-secondary-navy hover:underline"
+                onClick={() => {
+                  setMode("signin");
+                  setError(null);
+                }}
+              >
+                Sign in
+              </button>
+            </>
+          ) : (
+            <>
+              New client?{" "}
+              <button
+                type="button"
+                className="font-medium text-accent-blue underline-offset-4 hover:text-secondary-navy hover:underline"
+                onClick={() => {
+                  setMode("signup");
+                  setError(null);
+                }}
+              >
+                Create an account
+              </button>
+            </>
+          )}
         </p>
+        {mode === "signin" && (
+          <p className="text-center text-sm">
+            <Link
+              to="/forgot-password"
+              className="font-medium text-accent-blue underline-offset-4 transition-colors hover:text-secondary-navy hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </p>
+        )}
       </form>
     </AuthShell>
   );

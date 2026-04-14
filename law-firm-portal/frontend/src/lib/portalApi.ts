@@ -12,8 +12,11 @@ async function edgeFunctionErrorMessage(error: Error): Promise<string> {
   try {
     const ct = res.headers.get("content-type") ?? "";
     if (ct.includes("application/json")) {
-      const j = (await res.json()) as { error?: string; message?: string };
-      if (typeof j?.error === "string") return j.error;
+      const j = (await res.json()) as { error?: string; message?: string; detail?: string };
+      if (typeof j?.error === "string") {
+        const d = typeof j?.detail === "string" ? j.detail.trim() : "";
+        return d ? `${j.error}: ${d}` : j.error;
+      }
       if (typeof j?.message === "string") return j.message;
     } else {
       const t = await res.text();
@@ -142,9 +145,18 @@ async function getFreshAccessToken(): Promise<string | null> {
   return accessToken ?? null;
 }
 
+type NotifyEmailFnResponse = {
+  ok?: boolean;
+  skipped?: boolean;
+  sent?: boolean;
+  reason?: string;
+  error?: string;
+  detail?: string;
+};
+
 /**
  * Email assigned clients when an admin action occurs (status, message, hearing).
- * Requires deployed `portal-notify-email` + Resend secrets (see law-firm-portal/DEPLOYMENT.md).
+ * Requires deployed `portal-notify-email` + secrets (see law-firm-portal/SUPABASE.md).
  */
 async function notifyClientByEmail(payload: {
   recipientUserId: string;
@@ -154,13 +166,40 @@ async function notifyClientByEmail(payload: {
   try {
     const sb = getSupabase();
     const accessToken = await getFreshAccessToken();
-    if (!accessToken) return;
-    const { error } = await sb.functions.invoke("portal-notify-email", {
+    if (!accessToken) {
+      console.warn(
+        "[portal-notify-email] No session token — email not sent. Sign in again as admin.",
+      );
+      return;
+    }
+    const { data, error } = await sb.functions.invoke("portal-notify-email", {
       body: payload,
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (error) {
-      console.warn("[portal-notify-email]", error.message);
+      const detail = await edgeFunctionErrorMessage(error);
+      console.warn("[portal-notify-email] invoke failed:", detail);
+      return;
+    }
+    const res = data as NotifyEmailFnResponse | null;
+    if (res?.skipped) {
+      console.warn(
+        "[portal-notify-email] Email not sent —",
+        res.reason ?? "skipped",
+        "| Add GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY (+ NOTIFY_EMAIL_FROM) in Supabase → Edge Functions → Secrets, then redeploy portal-notify-email.",
+      );
+      return;
+    }
+    if (res && res.ok === false) {
+      console.warn(
+        "[portal-notify-email]",
+        res.error ?? "Request failed",
+        res.detail ? `— ${res.detail}` : "",
+      );
+      return;
+    }
+    if (res?.sent) {
+      console.info("[portal-notify-email] sent:", payload.subject);
     }
   } catch (e) {
     console.warn("[portal-notify-email]", e instanceof Error ? e.message : e);
@@ -976,6 +1015,27 @@ export async function portalApiJson(
       );
     }
     const prof = (data as Record<string, unknown>).profiles as { id: string; email: string };
+    const caseId = assignPost[1];
+    const assignUserId = String(b.userId ?? "");
+    const { data: caseRow } = await x.sb
+      .from("cases")
+      .select("title, reference")
+      .eq("id", caseId)
+      .maybeSingle();
+    const matterLabel = [caseRow?.reference, caseRow?.title].filter(Boolean).join(" — ") || "a matter";
+    const assignTitle = "Matter assigned to you";
+    const assignBody = `You have been assigned to ${matterLabel}. Open the client portal to view documents, messages, and updates.`;
+    await x.sb.from("notifications").insert({
+      user_id: assignUserId,
+      case_id: caseId,
+      title: assignTitle,
+      body: assignBody,
+    });
+    void notifyClientByEmail({
+      recipientUserId: assignUserId,
+      subject: `[N&A Jurists] ${assignTitle} — ${matterLabel}`,
+      text: `${assignBody}\n\nSign in to the client portal to view your matter.`,
+    });
     return { assignment: { user: { id: prof.id, email: prof.email } } };
   }
 
@@ -1032,6 +1092,8 @@ export async function portalApiJson(
         title,
         body: bodyText,
       });
+      const { data: prof } = await x.sb.from("profiles").select("role").eq("id", assignUserId).maybeSingle();
+      if ((prof as { role?: string } | null)?.role !== "CLIENT") continue;
       void notifyClientByEmail({
         recipientUserId: assignUserId,
         subject: `[N&A Jurists] ${title}`,
