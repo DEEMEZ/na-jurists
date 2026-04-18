@@ -5,6 +5,10 @@ import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useToast } from "@/components/ui/ToastProvider";
 import { apiBlob, apiFetch, apiJson } from "@/lib/api";
 import { formatCaseStatus } from "@/lib/formatCaseStatus";
+import {
+  WEBSITE_CASE_COURTS,
+  WEBSITE_CASE_SUBJECTS,
+} from "@site/constants/caseTaxonomy";
 
 type Msg = {
   id: string;
@@ -32,6 +36,8 @@ type CaseDetail = {
   id: string;
   title: string;
   reference: string | null;
+  court?: string | null;
+  subject?: string | null;
   status: string;
   archived: boolean;
   displayOnWebsite?: boolean;
@@ -68,6 +74,8 @@ export function CaseDetailPage() {
   const [refEdit, setRefEdit] = useState("");
   const [archivedEdit, setArchivedEdit] = useState(false);
   const [displayOnWebEdit, setDisplayOnWebEdit] = useState(false);
+  const [courtEdit, setCourtEdit] = useState("");
+  const [subjectEdit, setSubjectEdit] = useState("");
 
   const loadCase = useCallback(async () => {
     if (!user?.id || !caseId) return;
@@ -81,6 +89,8 @@ export function CaseDetailPage() {
     setRefEdit(data.case.reference ?? "");
     setArchivedEdit(data.case.archived);
     setDisplayOnWebEdit(Boolean(data.case.displayOnWebsite));
+    setCourtEdit(data.case.court ?? "");
+    setSubjectEdit(data.case.subject ?? "");
   }, [caseId, user?.id, user?.role]);
 
   const loadMessages = useCallback(async () => {
@@ -171,6 +181,8 @@ export function CaseDetailPage() {
           reference: refEdit || null,
           archived: archivedEdit,
           displayOnWebsite: displayOnWebEdit,
+          court: courtEdit.trim() || null,
+          subject: subjectEdit.trim() || null,
         }),
       });
       await loadCase();
@@ -316,6 +328,13 @@ export function CaseDetailPage() {
             Ref: {c.reference ?? "—"} · Status: {formatCaseStatus(c.status)}
             {c.archived ? " · Archived" : ""}
           </p>
+          {(c.court || c.subject) && (
+            <p className="mt-1 text-sm text-text-light">
+              {c.court ? <>Court: {c.court}</> : null}
+              {c.court && c.subject ? " · " : null}
+              {c.subject ? <>Subject: {c.subject}</> : null}
+            </p>
+          )}
         </div>
       </div>
 
@@ -339,6 +358,36 @@ export function CaseDetailPage() {
                 className="mt-1 w-full rounded border border-secondary-navy/20 px-3 py-2"
               />
             </div>
+            <div>
+              <label className="text-sm text-text-dark">Court</label>
+              <select
+                value={courtEdit}
+                onChange={(e) => setCourtEdit(e.target.value)}
+                className="mt-1 w-full rounded border border-secondary-navy/20 bg-background-white px-3 py-2"
+              >
+                <option value="">— Not set —</option>
+                {WEBSITE_CASE_COURTS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-text-dark">Subject</label>
+              <select
+                value={subjectEdit}
+                onChange={(e) => setSubjectEdit(e.target.value)}
+                className="mt-1 w-full rounded border border-secondary-navy/20 bg-background-white px-3 py-2"
+              >
+                <option value="">— Not set —</option>
+                {WEBSITE_CASE_SUBJECTS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
             <label className="flex items-center gap-2 sm:col-span-2">
               <input
                 type="checkbox"
@@ -356,7 +405,9 @@ export function CaseDetailPage() {
               />
               <span className="text-sm text-text-dark">
                 Show this matter on the public website (cases listing). Only non-archived matters
-                with this option appear when enabled in site settings.
+                with this option appear when enabled in site settings. If status is Pending or
+                Judgment reserved, the public case page still shows the firm&apos;s restricted
+                notice (same as other listed cases).
               </span>
             </label>
             <button

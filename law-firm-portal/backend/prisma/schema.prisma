@@ -55,6 +55,10 @@ model Case {
   id                 String              @id @default(cuid())
   title              String
   reference          String?
+  /// Matches public website court filter (e.g. Supreme Court).
+  court              String?
+  /// Matches public website subject list (e.g. Tax, Civil).
+  subject            String?
   status             String              @default("open")
   archived           Boolean             @default(false)
   /// When true, this matter may be listed on the public website (merged into /api/cases).

@@ -9,6 +9,8 @@ export interface LegalCase {
   "Subject/Applicable Law"?: string;
   Court?: string;
   Status?: string | null;
+  /** Set when row comes from the law firm portal (display on website). */
+  portalPublished?: boolean;
   [key: string]: any;
 }
 
@@ -36,6 +38,8 @@ export interface CasesListProps {
 
 export interface CaseDetailsProps {
   id: string;
+  /** Parent already fetched this case — avoids a second /api/cases request and stale cache. */
+  prefetchedCase?: LegalCase | null;
 }
 
 // Reported Judgments Types

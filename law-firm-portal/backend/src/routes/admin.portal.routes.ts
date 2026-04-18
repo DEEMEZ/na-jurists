@@ -285,6 +285,8 @@ router.get("/cases", async (req, res) => {
 const createCaseBody = z.object({
   title: z.string().min(1),
   reference: z.string().optional(),
+  court: z.string().min(1),
+  subject: z.string().min(1),
   status: z.string().optional(),
   displayOnWebsite: z.boolean().optional(),
 });
@@ -299,6 +301,8 @@ router.post("/cases", async (req, res) => {
     data: {
       title: parsed.data.title,
       reference: parsed.data.reference,
+      court: parsed.data.court.trim(),
+      subject: parsed.data.subject.trim(),
       status: parsed.data.status ?? "open",
       displayOnWebsite: parsed.data.displayOnWebsite ?? false,
     },
@@ -340,6 +344,8 @@ router.get("/cases/:caseId", async (req, res) => {
 const patchCaseBody = z.object({
   title: z.string().min(1).optional(),
   reference: z.string().nullable().optional(),
+  court: z.string().nullable().optional(),
+  subject: z.string().nullable().optional(),
   archived: z.boolean().optional(),
   displayOnWebsite: z.boolean().optional(),
 });
@@ -358,11 +364,25 @@ router.patch("/cases/:caseId", async (req, res) => {
   const data: {
     title?: string;
     reference?: string | null;
+    court?: string | null;
+    subject?: string | null;
     archived?: boolean;
     displayOnWebsite?: boolean;
   } = {};
   if (parsed.data.title !== undefined) data.title = parsed.data.title;
   if (parsed.data.reference !== undefined) data.reference = parsed.data.reference;
+  if (parsed.data.court !== undefined) {
+    data.court =
+      parsed.data.court === null || parsed.data.court.trim() === ""
+        ? null
+        : parsed.data.court.trim();
+  }
+  if (parsed.data.subject !== undefined) {
+    data.subject =
+      parsed.data.subject === null || parsed.data.subject.trim() === ""
+        ? null
+        : parsed.data.subject.trim();
+  }
   if (parsed.data.archived !== undefined) data.archived = parsed.data.archived;
   if (parsed.data.displayOnWebsite !== undefined)
     data.displayOnWebsite = parsed.data.displayOnWebsite;

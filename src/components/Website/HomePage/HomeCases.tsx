@@ -43,6 +43,7 @@ export default function HomeCases() {
 
         const response = await fetch(`/api/cases?${params.toString()}`, {
           signal: controller.signal,
+          cache: 'no-store',
         });
 
         if (!response.ok) {

@@ -5,39 +5,45 @@ import CasesList from '@/components/Website/Cases/CasesList';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import { LegalCase } from '@/types/LegalCase';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export const dynamic = 'force-dynamic';
-
-interface PageProps {
-  params?: Promise<{ id: string }>;
-  searchParams?: Promise<Record<string, string | string[]>>;
+function normalizeRouteCaseId(raw: string): string {
+  const s = decodeURIComponent(String(raw ?? '')).trim();
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
+  ) {
+    return s.toLowerCase();
+  }
+  return s;
 }
 
-export default function CaseDetailPage({ params: paramsPromise }: PageProps) {
+export default function CaseDetailPage() {
+  const params = useParams();
+  const routeId = params?.id;
+  const idFromRoute = Array.isArray(routeId) ? routeId[0] : routeId;
+
   const [decodedId, setDecodedId] = useState<string | null>(null);
   const [currentCase, setCurrentCase] = useState<LegalCase | null>(null);
   const [relatedCases, setRelatedCases] = useState<LegalCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load params and case data
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // 1. Resolve the params promise
-        if (!paramsPromise) {
+        if (idFromRoute == null || String(idFromRoute).trim() === '') {
           throw new Error('Route parameters not available');
         }
-        const params = await paramsPromise;
-        const id = decodeURIComponent(params.id);
+        const id = normalizeRouteCaseId(String(idFromRoute));
         setDecodedId(id);
 
-        // 2. Fetch case data from API
-        const response = await fetch(`/api/cases?id=${encodeURIComponent(id)}`);
+        const response = await fetch(`/api/cases?id=${encodeURIComponent(id)}`, {
+          cache: 'no-store',
+        });
         if (!response.ok) {
           throw new Error(`Failed to load data (HTTP ${response.status})`);
         }
@@ -57,8 +63,8 @@ export default function CaseDetailPage({ params: paramsPromise }: PageProps) {
       }
     };
 
-    loadData();
-  }, [paramsPromise]);
+    void loadData();
+  }, [idFromRoute]);
 
   if (isLoading) {
     return (
@@ -84,7 +90,7 @@ export default function CaseDetailPage({ params: paramsPromise }: PageProps) {
             <h3 className="text-xl font-medium text-red-500 mb-2">Error Loading Case</h3>
             <p className="text-[#666b6f]">{error || 'The requested case could not be found.'}</p>
             <button
-              onClick={() => window.location.href = '/cases'}
+              onClick={() => (window.location.href = '/cases')}
               className="mt-4 px-4 py-2 bg-[#2c415e] text-white rounded-lg hover:bg-[#1a2a3e]"
             >
               Back to Cases
@@ -100,31 +106,30 @@ export default function CaseDetailPage({ params: paramsPromise }: PageProps) {
     <main className="min-h-screen flex flex-col">
       <Navbar />
       <div className="flex-grow relative py-16 bg-[#f0f3f6]">
-        <div 
+        <div
           className="absolute inset-0 z-0 opacity-10 pointer-events-none"
           style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%232c415e\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%232c415e\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
             backgroundSize: '60px 60px',
           }}
         />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-            <CaseDetails id={decodedId} />
+            <CaseDetails id={decodedId} prefetchedCase={currentCase} />
           </div>
-          
+
           {relatedCases.length > 0 && (
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="bg-gradient-to-r from-[#2c415e] to-[#4a6789] p-8 text-white">
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">Related Cases</h2>
-                <p className="text-white/90">
-                  Explore other cases in the same category
-                </p>
+                <p className="text-white/90">Explore other cases in the same category</p>
               </div>
-              
+
               <div className="p-6">
-                <CasesList 
-                  cases={relatedCases} 
+                <CasesList
+                  cases={relatedCases}
                   currentPage={1}
                   totalPages={1}
                   onPageChange={() => {}}

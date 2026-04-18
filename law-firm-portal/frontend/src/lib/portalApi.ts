@@ -122,12 +122,18 @@ function mapCaseRow(c: Record<string, unknown>) {
   const titleRaw = c.title ?? c["Case Title"];
   const refRaw = c.reference ?? c["Case Number"];
   const statusRaw = c.status ?? c.Status;
+  const courtRaw = c.court;
+  const subRaw = c.subject;
   return {
     id,
     title: titleRaw != null && String(titleRaw).trim() !== "" ? String(titleRaw) : "Matter",
     reference: refRaw != null && String(refRaw).trim() !== "" ? String(refRaw) : null,
     status: statusRaw != null && String(statusRaw).trim() !== "" ? String(statusRaw) : "open",
     archived: Boolean(c.archived),
+    court:
+      courtRaw != null && String(courtRaw).trim() !== "" ? String(courtRaw).trim() : null,
+    subject:
+      subRaw != null && String(subRaw).trim() !== "" ? String(subRaw).trim() : null,
   };
 }
 
@@ -298,6 +304,9 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
     notes: h.notes as string | null,
   }));
 
+  const cr = c as Record<string, unknown>;
+  const courtVal = cr.court;
+  const subVal = cr.subject;
   return {
     case: {
       id: c.id,
@@ -305,7 +314,11 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
       reference: c.reference,
       status: c.status,
       archived: c.archived,
-      displayOnWebsite: Boolean((c as Record<string, unknown>).display_on_website),
+      displayOnWebsite: Boolean(cr.display_on_website),
+      court:
+        courtVal != null && String(courtVal).trim() !== "" ? String(courtVal).trim() : null,
+      subject:
+        subVal != null && String(subVal).trim() !== "" ? String(subVal).trim() : null,
       assignments,
       statusHistory,
       documents,
@@ -537,7 +550,7 @@ export async function portalApiJson(
     const { data: assigns, error: e1 } = await sb
       .from("case_assignments")
       .select(
-        "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived, display_on_website)",
+        "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived, display_on_website, court, subject)",
       )
       .eq("user_id", uid);
     if (e1) throw new Error(e1.message);
@@ -588,6 +601,8 @@ export async function portalApiJson(
         reference: null,
         status: "open",
         archived: false,
+        court: null,
+        subject: null,
       };
     });
     return { cases };
@@ -682,7 +697,7 @@ export async function portalApiJson(
       const { data: asg } = await x.sb
         .from("case_assignments")
         .select(
-          "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived, display_on_website)",
+          "case_id, cases!case_assignments_case_id_fkey(id, title, reference, status, archived, display_on_website, court, subject)",
         )
         .eq("user_id", x.uid)
         .eq("case_id", caseIdParam)
@@ -1044,6 +1059,9 @@ export async function portalApiJson(
       status: c.status,
       archived: c.archived,
       displayOnWebsite: Boolean(c.display_on_website),
+      court: c.court != null && String(c.court).trim() !== "" ? String(c.court).trim() : null,
+      subject:
+        c.subject != null && String(c.subject).trim() !== "" ? String(c.subject).trim() : null,
     }));
     return { cases };
   }
@@ -1056,6 +1074,8 @@ export async function portalApiJson(
       reference?: string;
       status?: string;
       displayOnWebsite?: boolean;
+      court?: string;
+      subject?: string;
     };
     const { data, error } = await x.sb
       .from("cases")
@@ -1064,6 +1084,8 @@ export async function portalApiJson(
         reference: b.reference ?? null,
         status: b.status ?? "open",
         display_on_website: b.displayOnWebsite ?? false,
+        court: (b.court ?? "").trim() || null,
+        subject: (b.subject ?? "").trim() || null,
       })
       .select()
       .single();
@@ -1091,12 +1113,24 @@ export async function portalApiJson(
       reference?: string | null;
       archived?: boolean;
       displayOnWebsite?: boolean;
+      court?: string | null;
+      subject?: string | null;
     };
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (b.title !== undefined) patch.title = b.title;
     if (b.reference !== undefined) patch.reference = b.reference;
     if (b.archived !== undefined) patch.archived = b.archived;
     if (b.displayOnWebsite !== undefined) patch.display_on_website = b.displayOnWebsite;
+    if (b.court !== undefined) {
+      patch.court =
+        b.court === null || String(b.court).trim() === "" ? null : String(b.court).trim();
+    }
+    if (b.subject !== undefined) {
+      patch.subject =
+        b.subject === null || String(b.subject).trim() === ""
+          ? null
+          : String(b.subject).trim();
+    }
     const { data, error } = await x.sb
       .from("cases")
       .update(patch)

@@ -34,6 +34,17 @@ function createPortalCasesSupabase() {
   });
 }
 
+/** Normalize id from URL / JSON / Supabase (UUIDs are case-insensitive; browsers may vary casing). */
+function normalizeCaseIdParam(raw: string): string {
+  const s = decodeURIComponent(String(raw ?? '')).trim();
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
+  ) {
+    return s.toLowerCase();
+  }
+  return s;
+}
+
 /** Matters marked “display on website” in the law firm portal (Supabase). */
 async function loadPortalWebsiteCases(): Promise<LegalCase[]> {
   const sb = createPortalCasesSupabase();
@@ -48,7 +59,7 @@ async function loadPortalWebsiteCases(): Promise<LegalCase[]> {
   }
   const { data, error } = await sb
     .from('cases')
-    .select('id,title,reference,status')
+    .select('id,title,reference,status,court,subject')
     .eq('display_on_website', true)
     .eq('archived', false);
   if (error) {
@@ -57,34 +68,52 @@ async function loadPortalWebsiteCases(): Promise<LegalCase[]> {
   }
   if (!data?.length) return [];
 
-  return data.map((row) => ({
-    id: String(row.id),
-    'Case Title': String(row.title ?? ''),
-    'Case Number': row.reference ? String(row.reference) : '—',
-    'Subject/Applicable Law': `Client matter (${String(row.status ?? 'open')})`,
-    Court: 'N&A Jurists',
-    Status: row.status != null ? String(row.status) : null,
-    portalPublished: true,
-  }));
+  return data.map((row) => {
+    const status = String(row.status ?? 'open');
+    const subjectRaw = row.subject != null ? String(row.subject).trim() : '';
+    const courtRaw = row.court != null ? String(row.court).trim() : '';
+    const idStr = normalizeCaseIdParam(String(row.id));
+    return {
+      id: idStr,
+      'Case Title': String(row.title ?? ''),
+      'Case Number': row.reference ? String(row.reference) : '—',
+      'Subject/Applicable Law':
+        subjectRaw || `Client matter (${status})`,
+      Court: courtRaw || '—',
+      Status: row.status != null ? String(row.status) : null,
+      portalPublished: true,
+    };
+  });
 }
 
 async function loadPortalCaseById(id: string): Promise<LegalCase | null> {
   const sb = createPortalCasesSupabase();
   if (!sb) return null;
+  const nid = normalizeCaseIdParam(id);
   const { data, error } = await sb
     .from('cases')
-    .select('id,title,reference,status')
-    .eq('id', id)
+    .select('id,title,reference,status,court,subject')
+    .eq('id', nid)
     .eq('display_on_website', true)
     .eq('archived', false)
     .maybeSingle();
-  if (error || !data) return null;
+  if (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[api/cases] loadPortalCaseById:', error.message, { id: nid });
+    }
+    return null;
+  }
+  if (!data) return null;
+  const status = String(data.status ?? 'open');
+  const subjectRaw = data.subject != null ? String(data.subject).trim() : '';
+  const courtRaw = data.court != null ? String(data.court).trim() : '';
   return {
-    id: String(data.id),
+    id: normalizeCaseIdParam(String(data.id)),
     'Case Title': String(data.title ?? ''),
     'Case Number': data.reference ? String(data.reference) : '—',
-    'Subject/Applicable Law': `Client matter (${String(data.status ?? 'open')})`,
-    Court: 'N&A Jurists',
+    'Subject/Applicable Law':
+      subjectRaw || `Client matter (${status})`,
+    Court: courtRaw || '—',
     Status: data.status != null ? String(data.status) : null,
     portalPublished: true,
   };
@@ -161,18 +190,24 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get('search') || '';
   const court = searchParams.get('court') || '';
   const subject = searchParams.get('subject') || '';
-  const id = searchParams.get('id');
+  const rawId = searchParams.get('id');
+  const id = rawId ? normalizeCaseIdParam(rawId) : null;
 
   const [jsonCases, portalCases] = await Promise.all([
     loadCases(),
     loadPortalWebsiteCases(),
   ]);
-  const cases = [...portalCases, ...jsonCases];
+  const jsonCasesNorm = jsonCases.map((c) => ({
+    ...c,
+    id: normalizeCaseIdParam(String(c.id ?? '')),
+  }));
+  const cases = [...portalCases, ...jsonCasesNorm];
 
   if (id) {
+    /** Prefer portal rows when resolving detail so Supabase remains source of truth for published matters. */
     const found =
-      jsonCases.find((item) => item.id === id) ??
-      portalCases.find((item) => item.id === id) ??
+      portalCases.find((item) => normalizeCaseIdParam(String(item.id)) === id) ??
+      jsonCasesNorm.find((item) => item.id === id) ??
       (await loadPortalCaseById(id));
     if (!found) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
@@ -193,7 +228,7 @@ export async function GET(request: NextRequest) {
       {
         headers: {
           'Cache-Control':
-            'public, s-maxage=120, stale-while-revalidate=300',
+            'private, no-store, max-age=0, must-revalidate',
         },
       }
     );
@@ -218,7 +253,7 @@ export async function GET(request: NextRequest) {
     {
       headers: {
         'Cache-Control':
-          'public, s-maxage=120, stale-while-revalidate=300',
+          'private, no-store, max-age=0, must-revalidate',
       },
     }
   );

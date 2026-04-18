@@ -4,6 +4,10 @@ import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
+import {
+  WEBSITE_CASE_COURTS,
+  WEBSITE_CASE_SUBJECTS,
+} from "@site/constants/caseTaxonomy";
 
 export function CaseCreatePage() {
   const { user } = useAuth();
@@ -11,6 +15,8 @@ export function CaseCreatePage() {
   const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [reference, setReference] = useState("");
+  const [court, setCourt] = useState<string>(WEBSITE_CASE_COURTS[0] ?? "");
+  const [subject, setSubject] = useState<string>(WEBSITE_CASE_SUBJECTS[0] ?? "");
   const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -30,6 +36,8 @@ export function CaseCreatePage() {
         body: JSON.stringify({
           title,
           reference: reference.trim() || undefined,
+          court,
+          subject,
           displayOnWebsite,
         }),
       });
@@ -45,7 +53,7 @@ export function CaseCreatePage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 pb-8">
+    <div className="mx-auto max-w-xl space-y-6 pb-8">
       <BackToDashboard />
       <h1 className="text-2xl font-semibold text-primary-navy">New case</h1>
       <form
@@ -77,6 +85,46 @@ export function CaseCreatePage() {
             onChange={(e) => setReference(e.target.value)}
             className="mt-1 w-full rounded-lg border border-secondary-navy/20 bg-background-light px-3 py-2 text-text-dark outline-none ring-accent-blue/30 focus:ring-2"
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-text-dark">
+            Court
+          </label>
+          <p className="mt-0.5 text-xs text-text-light">
+            Same options as the public website cases page — used for filters and the court column.
+          </p>
+          <select
+            required
+            value={court}
+            onChange={(e) => setCourt(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-secondary-navy/20 bg-background-light px-3 py-2 text-text-dark outline-none ring-accent-blue/30 focus:ring-2"
+          >
+            {WEBSITE_CASE_COURTS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-text-dark">
+            Subject
+          </label>
+          <p className="mt-0.5 text-xs text-text-light">
+            Same subject list as the website — shown in the subject column when published.
+          </p>
+          <select
+            required
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-secondary-navy/20 bg-background-light px-3 py-2 text-text-dark outline-none ring-accent-blue/30 focus:ring-2"
+          >
+            {WEBSITE_CASE_SUBJECTS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         </div>
         <label className="flex items-start gap-2">
           <input

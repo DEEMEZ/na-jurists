@@ -26,7 +26,18 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/api/:path*',
+        /** Portal + JSON merge must reflect toggles immediately; do not CDN-cache. */
+        source: '/api/cases',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, no-store, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      {
+        /** Static JSON-backed listing; safe to cache briefly. Do not use /api/:path* — it would override /api/cases. */
+        source: '/api/reported-judgments',
         headers: [
           {
             key: 'Cache-Control',
