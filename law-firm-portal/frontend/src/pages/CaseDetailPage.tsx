@@ -23,6 +23,7 @@ type DocRow = {
   size: number;
   createdAt: string;
   uploadedBy: { email: string };
+  visibleToClient?: boolean;
 };
 
 type HearingRow = {
@@ -30,6 +31,14 @@ type HearingRow = {
   scheduledAt: string;
   venue: string | null;
   notes: string | null;
+};
+
+type CaseNoteRow = {
+  id: string;
+  body: string;
+  visibleToClient: boolean;
+  createdAt: string;
+  author: { email: string };
 };
 
 type CaseDetail = {
@@ -48,10 +57,12 @@ type CaseDetail = {
     toStatus: string;
     note: string | null;
     createdAt: string;
+    visibleToClient?: boolean;
     author: { email: string };
   }[];
   documents: DocRow[];
   hearings: HearingRow[];
+  caseNotes?: CaseNoteRow[];
 };
 
 export function CaseDetailPage() {
@@ -75,7 +86,12 @@ export function CaseDetailPage() {
   const [archivedEdit, setArchivedEdit] = useState(false);
   const [displayOnWebEdit, setDisplayOnWebEdit] = useState(false);
   const [courtEdit, setCourtEdit] = useState("");
-  const [subjectEdit, setSubjectEdit] = useState("");
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+
+  const [statusShareWithClient, setStatusShareWithClient] = useState(true);
+  const [docShareWithClient, setDocShareWithClient] = useState(true);
+  const [noteBody, setNoteBody] = useState("");
+  const [noteShareWithClient, setNoteShareWithClient] = useState(false);
 
   const loadCase = useCallback(async () => {
     if (!user?.id || !caseId) return;
@@ -90,7 +106,13 @@ export function CaseDetailPage() {
     setArchivedEdit(data.case.archived);
     setDisplayOnWebEdit(Boolean(data.case.displayOnWebsite));
     setCourtEdit(data.case.court ?? "");
-    setSubjectEdit(data.case.subject ?? "");
+    const subs = data.case.subject
+      ? data.case.subject
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean)
+      : [];
+    setSelectedSubjects(subs);
   }, [caseId, user?.id, user?.role]);
 
   const loadMessages = useCallback(async () => {
@@ -140,10 +162,15 @@ export function CaseDetailPage() {
     try {
       await apiJson(`/api/v1/admin/cases/${caseId}/status`, {
         method: "POST",
-        body: JSON.stringify({ status: statusText.trim(), note: statusNote || undefined }),
+        body: JSON.stringify({
+          status: statusText.trim(),
+          note: statusNote || undefined,
+          visibleToClient: statusShareWithClient,
+        }),
       });
       setStatusText("");
       setStatusNote("");
+      setStatusShareWithClient(true);
       await loadCase();
       showToast("Case status updated.");
     } catch (err) {
@@ -182,7 +209,7 @@ export function CaseDetailPage() {
           archived: archivedEdit,
           displayOnWebsite: displayOnWebEdit,
           court: courtEdit.trim() || null,
-          subject: subjectEdit.trim() || null,
+          subject: selectedSubjects.length ? selectedSubjects.join(", ") : null,
         }),
       });
       await loadCase();
@@ -218,6 +245,7 @@ export function CaseDetailPage() {
     if (!file || !caseId) return;
     const fd = new FormData();
     fd.append("file", file);
+    fd.append("visibleToClient", docShareWithClient ? "true" : "false");
     const res = await apiFetch(`/api/v1/admin/cases/${caseId}/documents`, {
       method: "POST",
       body: fd,
@@ -290,6 +318,32 @@ export function CaseDetailPage() {
     }
     await loadCase();
     showToast("Document removed.");
+  }
+
+  async function addCaseNote(e: FormEvent) {
+    e.preventDefault();
+    if (!caseId || !noteBody.trim()) return;
+    try {
+      await apiJson(`/api/v1/admin/cases/${caseId}/notes`, {
+        method: "POST",
+        body: JSON.stringify({
+          body: noteBody.trim(),
+          visibleToClient: noteShareWithClient,
+        }),
+      });
+      setNoteBody("");
+      setNoteShareWithClient(false);
+      await loadCase();
+      showToast("Note added.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Could not add note", "error");
+    }
+  }
+
+  function toggleSubject(opt: string) {
+    setSelectedSubjects((prev) =>
+      prev.includes(opt) ? prev.filter((x) => x !== opt) : [...prev, opt],
+    );
   }
 
   if (!user || !caseId) return null;
@@ -373,20 +427,23 @@ export function CaseDetailPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="text-sm text-text-dark">Subject</label>
-              <select
-                value={subjectEdit}
-                onChange={(e) => setSubjectEdit(e.target.value)}
-                className="mt-1 w-full rounded border border-secondary-navy/20 bg-background-white px-3 py-2"
-              >
-                <option value="">— Not set —</option>
+            <div className="sm:col-span-2">
+              <label className="text-sm text-text-dark">Subjects</label>
+              <p className="mt-0.5 text-xs text-text-light">
+                Select one or more — combined on the public site filter as comma-separated text.
+              </p>
+              <div className="mt-2 grid max-h-48 gap-2 overflow-y-auto rounded border border-secondary-navy/15 p-3 sm:grid-cols-2">
                 {WEBSITE_CASE_SUBJECTS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
+                  <label key={opt} className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedSubjects.includes(opt)}
+                      onChange={() => toggleSubject(opt)}
+                    />
+                    <span>{opt}</span>
+                  </label>
                 ))}
-              </select>
+              </div>
             </div>
             <label className="flex items-center gap-2 sm:col-span-2">
               <input
@@ -423,25 +480,39 @@ export function CaseDetailPage() {
       {user.role === "ADMIN" && (
         <section className="rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm">
           <h2 className="font-semibold text-secondary-navy">Update status</h2>
-          <form onSubmit={updateStatus} className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <input
-              placeholder="New status"
-              value={statusText}
-              onChange={(e) => setStatusText(e.target.value)}
-              className="rounded border border-secondary-navy/20 px-3 py-2 sm:min-w-[180px]"
-            />
-            <input
-              placeholder="Note (optional)"
-              value={statusNote}
-              onChange={(e) => setStatusNote(e.target.value)}
-              className="flex-1 rounded border border-secondary-navy/20 px-3 py-2"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-secondary-navy px-4 py-2 text-sm text-white"
-            >
-              Apply
-            </button>
+          <form onSubmit={updateStatus} className="mt-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <input
+                placeholder="New status"
+                value={statusText}
+                onChange={(e) => setStatusText(e.target.value)}
+                className="rounded border border-secondary-navy/20 px-3 py-2 sm:min-w-[180px]"
+              />
+              <input
+                placeholder="Note (optional)"
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                className="flex-1 rounded border border-secondary-navy/20 px-3 py-2"
+              />
+              <button
+                type="submit"
+                className="rounded-lg bg-secondary-navy px-4 py-2 text-sm text-white"
+              >
+                Apply
+              </button>
+            </div>
+            <label className="flex items-start gap-2 text-sm text-text-dark">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={statusShareWithClient}
+                onChange={(e) => setStatusShareWithClient(e.target.checked)}
+              />
+              <span>
+                Notify assigned clients (portal notification and email) about this status change and show it in their
+                timeline.
+              </span>
+            </label>
           </form>
           <ul className="mt-4 space-y-2 border-t border-border-subtle pt-4 text-sm text-text-light">
             {c.statusHistory.map((h) => (
@@ -450,6 +521,11 @@ export function CaseDetailPage() {
                 {h.fromStatus ? formatCaseStatus(h.fromStatus) : "—"} →{" "}
                 {formatCaseStatus(h.toStatus)}
                 {h.note ? ` — ${h.note}` : ""}{" "}
+                {user.role === "ADMIN" && h.visibleToClient === false ? (
+                  <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-900">
+                    Internal
+                  </span>
+                ) : null}{" "}
                 <span className="text-xs">
                   ({new Date(h.createdAt).toLocaleString()})
                 </span>
@@ -505,6 +581,19 @@ export function CaseDetailPage() {
       {user.role === "ADMIN" && (
         <section className="rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm">
           <h2 className="font-semibold text-secondary-navy">Documents</h2>
+          <p className="mt-2 text-xs text-text-light">
+            Uploads marked internal are stored on the matter but hidden from clients until you share them (visible to
+            client).
+          </p>
+          <label className="mt-3 flex items-start gap-2 text-sm text-text-dark">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={docShareWithClient}
+              onChange={(e) => setDocShareWithClient(e.target.checked)}
+            />
+            <span>Next upload is visible to assigned clients (download in portal)</span>
+          </label>
           <label className="mt-4 inline-block cursor-pointer rounded-lg border border-dashed border-secondary-navy/30 px-4 py-3 text-sm text-text-light hover:bg-background-light">
             Upload file
             <input type="file" className="hidden" onChange={onUpload} />
@@ -524,6 +613,11 @@ export function CaseDetailPage() {
                 </button>
                 <span className="text-xs text-text-light">
                   {d.uploadedBy.email}
+                  {user.role === "ADMIN" && d.visibleToClient === false ? (
+                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 font-semibold uppercase text-amber-900">
+                      Internal
+                    </span>
+                  ) : null}
                 </span>
                 <button
                   type="button"
@@ -551,6 +645,56 @@ export function CaseDetailPage() {
                 >
                   {d.originalName}
                 </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(user.role === "ADMIN" || (c.caseNotes ?? []).length > 0) && (
+        <section className="rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm">
+          <h2 className="font-semibold text-secondary-navy">Case notes</h2>
+          <p className="mt-1 text-xs text-text-light">
+            Notes can be firm-only or shared with assigned clients on this matter.
+          </p>
+          {user.role === "ADMIN" && (
+            <form onSubmit={addCaseNote} className="mt-4 space-y-3 border-b border-border-subtle pb-4">
+              <textarea
+                placeholder="Add a note…"
+                value={noteBody}
+                onChange={(e) => setNoteBody(e.target.value)}
+                rows={3}
+                className="w-full rounded border border-secondary-navy/20 px-3 py-2 text-sm"
+              />
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={noteShareWithClient}
+                  onChange={(e) => setNoteShareWithClient(e.target.checked)}
+                />
+                <span>Show this note to assigned clients</span>
+              </label>
+              <button
+                type="submit"
+                className="rounded-lg bg-primary-navy px-4 py-2 text-sm text-white hover:bg-secondary-navy"
+              >
+                Save note
+              </button>
+            </form>
+          )}
+          <ul className="mt-4 space-y-3 text-sm">
+            {(c.caseNotes ?? []).map((n) => (
+              <li key={n.id} className="rounded-lg bg-background-light/80 px-3 py-2">
+                <div className="text-xs text-text-light">
+                  {n.author.email} · {new Date(n.createdAt).toLocaleString()}
+                  {user.role === "ADMIN" && !n.visibleToClient ? (
+                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 font-semibold uppercase text-amber-900">
+                      Internal
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-1 whitespace-pre-wrap text-text-dark">{n.body}</div>
               </li>
             ))}
           </ul>

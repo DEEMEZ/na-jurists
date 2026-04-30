@@ -18,6 +18,8 @@ type Body = {
   recipientUserId?: string;
   subject?: string;
   text?: string;
+  /** When true, send to NOTIFY_ADMIN_EMAILS (comma-separated) instead of a client profile. */
+  notifyAdmin?: boolean;
 };
 
 /** NOTIFY_EMAIL_FROM: `Name <email@domain.com>` or plain `email@domain.com`. */
@@ -49,6 +51,161 @@ function providerErrorDetail(errText: string): string {
   return detail;
 }
 
+type SendCtx = {
+  gmailUser: string;
+  gmailPass: string;
+  useGmail: boolean;
+  brevoKey: string | undefined;
+  resendKey: string | undefined;
+  fromHeader: string;
+  sender: { name?: string; email: string };
+};
+
+function loadSendCtx(): SendCtx {
+  const gmailUser = Deno.env.get("GMAIL_SMTP_USER")?.trim() ?? "";
+  const gmailPass = (Deno.env.get("GMAIL_APP_PASSWORD") ?? "").replace(/\s/g, "").trim();
+  const useGmail = gmailUser.includes("@") && gmailPass.length > 0;
+  const brevoKey = Deno.env.get("BREVO_API_KEY");
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  const fromHeader =
+    Deno.env.get("NOTIFY_EMAIL_FROM") ??
+    Deno.env.get("EMAIL_FROM") ??
+    (useGmail ? `N&A Jurists <${gmailUser}>` : "N&A Jurists <onboarding@resend.dev>");
+  const sender = parseNotifyFrom(fromHeader);
+  return { gmailUser, gmailPass, useGmail, brevoKey, resendKey, fromHeader, sender };
+}
+
+async function sendOne(
+  ctx: SendCtx,
+  toEmail: string,
+  subject: string,
+  text: string,
+): Promise<{ ok: true; provider: string } | { ok: false; detail: string }> {
+  const { gmailUser, gmailPass, useGmail, brevoKey, resendKey, fromHeader, sender } = ctx;
+
+  if (useGmail) {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: { user: gmailUser, pass: gmailPass },
+      });
+      const fromLine =
+        sender.email.toLowerCase() === gmailUser.toLowerCase() && sender.name
+          ? `"${sender.name}" <${gmailUser}>`
+          : gmailUser;
+      await transporter.sendMail({
+        from: fromLine,
+        to: toEmail,
+        subject,
+        text,
+      });
+      return { ok: true, provider: "gmail" };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[portal-notify-email] Gmail SMTP error:", msg);
+      return { ok: false, detail: msg.slice(0, 500) };
+    }
+  }
+
+  if (brevoKey) {
+    const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": brevoKey,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: sender.name ?? sender.email.split("@")[0] ?? "Portal",
+          email: sender.email,
+        },
+        to: [{ email: toEmail }],
+        subject,
+        textContent: text,
+      }),
+    });
+
+    if (!brevoRes.ok) {
+      const errText = await brevoRes.text();
+      console.error("[portal-notify-email] Brevo error:", brevoRes.status, errText);
+      return { ok: false, detail: providerErrorDetail(errText) };
+    }
+    return { ok: true, provider: "brevo" };
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromHeader,
+      to: [toEmail],
+      subject,
+      text,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[portal-notify-email] Resend error:", res.status, errText);
+    return { ok: false, detail: providerErrorDetail(errText) };
+  }
+  return { ok: true, provider: "resend" };
+}
+
+/** NOTIFY_ADMIN_EMAILS only — used by logged-in admins and by server-side callers with service role JWT. */
+async function sendAdminNotifyEmails(subject: string, text: string): Promise<Response> {
+  const ctx = loadSendCtx();
+  if (!ctx.sender.email.includes("@")) {
+    return json({ ok: false, error: "Invalid NOTIFY_EMAIL_FROM" }, 400);
+  }
+
+  const useGmail = ctx.useGmail;
+  const brevoKey = ctx.brevoKey;
+  const resendKey = ctx.resendKey;
+
+  if (!useGmail && !brevoKey && !resendKey) {
+    console.log(`[portal-notify-email] No email provider — would send: ${subject}`);
+    return json({
+      ok: true,
+      skipped: true,
+      reason:
+        "No provider: set GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY",
+    });
+  }
+
+  const raw = Deno.env.get("NOTIFY_ADMIN_EMAILS")?.trim() ?? "";
+  const emails = [
+    ...new Set(
+      raw
+        .split(/[,;\s]+/)
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => e.includes("@")),
+    ),
+  ];
+  if (emails.length === 0) {
+    console.log("[portal-notify-email] NOTIFY_ADMIN_EMAILS empty — skip admin notify:", subject.slice(0, 80));
+    return json({
+      ok: true,
+      skipped: true,
+      reason: "Set NOTIFY_ADMIN_EMAILS (comma-separated) on the edge function",
+    });
+  }
+  const results: string[] = [];
+  for (const toEmail of emails) {
+    const r = await sendOne(ctx, toEmail, subject, text);
+    if (!r.ok) {
+      return json({ ok: false, error: "Email provider error", detail: r.detail }, 502);
+    }
+    results.push(r.provider);
+  }
+  console.info("[portal-notify-email] admin notify sent", { count: emails.length, subject: subject.slice(0, 80) });
+  return json({ ok: true, sent: true, provider: results[0] ?? "multi", recipients: emails.length });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: cors });
@@ -61,12 +218,32 @@ Deno.serve(async (req) => {
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceKey =
     Deno.env.get("SERVICE_ROLE_KEY") ??
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+    "";
   if (!supabaseUrl || !anonKey || !serviceKey) {
     return json({ ok: false, error: "Server misconfigured" }, 500);
   }
 
+  let payload: Body;
+  try {
+    payload = (await req.json()) as Body;
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
   const authHeader = req.headers.get("Authorization") ?? "";
+  const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+
+  // Server-to-server only: Bearer must be the service_role JWT; body must be notifyAdmin (cron digest).
+  if (serviceKey && bearerToken === serviceKey && payload.notifyAdmin === true) {
+    const subject = typeof payload.subject === "string" ? payload.subject.trim() : "";
+    const text = typeof payload.text === "string" ? payload.text : "";
+    if (!subject || !text) {
+      return json({ ok: false, error: "subject and text required" }, 400);
+    }
+    return await sendAdminNotifyEmails(subject, text);
+  }
+
   if (!authHeader.startsWith("Bearer ")) {
     return json({ ok: false, error: "Unauthorized" }, 401);
   }
@@ -95,17 +272,41 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "Forbidden" }, 403);
   }
 
-  let payload: Body;
-  try {
-    payload = (await req.json()) as Body;
-  } catch {
-    return json({ ok: false, error: "Invalid JSON" }, 400);
-  }
-  const recipientUserId = typeof payload.recipientUserId === "string" ? payload.recipientUserId.trim() : "";
   const subject = typeof payload.subject === "string" ? payload.subject.trim() : "";
   const text = typeof payload.text === "string" ? payload.text : "";
-  if (!recipientUserId || !subject || !text) {
-    return json({ ok: false, error: "recipientUserId, subject, and text required" }, 400);
+
+  if (!subject || !text) {
+    return json({ ok: false, error: "subject and text required" }, 400);
+  }
+
+  if (payload.notifyAdmin === true) {
+    return await sendAdminNotifyEmails(subject, text);
+  }
+
+  const ctx = loadSendCtx();
+  if (!ctx.sender.email.includes("@")) {
+    return json({ ok: false, error: "Invalid NOTIFY_EMAIL_FROM" }, 400);
+  }
+
+  const useGmail = ctx.useGmail;
+  const brevoKey = ctx.brevoKey;
+  const resendKey = ctx.resendKey;
+
+  if (!useGmail && !brevoKey && !resendKey) {
+    console.log(`[portal-notify-email] No email provider — would send: ${subject}`);
+    return json({
+      ok: true,
+      skipped: true,
+      reason:
+        "No provider: set GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY",
+    });
+  }
+
+  // --- Client notify (existing behaviour)
+  const recipientUserId =
+    typeof payload.recipientUserId === "string" ? payload.recipientUserId.trim() : "";
+  if (!recipientUserId) {
+    return json({ ok: false, error: "recipientUserId required for client emails" }, 400);
   }
 
   const { data: recipient, error: rErr } = await adminSb
@@ -127,40 +328,11 @@ Deno.serve(async (req) => {
 
   let toEmail = typeof recipient.email === "string" ? recipient.email.trim() : "";
   if (!toEmail) {
-    const { data: authData, error: authErr } = await adminSb.auth.admin.getUserById(
-      recipientUserId,
-    );
+    const { data: authData, error: authErr } = await adminSb.auth.admin.getUserById(recipientUserId);
     if (authErr || !authData?.user?.email?.trim()) {
       return json({ ok: false, error: "Invalid recipient" }, 400);
     }
     toEmail = authData.user.email.trim();
-  }
-
-  const gmailUser = Deno.env.get("GMAIL_SMTP_USER")?.trim() ?? "";
-  const gmailPass = (Deno.env.get("GMAIL_APP_PASSWORD") ?? "").replace(/\s/g, "").trim();
-  const useGmail = gmailUser.includes("@") && gmailPass.length > 0;
-
-  const brevoKey = Deno.env.get("BREVO_API_KEY");
-  const resendKey = Deno.env.get("RESEND_API_KEY");
-  const fromHeader =
-    Deno.env.get("NOTIFY_EMAIL_FROM") ??
-    Deno.env.get("EMAIL_FROM") ??
-    (useGmail ? `N&A Jurists <${gmailUser}>` : "N&A Jurists <onboarding@resend.dev>");
-  const sender = parseNotifyFrom(fromHeader);
-  if (!sender.email.includes("@")) {
-    return json({ ok: false, error: "Invalid NOTIFY_EMAIL_FROM" }, 400);
-  }
-
-  if (!useGmail && !brevoKey && !resendKey) {
-    console.log(
-      `[portal-notify-email] No email provider — would send to ${toEmail}: ${subject}`,
-    );
-    return json({
-      ok: true,
-      skipped: true,
-      reason:
-        "No provider: set GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY",
-    });
   }
 
   const providerName = useGmail ? "gmail" : brevoKey ? "brevo" : "resend";
@@ -171,94 +343,9 @@ Deno.serve(async (req) => {
     provider: providerName,
   });
 
-  if (useGmail) {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: { user: gmailUser, pass: gmailPass },
-      });
-      const fromLine =
-        sender.email.toLowerCase() === gmailUser.toLowerCase() && sender.name
-          ? `"${sender.name}" <${gmailUser}>`
-          : gmailUser;
-      await transporter.sendMail({
-        from: fromLine,
-        to: toEmail,
-        subject,
-        text,
-      });
-      return json({ ok: true, sent: true, provider: "gmail" });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      console.error("[portal-notify-email] Gmail SMTP error:", msg);
-      return json(
-        { ok: false, error: "Email provider error", detail: msg.slice(0, 500) },
-        502,
-      );
-    }
+  const r = await sendOne(ctx, toEmail, subject, text);
+  if (!r.ok) {
+    return json({ ok: false, error: "Email provider error", detail: r.detail }, 502);
   }
-
-  if (brevoKey) {
-    const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-        "api-key": brevoKey,
-      },
-      body: JSON.stringify({
-        sender: {
-          name: sender.name ?? sender.email.split("@")[0] ?? "Portal",
-          email: sender.email,
-        },
-        to: [{ email: toEmail }],
-        subject,
-        textContent: text,
-      }),
-    });
-
-    if (!brevoRes.ok) {
-      const errText = await brevoRes.text();
-      console.error("[portal-notify-email] Brevo error:", brevoRes.status, errText);
-      return json(
-        {
-          ok: false,
-          error: "Email provider error",
-          detail: providerErrorDetail(errText),
-        },
-        502,
-      );
-    }
-
-    return json({ ok: true, sent: true, provider: "brevo" });
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: fromHeader,
-      to: [toEmail],
-      subject,
-      text,
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    console.error("[portal-notify-email] Resend error:", res.status, errText);
-    return json(
-      {
-        ok: false,
-        error: "Email provider error",
-        detail: providerErrorDetail(errText),
-      },
-      502,
-    );
-  }
-
-  return json({ ok: true, sent: true, provider: "resend" });
+  return json({ ok: true, sent: true, provider: r.provider });
 });

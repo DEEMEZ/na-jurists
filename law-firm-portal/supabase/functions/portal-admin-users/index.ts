@@ -198,8 +198,36 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Remove / detach portal rows that reference this profile so auth.admin.deleteUser
+    // succeeds even if older DBs missed migration 20260427120000_* FK fixes.
+    await admin.from("case_assignments").delete().eq("user_id", userId);
+    await admin.from("notifications").delete().eq("user_id", userId);
+    await admin.from("messages").delete().eq("sender_id", userId);
+    const hist = await admin
+      .from("case_status_history")
+      .update({ author_id: null })
+      .eq("author_id", userId);
+    if (hist.error) console.warn("[portal-admin-users] status_history cleanup:", hist.error.message);
+    const docs = await admin
+      .from("documents")
+      .update({ uploaded_by_id: null })
+      .eq("uploaded_by_id", userId);
+    if (docs.error) console.warn("[portal-admin-users] documents cleanup:", docs.error.message);
+    const notes = await admin.from("case_notes").update({ author_id: null }).eq("author_id", userId);
+    if (notes.error) console.warn("[portal-admin-users] case_notes cleanup:", notes.error.message);
+
     const { error: de } = await admin.auth.admin.deleteUser(userId);
-    if (de) return json({ ok: false, error: de.message }, 400);
+    if (de) {
+      return json(
+        {
+          ok: false,
+          error:
+            de.message +
+            " If this persists, run SQL migration 20260427120000_user_delete_fks_client_visibility.sql (nullable author/uploaded_by + messages CASCADE).",
+        },
+        400,
+      );
+    }
     return json({ ok: true });
   }
 

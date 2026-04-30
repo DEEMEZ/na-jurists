@@ -142,9 +142,13 @@ function filterCases(
 
   if (court) {
     const lowerCourt = court.toLowerCase();
+    /** Dropdown label was renamed; legacy stored value may still be "Civil Court & Tribunal". */
+    const isLowerCourtsBucket =
+      lowerCourt === 'lower courts & tribunals' ||
+      lowerCourt === 'civil court & tribunal';
     filtered = filtered.filter((item) => {
       const caseCourt = item.Court?.toLowerCase() || '';
-      if (lowerCourt === 'civil court & tribunal') {
+      if (isLowerCourtsBucket) {
         return (
           caseCourt.includes('civil court') ||
           caseCourt.includes('tribunal')

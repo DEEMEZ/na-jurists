@@ -14,3 +14,7 @@ verify_jwt = false
 # Same as portal-admin-users: gateway JWT check can 401 with some key setups; auth is enforced in the function.
 [functions.portal-notify-email]
 verify_jwt = false
+
+# Cron invokes with CRON_HEARING_DIGEST_SECRET; no end-user JWT.
+[functions.portal-hearing-alert-digest]
+verify_jwt = false

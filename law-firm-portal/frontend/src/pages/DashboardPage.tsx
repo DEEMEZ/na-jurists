@@ -270,6 +270,18 @@ export function DashboardPage() {
               Hearing alerts
             </Link>
             <Link
+              to="/admin/reported-judgments"
+              className="portal-link-chip rounded-xl border border-border-subtle bg-background-white px-4 py-2.5 text-sm font-medium text-secondary-navy shadow-sm hover:bg-background-light"
+            >
+              Judgments
+            </Link>
+            <Link
+              to="/admin/website-team"
+              className="portal-link-chip rounded-xl border border-border-subtle bg-background-white px-4 py-2.5 text-sm font-medium text-secondary-navy shadow-sm hover:bg-background-light"
+            >
+              Website team
+            </Link>
+            <Link
               to="/admin/users"
               className="portal-link-chip rounded-xl border border-border-subtle bg-background-white px-4 py-2.5 text-sm font-medium text-secondary-navy shadow-sm hover:bg-background-light"
             >

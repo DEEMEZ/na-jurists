@@ -53,5 +53,6 @@ law-firm-portal/**/.env.local
 law-firm-portal/scripts/seed-admin.env
 
 # Supabase CLI / mistaken nested init
+/supabase/.temp/
 law-firm-portal/supabase/.temp/
 law-firm-portal/frontend/supabase/

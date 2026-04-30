@@ -2,8 +2,10 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
+import { notifyPortalAdmins } from "@/lib/portalApi";
 import { parseValidEmail } from "@/lib/emailValidation";
 
 type UserRow = {
@@ -17,6 +19,7 @@ type UserRow = {
 export function AdminUsersPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [rows, setRows] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +83,10 @@ export function AdminUsersPage() {
       setNewRole("CLIENT");
       await load();
       showToast("User created.");
+      void notifyPortalAdmins(
+        "[Portal] New user account created",
+        `An administrator created a portal account.\nEmail: ${emailOk}\nRole: ${newRole}`,
+      );
     } catch (err) {
       const m = err instanceof Error ? err.message : "Create failed";
       setError(m);
@@ -130,7 +137,14 @@ export function AdminUsersPage() {
   }
 
   async function removeUser(id: string) {
-    if (!window.confirm("Delete this user permanently?")) return;
+    const ok = await confirm({
+      title: "Delete user",
+      message: "Delete this user permanently?",
+      variant: "danger",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+    });
+    if (!ok) return;
     setError(null);
     try {
       await apiJson(`/api/v1/admin/users/${id}`, { method: "DELETE" });

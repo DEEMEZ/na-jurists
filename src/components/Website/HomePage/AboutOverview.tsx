@@ -27,9 +27,9 @@ const AboutOverview = () => {
   }, []);
 
   const achievements = [
-    { number: "300+", label: "Satisfied Clients", icon: Award },
-    { number: "500+", label: "Cases Won", icon: Scale },
-    { number: "100+", label: "Corporate Clients", icon: Building2 },
+    { number: "1000+", label: "successful clients", icon: Award },
+    { number: "3000+", label: "Cases Won", icon: Scale },
+    { number: "700+", label: "Corporate Clients", icon: Building2 },
     { number: "24/7", label: "Client Support", icon: Clock }
   ];
 
@@ -54,7 +54,7 @@ const AboutOverview = () => {
 
               <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] leading-tight">
                 Leading Legal
-                <span className="block text-[#4a6789]">Excellence Since 1998</span>
+                <span className="block text-[#4a6789]">Committed to Legal Excellence</span>
               </h2>
 
               <div className="w-20 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b]"></div>

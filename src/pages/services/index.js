@@ -1,5 +1,17 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Briefcase, Quote } from 'lucide-react';
+import {
+  ArrowRight,
+  Briefcase,
+  Calculator,
+  Copyright,
+  Gavel,
+  Landmark,
+  MessageSquare,
+  Quote,
+  Scale,
+  ShieldAlert,
+  Users
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import '../../app/globals.css';
@@ -21,6 +33,19 @@ const containerVariants = {
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1 }
+};
+
+/** Same Lucide icons as homepage practice marquee (`PracticeAreas.tsx`) by service `id`. */
+const SERVICE_ICONS = {
+  1: Briefcase,
+  2: Calculator,
+  3: Landmark,
+  4: Scale,
+  5: MessageSquare,
+  6: Users,
+  7: Copyright,
+  8: ShieldAlert,
+  9: Gavel
 };
 
 export default function ServicesPage() {
@@ -120,7 +145,9 @@ export default function ServicesPage() {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            {services.map((service) => (
+            {services.map((service) => {
+              const IconComponent = SERVICE_ICONS[service.id] ?? Briefcase;
+              return (
               <motion.div
                 key={service.id}
                 variants={itemVariants}
@@ -130,7 +157,7 @@ export default function ServicesPage() {
                   <div className="p-6 flex-grow">
                     <div className="flex items-center mb-4">
                       <div className="p-3 rounded-lg bg-white/10 mr-4">
-                        <Briefcase className="w-6 h-6 text-white" />
+                        <IconComponent className="w-6 h-6 text-white" strokeWidth={2} />
                       </div>
                       <h3 className="text-xl font-semibold text-white">{service.name}</h3>
                     </div>
@@ -144,7 +171,8 @@ export default function ServicesPage() {
                   </div>
                 </Link>
               </motion.div>
-            ))}
+            );
+            })}
           </motion.div>
         </div>
       </section>

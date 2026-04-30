@@ -1,0 +1,9 @@
+-- Idempotent: deleting a user/profile must not fail on messages.sender_id FK.
+-- (Migration 20260427120000_user_delete_fks_client_visibility.sql already does this;
+--  this file helps projects that ran core schema but skipped that migration.)
+
+ALTER TABLE public.messages DROP CONSTRAINT IF EXISTS messages_sender_id_fkey;
+
+ALTER TABLE public.messages
+  ADD CONSTRAINT messages_sender_id_fkey
+  FOREIGN KEY (sender_id) REFERENCES public.profiles (id) ON DELETE CASCADE;

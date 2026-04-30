@@ -2,7 +2,7 @@
 export const WEBSITE_CASE_COURTS = [
   "Supreme Court",
   "High Court",
-  "Civil Court & Tribunal",
+  "Lower Courts & Tribunals",
 ] as const;
 
 export const WEBSITE_CASE_SUBJECTS = [

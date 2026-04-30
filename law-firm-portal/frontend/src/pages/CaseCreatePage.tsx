@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
@@ -16,7 +16,11 @@ export function CaseCreatePage() {
   const [title, setTitle] = useState("");
   const [reference, setReference] = useState("");
   const [court, setCourt] = useState<string>(WEBSITE_CASE_COURTS[0] ?? "");
-  const [subject, setSubject] = useState<string>(WEBSITE_CASE_SUBJECTS[0] ?? "");
+  const defaultSubjects = useMemo(() => {
+    const first = WEBSITE_CASE_SUBJECTS[0];
+    return first ? [first] : [];
+  }, []);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(defaultSubjects);
   const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -26,8 +30,19 @@ export function CaseCreatePage() {
     return <Navigate to="/cases" replace />;
   }
 
+  function toggleSubject(opt: string) {
+    setSelectedSubjects((prev) =>
+      prev.includes(opt) ? prev.filter((x) => x !== opt) : [...prev, opt],
+    );
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (selectedSubjects.length === 0) {
+      setError("Select at least one subject.");
+      showToast("Select at least one subject.", "error");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -37,7 +52,7 @@ export function CaseCreatePage() {
           title,
           reference: reference.trim() || undefined,
           court,
-          subject,
+          subject: selectedSubjects.join(", "),
           displayOnWebsite,
         }),
       });
@@ -57,7 +72,7 @@ export function CaseCreatePage() {
       <BackToDashboard />
       <h1 className="text-2xl font-semibold text-primary-navy">New case</h1>
       <form
-        onSubmit={onSubmit}
+        onSubmit={(e) => void onSubmit(e)}
         className="space-y-4 rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm"
       >
         {error && (
@@ -66,9 +81,7 @@ export function CaseCreatePage() {
           </div>
         )}
         <div>
-          <label className="block text-sm font-medium text-text-dark">
-            Title
-          </label>
+          <label className="block text-sm font-medium text-text-dark">Title</label>
           <input
             required
             value={title}
@@ -77,9 +90,7 @@ export function CaseCreatePage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-text-dark">
-            Reference (optional)
-          </label>
+          <label className="block text-sm font-medium text-text-dark">Reference (optional)</label>
           <input
             value={reference}
             onChange={(e) => setReference(e.target.value)}
@@ -87,9 +98,7 @@ export function CaseCreatePage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-text-dark">
-            Court
-          </label>
+          <label className="block text-sm font-medium text-text-dark">Court</label>
           <p className="mt-0.5 text-xs text-text-light">
             Same options as the public website cases page — used for filters and the court column.
           </p>
@@ -107,24 +116,22 @@ export function CaseCreatePage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-text-dark">
-            Subject
-          </label>
+          <label className="block text-sm font-medium text-text-dark">Subjects</label>
           <p className="mt-0.5 text-xs text-text-light">
-            Same subject list as the website — shown in the subject column when published.
+            Select one or more — stored together for the public subject column and filters.
           </p>
-          <select
-            required
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-secondary-navy/20 bg-background-light px-3 py-2 text-text-dark outline-none ring-accent-blue/30 focus:ring-2"
-          >
+          <div className="mt-2 grid max-h-52 gap-2 overflow-y-auto rounded-lg border border-secondary-navy/15 p-3 sm:grid-cols-2">
             {WEBSITE_CASE_SUBJECTS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <label key={s} className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedSubjects.includes(s)}
+                  onChange={() => toggleSubject(s)}
+                />
+                <span>{s}</span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
         <label className="flex items-start gap-2">
           <input

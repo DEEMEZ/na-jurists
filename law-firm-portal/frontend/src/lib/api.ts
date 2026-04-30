@@ -51,8 +51,10 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<Respon
     if (!(file instanceof File)) {
       return new Response(JSON.stringify({ error: "Missing file" }), { status: 400 });
     }
+    const vis = init.body.get("visibleToClient");
+    const visibleToClient = vis !== "false";
     try {
-      const result = await portalApiUpload(m[1], file);
+      const result = await portalApiUpload(m[1], file, { visibleToClient });
       return new Response(JSON.stringify(result), {
         status: 201,
         headers: { "Content-Type": "application/json" },

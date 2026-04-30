@@ -39,7 +39,7 @@ export default function AboutPage() {
                 About N&A Jurists
               </h1>
               <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
-                Excellence in legal services since 1995
+                Excellence in legal services
               </p>
             </div>
           </div>
@@ -68,11 +68,11 @@ export default function AboutPage() {
                 <h3 className="text-2xl font-semibold text-[#2c415e] mb-4">Our History</h3>
                 <div className="prose text-[#666b6f]">
                   <p>
-                    Founded in 1995 by Syed Ishfaq Hussain Naqvi, N&A Jurists has grown from a small practice to one of the most respected law firms in Pakistan. 
+                    Founded by Syed Ishfaq Hussain Naqvi, N&A Jurists has grown from a small practice to one of the most respected law firms in Pakistan. 
                     Our journey reflects our commitment to excellence and our ability to adapt to the evolving legal landscape.
                   </p>
                   <p className="mt-4">
-                    Over the past 20+ years, we've successfully represented clients in landmark cases before the Supreme Court, High Courts, and District Courts across Pakistan.
+                    Throughout our practice, we have successfully represented clients in landmark cases before the Supreme Court, High Courts, and District Courts across Pakistan.
                   </p>
                 </div>
               </div>

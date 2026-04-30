@@ -24,7 +24,7 @@ const Statistics = () => {
 
   const achievements = [
     {
-      value: 1500,
+      value: 5000,
       suffix: "+",
       label: "Cases Handled",
       description: "Successfully resolved cases across all practice areas",

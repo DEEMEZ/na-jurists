@@ -1,41 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { withPortalFetchCors } from '@/lib/portalFetchCors';
+import { loadReportedJudgments, type ReportedJudgmentRecord } from '@/lib/reportedJudgmentsData';
 
-type ReportedJudgment = {
-  id: number;
-  citation: string;
-  title: string;
-  court: string;
-  date: string;
-  caseNumber: string;
-  dictumLaw: string;
-  subject: string;
-  parties: {
-    petitioner: string;
-    respondent: string;
-  };
-  judges: string[];
-  sections: string[];
-  fullText: string;
-  keywords: string[];
-};
+/** Supabase-backed rows change from the portal; avoid stale CDN totals vs static JSON. */
+export const dynamic = 'force-dynamic';
 
-let cachedJudgments: ReportedJudgment[] | null = null;
-
-async function loadJudgments(): Promise<ReportedJudgment[]> {
-  if (cachedJudgments) return cachedJudgments;
-
-  const filePath = path.join(process.cwd(), 'public', 'data', 'reported-judgments.json');
-  const file = await fs.readFile(filePath, 'utf-8');
-  const parsed = JSON.parse(file);
-
-  cachedJudgments = Array.isArray(parsed) ? parsed : [];
-  return cachedJudgments;
+export async function OPTIONS(request: NextRequest) {
+  return withPortalFetchCors(request, new NextResponse(null, { status: 204 }));
 }
 
 function filterJudgments(
-  judgments: ReportedJudgment[],
+  judgments: ReportedJudgmentRecord[],
   {
     search,
     court,
@@ -95,23 +70,29 @@ export async function GET(request: NextRequest) {
   const year = searchParams.get('year') || '';
   const id = searchParams.get('id');
 
-  const judgments = await loadJudgments();
+  const judgments = await loadReportedJudgments();
 
   if (id) {
     const numericId = Number(id);
     const found = judgments.find((item) => item.id === numericId);
     if (!found) {
-      return NextResponse.json({ error: 'Judgment not found' }, { status: 404 });
+      return withPortalFetchCors(
+        request,
+        NextResponse.json({ error: 'Judgment not found' }, { status: 404 }),
+      );
     }
 
-    return NextResponse.json(
-      { data: found },
-      {
-        headers: {
-          'Cache-Control':
-            'public, s-maxage=3600, stale-while-revalidate=7200',
+    return withPortalFetchCors(
+      request,
+      NextResponse.json(
+        { data: found },
+        {
+          headers: {
+            'Cache-Control':
+              'public, s-maxage=3600, stale-while-revalidate=7200',
+          },
         },
-      }
+      ),
     );
   }
 
@@ -121,21 +102,24 @@ export async function GET(request: NextRequest) {
   const paginated = filtered.slice(start, start + limit);
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  return NextResponse.json(
-    {
-      data: paginated,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages,
+  return withPortalFetchCors(
+    request,
+    NextResponse.json(
+      {
+        data: paginated,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages,
+        },
       },
-    },
-    {
-      headers: {
-        'Cache-Control':
-          'public, s-maxage=3600, stale-while-revalidate=7200',
+      {
+        headers: {
+          'Cache-Control':
+            'public, s-maxage=3600, stale-while-revalidate=7200',
+        },
       },
-    }
+    ),
   );
 }

@@ -15,8 +15,6 @@ type AuthState = {
   user: AuthUser | null;
   ready: boolean;
   login: (email: string, password: string) => Promise<void>;
-  /** Creates a client account (Supabase Auth + profile trigger). Returns whether the user must confirm email before sign-in. */
-  signUp: (email: string, password: string) => Promise<{ needsEmailConfirmation: boolean }>;
   logout: () => Promise<void>;
 };
 
@@ -91,27 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await loadProfile();
   }, [loadProfile]);
 
-  const signUp = useCallback(async (email: string, password: string) => {
-    const sb = getSupabase();
-    const origin = window.location.origin.replace(/\/$/, "");
-    const { data, error } = await sb.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: `${origin}/login`,
-      },
-    });
-    if (error) throw new Error(error.message);
-    const needsEmailConfirmation = !data.session;
-    // Always end on sign-in UX: Supabase may return a session when "Confirm email" is off — sign out so the portal does not open automatically.
-    if (data.session) {
-      await sb.auth.signOut();
-      invalidatePortalProfileCache();
-      setUser(null);
-    }
-    return { needsEmailConfirmation };
-  }, []);
-
   const logout = useCallback(async () => {
     await getSupabase().auth.signOut();
     invalidatePortalProfileCache();
@@ -123,10 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       ready,
       login,
-      signUp,
       logout,
     }),
-    [user, ready, login, signUp, logout],
+    [user, ready, login, logout],
   );
 
   return (

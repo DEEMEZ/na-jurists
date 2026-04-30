@@ -85,6 +85,22 @@ export function PortalFooter() {
                   </li>
                   <li>
                     <Link
+                      to="/admin/reported-judgments"
+                      className="transition-colors hover:text-white"
+                    >
+                      Judgments
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/admin/website-team"
+                      className="transition-colors hover:text-white"
+                    >
+                      Website team
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
                       to="/admin/users"
                       className="transition-colors hover:text-white"
                     >

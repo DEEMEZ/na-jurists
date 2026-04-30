@@ -1,4 +1,5 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
+import { getDefaultWebsiteTeamSeedRows } from "@site/lib/websiteTeamDefaults";
 import { getSupabase } from "./supabaseClient";
 
 async function edgeFunctionErrorMessage(error: Error): Promise<string> {
@@ -96,6 +97,55 @@ async function requireProfile(): Promise<Ctx> {
   return ctx;
 }
 
+const WEBSITE_TEAM_BUCKET = "website-team";
+
+function normalizeTeamPhotoFields(
+  photoStoragePath: string | null | undefined,
+  imageKey: string | null | undefined,
+): { photo_storage_path: string | null; image_key: string | null } {
+  const path =
+    photoStoragePath === undefined || photoStoragePath === null || photoStoragePath === ""
+      ? null
+      : String(photoStoragePath);
+  const key =
+    imageKey === undefined || imageKey === null || imageKey === "" ? null : String(imageKey);
+  if (path) return { photo_storage_path: path, image_key: null };
+  if (key) return { photo_storage_path: null, image_key: key };
+  return { photo_storage_path: null, image_key: null };
+}
+
+function teamPhotoExtension(file: File): string {
+  const t = file.type.toLowerCase();
+  if (t.includes("png")) return "png";
+  if (t.includes("webp")) return "webp";
+  if (t.includes("gif")) return "gif";
+  if (t.includes("jpeg") || t.includes("jpg")) return "jpg";
+  const n = file.name.toLowerCase();
+  const ext = n.match(/\.([a-z0-9]+)$/);
+  if (ext?.[1]) {
+    const e = ext[1];
+    if (e === "jpeg" || e === "jpg" || e === "png" || e === "webp" || e === "gif") return e === "jpeg" ? "jpg" : e;
+  }
+  return "jpg";
+}
+
+function mapWebsiteTeamAdminRow(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    section: row.section === "founder" ? "founder" : "member",
+    sortOrder: Number(row.sort_order ?? 0),
+    name: String(row.name ?? ""),
+    title: String(row.title ?? ""),
+    bio: String(row.bio ?? ""),
+    imageKey: row.image_key == null || row.image_key === "" ? null : String(row.image_key),
+    photoStoragePath:
+      row.photo_storage_path == null || row.photo_storage_path === ""
+        ? null
+        : String(row.photo_storage_path),
+    delayMs: Number(row.delay_ms ?? 100),
+  };
+}
+
 function parseUrl(pathWithQuery: string): { pathname: string; q: URLSearchParams } {
   const u = new URL(pathWithQuery, "http://portal.local");
   return { pathname: u.pathname, q: u.searchParams };
@@ -114,6 +164,68 @@ function assignmentRowCaseId(row: Record<string, unknown>): string {
 
 function normCaseId(id: unknown): string {
   return id != null ? String(id).trim() : "";
+}
+
+function coerceStr(v: unknown, fallback = ""): string {
+  return v != null ? String(v) : fallback;
+}
+
+function coerceStrArray(v: unknown): string[] {
+  if (Array.isArray(v)) return v.map((x) => String(x));
+  if (typeof v === "string" && v.trim()) {
+    return v
+      .split(/\n|,/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function parseReportedJudgmentRecord(body: unknown): {
+  id: number;
+  citation: string;
+  title: string;
+  court: string;
+  date: string;
+  caseNumber: string;
+  dictumLaw: string;
+  subject: string;
+  parties: { petitioner: string; respondent: string };
+  judges: string[];
+  sections: string[];
+  fullText: string;
+  keywords: string[];
+} {
+  const o = body as Record<string, unknown>;
+  const src = (
+    o.record !== undefined && typeof o.record === "object" && o.record !== null ? o.record : o
+  ) as Record<string, unknown>;
+  const id = Number(src.id);
+  if (!Number.isFinite(id) || id < 1) {
+    throw new Error("Invalid judgment id (positive integer required)");
+  }
+  const partiesRaw =
+    src.parties !== undefined && typeof src.parties === "object" && src.parties !== null
+      ? (src.parties as Record<string, unknown>)
+      : {};
+  return {
+    id,
+    citation: coerceStr(src.citation),
+    title: coerceStr(src.title),
+    court: coerceStr(src.court),
+    date: coerceStr(src.date),
+    caseNumber: coerceStr(src.caseNumber),
+    dictumLaw: coerceStr(src.dictumLaw),
+    subject: coerceStr(src.subject),
+    parties: {
+      petitioner: coerceStr(partiesRaw.petitioner),
+      respondent: coerceStr(partiesRaw.respondent),
+    },
+    judges: coerceStrArray(src.judges),
+    sections: coerceStrArray(src.sections),
+    fullText: coerceStr(src.fullText),
+    keywords: coerceStrArray(src.keywords),
+  };
 }
 
 /** Map PostgREST row (snake_case columns). */
@@ -160,15 +272,7 @@ type NotifyEmailFnResponse = {
   detail?: string;
 };
 
-/**
- * Email assigned clients when an admin action occurs (status, message, hearing).
- * Requires deployed `portal-notify-email` + secrets (see law-firm-portal/SUPABASE.md).
- */
-async function notifyClientByEmail(payload: {
-  recipientUserId: string;
-  subject: string;
-  text: string;
-}): Promise<void> {
+async function invokeNotifyEmail(body: Record<string, unknown>): Promise<void> {
   try {
     const sb = getSupabase();
     const accessToken = await getFreshAccessToken();
@@ -179,7 +283,7 @@ async function notifyClientByEmail(payload: {
       return;
     }
     const { data, error } = await sb.functions.invoke("portal-notify-email", {
-      body: payload,
+      body,
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (error) {
@@ -192,7 +296,7 @@ async function notifyClientByEmail(payload: {
       console.warn(
         "[portal-notify-email] Email not sent —",
         res.reason ?? "skipped",
-        "| Add GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY (+ NOTIFY_EMAIL_FROM) in Supabase → Edge Functions → Secrets, then redeploy portal-notify-email.",
+        "| Add GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY (+ NOTIFY_EMAIL_FROM) in Supabase → Edge Functions → Secrets, then redeploy portal-notify-email. For admin alerts set NOTIFY_ADMIN_EMAILS.",
       );
       return;
     }
@@ -205,11 +309,28 @@ async function notifyClientByEmail(payload: {
       return;
     }
     if (res?.sent) {
-      console.info("[portal-notify-email] sent:", payload.subject);
+      console.info("[portal-notify-email] sent:", body.subject ?? "");
     }
   } catch (e) {
     console.warn("[portal-notify-email]", e instanceof Error ? e.message : e);
   }
+}
+
+/**
+ * Email assigned clients when an admin action occurs (status, message, hearing).
+ * Requires deployed `portal-notify-email` + secrets (see law-firm-portal/SUPABASE.md).
+ */
+async function notifyClientByEmail(payload: {
+  recipientUserId: string;
+  subject: string;
+  text: string;
+}): Promise<void> {
+  await invokeNotifyEmail(payload);
+}
+
+/** Notify firm inboxes (NOTIFY_ADMIN_EMAILS on edge function). Safe to fire-and-forget. */
+export async function notifyPortalAdmins(subject: string, text: string): Promise<void> {
+  await invokeNotifyEmail({ notifyAdmin: true, subject, text });
 }
 
 async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -247,7 +368,7 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
     .maybeSingle();
   if (ce || !c) throw new Error("Not found");
 
-  const [asg, hist, docs, hear] = await Promise.all([
+  const [asg, hist, docs, hear, noteRows] = await Promise.all([
     sb
       .from("case_assignments")
       .select("user_id, profiles!case_assignments_user_id_fkey(id, email)")
@@ -255,18 +376,25 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
     sb
       .from("case_status_history")
       .select(
-        "id, from_status, to_status, note, created_at, profiles!case_status_history_author_id_fkey(email)",
+        "id, from_status, to_status, note, created_at, visible_to_client, profiles!case_status_history_author_id_fkey(email)",
       )
       .eq("case_id", caseId)
       .order("created_at", { ascending: false }),
     sb
       .from("documents")
       .select(
-        "id, original_name, size, created_at, profiles!documents_uploaded_by_id_fkey(email)",
+        "id, original_name, size, created_at, visible_to_client, profiles!documents_uploaded_by_id_fkey(email)",
       )
       .eq("case_id", caseId)
       .order("created_at", { ascending: false }),
     sb.from("hearings").select("*").eq("case_id", caseId).order("scheduled_at", { ascending: true }),
+    sb
+      .from("case_notes")
+      .select(
+        "id, body, visible_to_client, created_at, profiles!case_notes_author_id_fkey(email)",
+      )
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false }),
   ]);
 
   const assignments = (asg.data ?? []).map((row: Record<string, unknown>) => {
@@ -282,6 +410,7 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
       toStatus: h.to_status as string,
       note: h.note as string | null,
       createdAt: h.created_at as string,
+      visibleToClient: h.visible_to_client !== false,
       author: { email: author?.email ?? "" },
     };
   });
@@ -293,7 +422,19 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
       originalName: d.original_name,
       size: d.size,
       createdAt: d.created_at,
+      visibleToClient: d.visible_to_client !== false,
       uploadedBy: { email: up?.email ?? "" },
+    };
+  });
+
+  const caseNotes = (noteRows.data ?? []).map((n: Record<string, unknown>) => {
+    const author = n.profiles as { email: string } | null;
+    return {
+      id: n.id,
+      body: n.body as string,
+      visibleToClient: Boolean(n.visible_to_client),
+      createdAt: n.created_at as string,
+      author: { email: author?.email ?? "" },
     };
   });
 
@@ -323,6 +464,7 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
       statusHistory,
       documents,
       hearings,
+      caseNotes,
     },
   };
 }
@@ -704,7 +846,7 @@ export async function portalApiJson(
         .maybeSingle();
       if (!asg) throw new Error("Not found");
       const c = (asg as Record<string, unknown> | null)?.cases as Record<string, unknown> | null;
-      const [hearRes, docRes, histRes] = await Promise.all([
+      const [hearRes, docRes, histRes, noteRes] = await Promise.all([
         x.sb
           .from("hearings")
           .select("id, scheduled_at, venue, notes")
@@ -712,12 +854,17 @@ export async function portalApiJson(
           .order("scheduled_at", { ascending: true }),
         x.sb
           .from("documents")
-          .select("id, original_name, size, created_at")
+          .select("id, original_name, size, created_at, visible_to_client")
           .eq("case_id", caseIdParam)
           .order("created_at", { ascending: false }),
         x.sb
           .from("case_status_history")
-          .select("id, from_status, to_status, note, created_at")
+          .select("id, from_status, to_status, note, created_at, visible_to_client")
+          .eq("case_id", caseIdParam)
+          .order("created_at", { ascending: false }),
+        x.sb
+          .from("case_notes")
+          .select("id, body, visible_to_client, created_at")
           .eq("case_id", caseIdParam)
           .order("created_at", { ascending: false }),
       ]);
@@ -733,6 +880,7 @@ export async function portalApiJson(
         originalName: d.original_name,
         size: d.size,
         createdAt: d.created_at,
+        visibleToClient: d.visible_to_client !== false,
         uploadedBy: { email: "" },
       }));
       const statusHistory = (histRes.data ?? []).map((h: Record<string, unknown>) => ({
@@ -741,6 +889,14 @@ export async function portalApiJson(
         toStatus: (h.to_status as string) ?? "open",
         note: (h.note as string | null) ?? null,
         createdAt: h.created_at as string,
+        visibleToClient: h.visible_to_client !== false,
+        author: { email: "" },
+      }));
+      const caseNotes = (noteRes.data ?? []).map((n: Record<string, unknown>) => ({
+        id: n.id,
+        body: n.body as string,
+        visibleToClient: Boolean(n.visible_to_client),
+        createdAt: n.created_at as string,
         author: { email: "" },
       }));
       return {
@@ -755,6 +911,7 @@ export async function portalApiJson(
           statusHistory,
           documents,
           hearings,
+          caseNotes,
         },
       };
     }
@@ -1186,6 +1343,10 @@ export async function portalApiJson(
       subject: `[N&A Jurists] ${assignTitle} — ${matterLabel}`,
       text: `${assignBody}\n\nSign in to the client portal to view your matter.`,
     });
+    void notifyPortalAdmins(
+      `[Portal] Client assigned — ${matterLabel}`,
+      `Client user id ${assignUserId} was assigned to matter:\n${matterLabel}`,
+    );
     return { assignment: { user: { id: prof.id, email: prof.email } } };
   }
 
@@ -1206,8 +1367,9 @@ export async function portalApiJson(
   if (statusPost && m === "POST") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
-    const b = body as { status?: string; note?: string };
+    const b = body as { status?: string; note?: string; visibleToClient?: boolean };
     const caseId = statusPost[1];
+    const visibleToClient = b.visibleToClient !== false;
     const { data: existing, error: e0 } = await x.sb.from("cases").select("status").eq("id", caseId).single();
     if (e0 || !existing) throw new Error("Case not found");
     const fromStatus = existing.status as string;
@@ -1223,6 +1385,7 @@ export async function portalApiJson(
       from_status: fromStatus,
       to_status: toStatus,
       note: b.note ?? null,
+      visible_to_client: visibleToClient,
     });
     if (e2) throw new Error(e2.message);
     const { data: assigns } = await x.sb.from("case_assignments").select("user_id").eq("case_id", caseId);
@@ -1234,24 +1397,48 @@ export async function portalApiJson(
       .eq("id", caseId)
       .maybeSingle();
     const matterLabel = [caseRow?.reference, caseRow?.title].filter(Boolean).join(" — ") || "your matter";
-    for (const a of assigns ?? []) {
-      const assignUserId = (a as { user_id: string }).user_id;
-      await x.sb.from("notifications").insert({
-        user_id: assignUserId,
-        case_id: caseId,
-        title,
-        body: bodyText,
-      });
-      const { data: prof } = await x.sb.from("profiles").select("role").eq("id", assignUserId).maybeSingle();
-      if ((prof as { role?: string } | null)?.role !== "CLIENT") continue;
-      void notifyClientByEmail({
-        recipientUserId: assignUserId,
-        subject: `[N&A Jurists] ${title}`,
-        text: `Update for ${matterLabel}:\n\n${bodyText}\n\nSign in to the client portal to view your matter.`,
-      });
+    if (visibleToClient) {
+      for (const a of assigns ?? []) {
+        const assignUserId = (a as { user_id: string }).user_id;
+        await x.sb.from("notifications").insert({
+          user_id: assignUserId,
+          case_id: caseId,
+          title,
+          body: bodyText,
+        });
+        const { data: prof } = await x.sb.from("profiles").select("role").eq("id", assignUserId).maybeSingle();
+        if ((prof as { role?: string } | null)?.role !== "CLIENT") continue;
+        void notifyClientByEmail({
+          recipientUserId: assignUserId,
+          subject: `[N&A Jurists] ${title}`,
+          text: `Update for ${matterLabel}:\n\n${bodyText}\n\nSign in to the client portal to view your matter.`,
+        });
+      }
     }
     const { data: updated } = await x.sb.from("cases").select("*").eq("id", caseId).single();
     return { case: updated };
+  }
+
+  const adminNotesPost = pathname.match(/^\/api\/v1\/admin\/cases\/([^/]+)\/notes$/);
+  if (adminNotesPost && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const b = body as { body?: string; visibleToClient?: boolean };
+    const noteBody = (b.body ?? "").trim();
+    if (!noteBody) throw new Error("Note text required");
+    const share = b.visibleToClient === true;
+    const { data, error } = await x.sb
+      .from("case_notes")
+      .insert({
+        case_id: adminNotesPost[1],
+        author_id: x.uid,
+        body: noteBody,
+        visible_to_client: share,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return { note: data };
   }
 
   const adminHearings = pathname.match(/^\/api\/v1\/admin\/cases\/([^/]+)\/hearings$/);
@@ -1309,6 +1496,10 @@ export async function portalApiJson(
         text: `A hearing was scheduled for ${matterLabel}.\n\nDate & time: ${whenStr}${venueStr}\n\nSign in to the client portal for full details.`,
       });
     }
+    void notifyPortalAdmins(
+      `[Portal] Hearing scheduled — ${matterLabel}`,
+      `Case: ${matterLabel}\nDate & time: ${whenStr}${venueStr}\n\nScheduled by admin in the portal.`,
+    );
     return { hearing: data };
   }
 
@@ -1392,6 +1583,90 @@ export async function portalApiJson(
     return { count: list.length, cases: list };
   }
 
+  if (pathname === "/api/v1/admin/reported-judgments" && m === "GET") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const { data, error } = await x.sb
+      .from("reported_judgments")
+      .select("id, record, updated_at, display_on_website")
+      .order("id", { ascending: true });
+    if (error) throw new Error(error.message);
+    const judgments = (data ?? []).map((row: Record<string, unknown>) => {
+      const rec = row.record as Record<string, unknown>;
+      return {
+        id: row.id as number,
+        citation: coerceStr(rec?.citation),
+        title: coerceStr(rec?.title),
+        updatedAt: row.updated_at as string,
+        displayOnWebsite: row.display_on_website !== false,
+      };
+    });
+    return { judgments };
+  }
+
+  if (pathname === "/api/v1/admin/reported-judgments" && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const b = body as { record?: unknown; displayOnWebsite?: boolean };
+    const rec = parseReportedJudgmentRecord(b.record ?? body);
+    const displayOnWebsite = b.displayOnWebsite ?? false;
+    const { data, error } = await x.sb
+      .from("reported_judgments")
+      .upsert(
+        {
+          id: rec.id,
+          record: rec,
+          display_on_website: displayOnWebsite,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" },
+      )
+      .select("id, record, updated_at, display_on_website")
+      .single();
+    if (error) throw new Error(error.message);
+    const row = data as Record<string, unknown>;
+    return {
+      judgment: {
+        id: row.id,
+        record: row.record,
+        updatedAt: row.updated_at,
+        displayOnWebsite: row.display_on_website !== false,
+      },
+    };
+  }
+
+  const adminReportedJudgment = pathname.match(/^\/api\/v1\/admin\/reported-judgments\/(\d+)$/);
+  if (adminReportedJudgment && m === "GET") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const numericId = Number(adminReportedJudgment[1]);
+    const { data, error } = await x.sb
+      .from("reported_judgments")
+      .select("id, record, updated_at, display_on_website")
+      .eq("id", numericId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("Not found");
+    const row = data as Record<string, unknown>;
+    return {
+      judgment: {
+        id: row.id,
+        record: row.record,
+        updatedAt: row.updated_at,
+        displayOnWebsite: row.display_on_website !== false,
+      },
+    };
+  }
+
+  if (adminReportedJudgment && m === "DELETE") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const numericId = Number(adminReportedJudgment[1]);
+    const { error } = await x.sb.from("reported_judgments").delete().eq("id", numericId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  }
+
   const caseMsgs = pathname.match(/^\/api\/v1\/cases\/([^/]+)\/messages$/);
   if (caseMsgs && m === "GET") {
     await requireProfile();
@@ -1448,6 +1723,21 @@ export async function portalApiJson(
         });
       }
     }
+    if (x.role === "CLIENT") {
+      const caseId = caseMsgs[1];
+      const { data: caseRow } = await x.sb
+        .from("cases")
+        .select("title, reference")
+        .eq("id", caseId)
+        .maybeSingle();
+      const matterLabel = [caseRow?.reference, caseRow?.title].filter(Boolean).join(" — ") || "your matter";
+      const preview =
+        (b.body ?? "").length > 400 ? `${(b.body ?? "").slice(0, 400)}…` : (b.body ?? "");
+      void notifyPortalAdmins(
+        `[Portal] Client message — ${matterLabel}`,
+        `Client ${s.email} wrote:\n\n${preview}`,
+      );
+    }
     return {
       message: {
         id: (data as Record<string, unknown>).id,
@@ -1465,7 +1755,7 @@ export async function portalApiJson(
     const { data, error } = await sb
       .from("documents")
       .select(
-        "id, original_name, size, created_at, profiles!documents_uploaded_by_id_fkey(email)",
+        "id, original_name, size, created_at, visible_to_client, profiles!documents_uploaded_by_id_fkey(email)",
       )
       .eq("case_id", caseDocs[1])
       .order("created_at", { ascending: false });
@@ -1477,10 +1767,170 @@ export async function portalApiJson(
         originalName: d.original_name,
         size: d.size,
         createdAt: d.created_at,
+        visibleToClient: d.visible_to_client !== false,
         uploadedBy: { email: u?.email ?? "" },
       };
     });
     return { documents };
+  }
+
+  if (pathname === "/api/v1/admin/website-team/seed-defaults" && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const { error: delErr } = await x.sb
+      .from("website_team_members")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+    if (delErr) throw new Error(delErr.message);
+    const seedRows = getDefaultWebsiteTeamSeedRows();
+    const { error: insErr } = await x.sb.from("website_team_members").insert(seedRows);
+    if (insErr) throw new Error(insErr.message);
+    return { ok: true };
+  }
+
+  if (pathname === "/api/v1/admin/website-team/clear" && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const { error: delErr } = await x.sb
+      .from("website_team_members")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+    if (delErr) throw new Error(delErr.message);
+    return { ok: true };
+  }
+
+  if (pathname === "/api/v1/admin/website-team" && m === "GET") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const { data, error } = await x.sb
+      .from("website_team_members")
+      .select("id, section, sort_order, name, title, bio, image_key, photo_storage_path, delay_ms");
+    if (error) throw new Error(error.message);
+    const raw = [...(data ?? [])] as Record<string, unknown>[];
+    raw.sort((a, b) => {
+      const ra = a.section === "founder" ? 0 : 1;
+      const rb = b.section === "founder" ? 0 : 1;
+      if (ra !== rb) return ra - rb;
+      return Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0);
+    });
+    const rows = raw.map((row) => mapWebsiteTeamAdminRow(row));
+    return { rows };
+  }
+
+  if (pathname === "/api/v1/admin/website-team" && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const b = body as Record<string, unknown>;
+    const section = b.section === "founder" ? "founder" : "member";
+    const name = coerceStr(b.name);
+    if (!name) throw new Error("Name is required");
+    const sortOrder = Number(b.sortOrder ?? 0);
+    const title = coerceStr(b.title);
+    const bio = coerceStr(b.bio);
+    const delayMs = Number(b.delayMs ?? 100);
+    const { photo_storage_path, image_key } = normalizeTeamPhotoFields(
+      b.photoStoragePath as string | null | undefined,
+      b.imageKey as string | null | undefined,
+    );
+    const { data, error } = await x.sb
+      .from("website_team_members")
+      .insert({
+        section,
+        sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
+        name,
+        title,
+        bio,
+        image_key,
+        photo_storage_path,
+        delay_ms: Number.isFinite(delayMs) ? delayMs : 100,
+        updated_at: new Date().toISOString(),
+      })
+      .select("id, section, sort_order, name, title, bio, image_key, photo_storage_path, delay_ms")
+      .single();
+    if (error) throw new Error(error.message);
+    const row = data as Record<string, unknown>;
+    return {
+      row: mapWebsiteTeamAdminRow(row),
+    };
+  }
+
+  const websiteTeamIdMatch = pathname.match(/^\/api\/v1\/admin\/website-team\/([^/]+)$/);
+  if (websiteTeamIdMatch && (m === "PATCH" || m === "DELETE")) {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const rowId = websiteTeamIdMatch[1];
+    const uuidRe =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRe.test(rowId)) throw new Error("Invalid team row id");
+
+    if (m === "DELETE") {
+      const { data: prevMeta } = await x.sb
+        .from("website_team_members")
+        .select("photo_storage_path")
+        .eq("id", rowId)
+        .maybeSingle();
+      const { error } = await x.sb.from("website_team_members").delete().eq("id", rowId);
+      if (error) throw new Error(error.message);
+      const oldPath = (prevMeta as { photo_storage_path?: string | null } | null)?.photo_storage_path;
+      if (oldPath) {
+        await x.sb.storage.from(WEBSITE_TEAM_BUCKET).remove([oldPath]);
+      }
+      return { ok: true };
+    }
+
+    const { data: prevRow, error: prevErr } = await x.sb
+      .from("website_team_members")
+      .select("photo_storage_path, image_key")
+      .eq("id", rowId)
+      .single();
+    if (prevErr) throw new Error(prevErr.message);
+    const prev = prevRow as { photo_storage_path: string | null; image_key: string | null };
+
+    const b = body as Record<string, unknown>;
+    const patch: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (b.section === "founder" || b.section === "member") patch.section = b.section;
+    if (typeof b.name === "string") patch.name = b.name;
+    if (typeof b.title === "string") patch.title = b.title;
+    if (typeof b.bio === "string") patch.bio = b.bio;
+    if (b.sortOrder !== undefined) {
+      const so = Number(b.sortOrder);
+      if (Number.isFinite(so)) patch.sort_order = so;
+    }
+    if (b.delayMs !== undefined) {
+      const dm = Number(b.delayMs);
+      if (Number.isFinite(dm)) patch.delay_ms = dm;
+    }
+    if ("photoStoragePath" in b || "imageKey" in b) {
+      const norm = normalizeTeamPhotoFields(
+        "photoStoragePath" in b ? (b.photoStoragePath as string | null) : prev.photo_storage_path,
+        "imageKey" in b ? (b.imageKey as string | null) : prev.image_key,
+      );
+      patch.photo_storage_path = norm.photo_storage_path;
+      patch.image_key = norm.image_key;
+    }
+
+    const oldPhotoPath = prev.photo_storage_path ?? null;
+
+    const { data, error } = await x.sb
+      .from("website_team_members")
+      .update(patch)
+      .eq("id", rowId)
+      .select("id, section, sort_order, name, title, bio, image_key, photo_storage_path, delay_ms")
+      .single();
+    if (error) throw new Error(error.message);
+    const row = data as Record<string, unknown>;
+    const newPhotoPath =
+      row.photo_storage_path == null || row.photo_storage_path === ""
+        ? null
+        : String(row.photo_storage_path);
+    if (oldPhotoPath && oldPhotoPath !== newPhotoPath) {
+      await x.sb.storage.from(WEBSITE_TEAM_BUCKET).remove([oldPhotoPath]);
+    }
+    return {
+      row: mapWebsiteTeamAdminRow(row),
+    };
   }
 
   throw new Error(`Unsupported API: ${m} ${pathname}`);
@@ -1505,7 +1955,25 @@ export async function downloadCaseDocumentBlob(caseId: string, docId: string): P
   return r.blob();
 }
 
-export async function portalApiUpload(caseId: string, file: File): Promise<unknown> {
+export async function uploadWebsiteTeamPhoto(file: File): Promise<{ photoStoragePath: string }> {
+  const x = await requireProfile();
+  if (x.role !== "ADMIN") throw new Error("Forbidden");
+  if (!file.type.startsWith("image/")) throw new Error("Please choose an image file");
+  if (file.size > 5 * 1024 * 1024) throw new Error("Image must be 5 MB or smaller");
+  const path = `${crypto.randomUUID()}.${teamPhotoExtension(file)}`;
+  const { error: upErr } = await x.sb.storage.from(WEBSITE_TEAM_BUCKET).upload(path, file, {
+    contentType: file.type || "image/jpeg",
+    upsert: false,
+  });
+  if (upErr) throw new Error(upErr.message);
+  return { photoStoragePath: path };
+}
+
+export async function portalApiUpload(
+  caseId: string,
+  file: File,
+  opts?: { visibleToClient?: boolean },
+): Promise<unknown> {
   const x = await requireProfile();
   if (x.role !== "ADMIN") throw new Error("Forbidden");
   const path = `${caseId}/${crypto.randomUUID()}_${file.name}`;
@@ -1514,6 +1982,7 @@ export async function portalApiUpload(caseId: string, file: File): Promise<unkno
     upsert: false,
   });
   if (upErr) throw new Error(upErr.message);
+  const visibleToClient = opts?.visibleToClient !== false;
   const { data: row, error } = await x.sb
     .from("documents")
     .insert({
@@ -1523,6 +1992,7 @@ export async function portalApiUpload(caseId: string, file: File): Promise<unkno
       storage_path: path,
       mime_type: file.type || "application/octet-stream",
       size: file.size,
+      visible_to_client: visibleToClient,
     })
     .select()
     .single();

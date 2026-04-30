@@ -20,7 +20,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@site/constants/*": ["../../src/constants/*"]
+      "@site/constants/*": ["../../src/constants/*"],
+      "@site/lib/*": ["../../src/lib/*"]
     }
   },
   "include": ["src"]

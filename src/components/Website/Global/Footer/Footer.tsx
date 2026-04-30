@@ -10,6 +10,7 @@ import {
   Linkedin,
   Shield
 } from 'lucide-react';
+import { FaInstagram } from 'react-icons/fa';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -38,7 +39,8 @@ const Footer = () => {
 
   const socialLinks = [
     { name: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100077795273536&mibextid=wwXIfr&rdid=k9eLgUU5t6Y7H9u9&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1CkmVbxAr1%2F%3Fmibextid%3DwwXIfr%26ref%3D1#', icon: <Facebook className="w-5 h-5" /> },
-    { name: 'LinkedIn', href: 'https://www.linkedin.com/company/najurists/', icon: <Linkedin className="w-5 h-5" /> }
+    { name: 'LinkedIn', href: 'https://www.linkedin.com/company/najurists/', icon: <Linkedin className="w-5 h-5" /> },
+    { name: 'Instagram', href: 'https://www.instagram.com/najurists?igsh=aWJqdTJtYTRndm0y', icon: <FaInstagram className="w-5 h-5" /> }
   ];
 
 
@@ -84,10 +86,14 @@ const Footer = () => {
               <div className="space-y-3 flex flex-col items-center md:items-start">
                 <div className="flex items-start space-x-3">
                   <MapPin className="w-5 h-5 mt-1 text-[#4a6789] flex-shrink-0" />
-                  <div>
-                    <p className="text-blue-200 text-sm leading-relaxed">
-                      House No. 6-A, Street No. 12,<br />
-                      Sector F-8/3, Islamabad, Pakistan
+                  <div className="space-y-3 text-sm text-blue-200 leading-relaxed">
+                    <p>
+                      <span className="font-semibold text-white/90">Islamabad: </span>
+                      House No. 6-A, Street No. 12, Sector F-8/3, Islamabad, Pakistan
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white/90">Karachi: </span>
+                      Mezzanine 1, Plot# 12 - C, Zamzama Commercial Lane 4, DHA Phase 5, Karachi
                     </p>
                   </div>
                 </div>
@@ -101,8 +107,8 @@ const Footer = () => {
 
                 <div className="flex items-center space-x-3">
                   <Phone className="w-5 h-5 text-[#4a6789] flex-shrink-0" />
-                  <a href="tel:+923332354476" className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm">
-                    +92 333 235 4476
+                  <a href="tel:+92518430814" className="text-blue-200 hover:text-[#4a6789] transition-colors duration-300 text-sm">
+                    051-8430814
                   </a>
                 </div>
               </div>

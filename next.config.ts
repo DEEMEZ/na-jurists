@@ -1,8 +1,37 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /** pdfkit ships .afm font metrics under node_modules; bundling breaks those paths (Helvetica.afm ENOENT). */
+  serverExternalPackages: ['pdfkit'],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push({ pdfkit: 'commonjs pdfkit' });
+    }
+    return config;
+  },
   images: {
-    domains: ['placehold.co'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+        pathname: "/**",
+      },
+    ],
   },
   /** SPA fallback for embedded Vite portal at /portal (see npm run build:portal). */
   async rewrites() {

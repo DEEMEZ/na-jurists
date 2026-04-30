@@ -36,8 +36,8 @@ const ContactCTA = () => {
       icon: <Phone className="w-8 h-8" />,
       title: "Call Us",
       description: "Speak with our legal experts",
-      contact: "+92 51 123 4567",
-      action: "tel:+925112345678"
+      contact: "051-8430814",
+      action: "tel:+92518430814"
     },
     {
       icon: <Mail className="w-8 h-8" />,
@@ -58,7 +58,7 @@ const ContactCTA = () => {
       title: "24/7 Support",
       description: "Emergency legal assistance",
       contact: "Always Available",
-      action: "tel:+925112345678"
+      action: "tel:+92518430814"
     }
   ];
 
@@ -207,10 +207,10 @@ const ContactCTA = () => {
                     Schedule Free Consultation
                   </Link>
                   <Link
-                    href="tel:+925112345678"
+                    href="tel:+92518430814"
                     className="w-full border-2 border-[#4a6789] text-[#4a6789] px-8 py-4 rounded-lg hover:bg-[#4a6789] hover:text-white transition-all duration-300 font-semibold inline-block text-center"
                   >
-                    Call Now: +92 51 123 4567
+                    Call Now: 051-8430814
                   </Link>
                 </div>
 

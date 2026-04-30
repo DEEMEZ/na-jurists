@@ -1,7 +1,6 @@
 "use client";
 
-import heroimg from '@/assets/images/hero.png';
-import homehero from '@/assets/images/homehero.avif';
+import homehero from '@/assets/images/homehero.png';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -143,7 +142,7 @@ const Hero = () => {
                   </div>
                   <div className="flex items-center space-x-2 md:space-x-3">
                     <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-[#6a8aab] rounded-full flex-shrink-0"></div>
-                    <span className="text-white/80 text-xs md:text-sm font-medium">1500+ Cases Handled</span>
+                    <span className="text-white/80 text-xs md:text-sm font-medium">5000+ Cases Handled</span>
                   </div>
                 </div>
               </div>

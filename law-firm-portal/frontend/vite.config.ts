@@ -32,6 +32,7 @@ export default defineConfig(({ command, mode }) => {
       alias: {
         "@": path.resolve(__dirname, "./src"),
         "@site/constants": path.resolve(__dirname, "../../src/constants"),
+        "@site/lib": path.resolve(__dirname, "../../src/lib"),
       },
     },
     server: {

@@ -60,9 +60,6 @@ export function PortalHeader() {
                 >
                   Dashboard
                 </Link>
-                <Link to="/cases" className={linkClass(navActive("/cases"))}>
-                  Cases
-                </Link>
                 <Link
                   to="/admin/hearings"
                   className={linkClass(navActive("/admin/hearings"))}
@@ -74,18 +71,6 @@ export function PortalHeader() {
                   className={linkClass(navActive("/admin/messages"))}
                 >
                   Client messages
-                </Link>
-                <Link
-                  to="/admin/alerts"
-                  className={linkClass(navActive("/admin/alerts"))}
-                >
-                  Hearing alerts
-                </Link>
-                <Link
-                  to="/admin/users"
-                  className={linkClass(navActive("/admin/users"))}
-                >
-                  Users
                 </Link>
               </>
             )}
@@ -109,6 +94,12 @@ export function PortalHeader() {
                 <ClientNotificationDropdown />
               </>
             )}
+            <Link
+              to="/account/password"
+              className={linkClass(navActive("/account/password"))}
+            >
+              Password
+            </Link>
             <button
               type="button"
               onClick={() => {
@@ -167,13 +158,6 @@ export function PortalHeader() {
                   Dashboard
                 </Link>
                 <Link
-                  to="/cases"
-                  className={`${mobileRowClass} ${navActive("/cases") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
-                  onClick={closeMobile}
-                >
-                  Cases
-                </Link>
-                <Link
                   to="/admin/hearings"
                   className={`${mobileRowClass} ${navActive("/admin/hearings") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
                   onClick={closeMobile}
@@ -186,20 +170,6 @@ export function PortalHeader() {
                   onClick={closeMobile}
                 >
                   Client messages
-                </Link>
-                <Link
-                  to="/admin/alerts"
-                  className={`${mobileRowClass} ${navActive("/admin/alerts") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
-                  onClick={closeMobile}
-                >
-                  Hearing alerts
-                </Link>
-                <Link
-                  to="/admin/users"
-                  className={`${mobileRowClass} ${navActive("/admin/users") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
-                  onClick={closeMobile}
-                >
-                  Users
                 </Link>
               </>
             )}
@@ -228,6 +198,13 @@ export function PortalHeader() {
                 </Link>
               </>
             )}
+            <Link
+              to="/account/password"
+              className={`${mobileRowClass} ${navActive("/account/password") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
+              onClick={closeMobile}
+            >
+              Password
+            </Link>
             <button
               type="button"
               className={`${mobileRowClass} w-full text-left text-text-light hover:text-secondary-navy`}
