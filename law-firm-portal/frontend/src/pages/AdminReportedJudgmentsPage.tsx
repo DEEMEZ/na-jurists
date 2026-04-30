@@ -75,7 +75,7 @@ export function AdminReportedJudgmentsPage() {
   const [judgesText, setJudgesText] = useState("");
   const [sectionsText, setSectionsText] = useState("");
   const [keywordsText, setKeywordsText] = useState("");
-  const [idLocked, setIdLocked] = useState(false);
+  const [originalEditId, setOriginalEditId] = useState<number | null>(null);
   const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -116,7 +116,7 @@ export function AdminReportedJudgmentsPage() {
     setSectionsText("");
     setKeywordsText("");
     setDisplayOnWebsite(false);
-    setIdLocked(false);
+    setOriginalEditId(null);
   }
 
   async function openEdit(id: number) {
@@ -131,7 +131,7 @@ export function AdminReportedJudgmentsPage() {
       setJudgesText(rec.judges.join("\n"));
       setSectionsText(rec.sections.join("\n"));
       setKeywordsText(rec.keywords.join(", "));
-      setIdLocked(true);
+      setOriginalEditId(id);
     } catch (e) {
       const m = e instanceof Error ? e.message : "Failed to load judgment";
       setError(m);
@@ -145,7 +145,7 @@ export function AdminReportedJudgmentsPage() {
     setSectionsText("");
     setKeywordsText("");
     setDisplayOnWebsite(false);
-    setIdLocked(false);
+    setOriginalEditId(null);
   }
 
   async function importFromWebsite() {
@@ -218,7 +218,11 @@ export function AdminReportedJudgmentsPage() {
     try {
       await apiJson("/api/v1/admin/reported-judgments", {
         method: "POST",
-        body: JSON.stringify({ record: rec, displayOnWebsite }),
+        body: JSON.stringify({
+          record: rec,
+          displayOnWebsite,
+          ...(originalEditId != null ? { previousId: originalEditId } : {}),
+        }),
       });
       showToast(
         displayOnWebsite
@@ -347,7 +351,7 @@ export function AdminReportedJudgmentsPage() {
         <section className="rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-semibold text-secondary-navy">
-              {idLocked ? `Edit Sr. No. ${editing.id}` : "New judgment"}
+              {originalEditId !== null ? `Edit judgment (Sr. ${editing.id})` : "New judgment"}
             </h2>
             <div className="flex flex-wrap gap-2">
               <button
@@ -376,12 +380,11 @@ export function AdminReportedJudgmentsPage() {
                   type="number"
                   min={1}
                   required
-                  disabled={idLocked}
                   value={editing.id}
                   onChange={(e) =>
                     setEditing({ ...editing, id: Number(e.target.value) || editing.id })
                   }
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm disabled:bg-background-light"
+                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
                 />
               </label>
               <label className="block text-sm">
@@ -393,6 +396,12 @@ export function AdminReportedJudgmentsPage() {
                 />
               </label>
             </div>
+            {originalEditId !== null && originalEditId !== editing.id && (
+              <p className="text-xs text-text-light">
+                Saving moves this database row from Sr. {originalEditId} to Sr. {editing.id}. If Sr.{" "}
+                {editing.id} already exists, it will be replaced by this save.
+              </p>
+            )}
             <label className="block text-sm">
               <span className="font-medium text-secondary-navy">Citation</span>
               <input

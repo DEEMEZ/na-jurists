@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import { reportedJudgmentsList } from '@/data/reportedJudgmentsList';
-import { FileText, ExternalLink } from 'lucide-react';
+import { FileText, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type ApiJudgment = {
   id: number;
@@ -18,6 +18,8 @@ type DisplayRow = {
   citation: string;
   law: string;
 };
+
+const JUDGMENTS_PAGE_SIZE = 25;
 
 async function fetchAllReportedJudgmentsFromApi(): Promise<Map<number, ApiJudgment>> {
   const pageSize = 50;
@@ -53,6 +55,7 @@ function shortLawForDatabaseOnlyRow(rec: ApiJudgment): string {
 
 export default function JudgmentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [listPage, setListPage] = useState(1);
   const [overlay, setOverlay] = useState<Map<number, ApiJudgment> | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -117,6 +120,21 @@ export default function JudgmentsPage() {
         judgment.id.toString().includes(q)
     );
   }, [rows, searchTerm]);
+
+  useEffect(() => {
+    setListPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const tp = Math.max(1, Math.ceil(filteredJudgments.length / JUDGMENTS_PAGE_SIZE));
+    setListPage((p) => Math.min(p, tp));
+  }, [filteredJudgments.length]);
+
+  const totalFiltered = filteredJudgments.length;
+  const totalListPages = Math.max(1, Math.ceil(totalFiltered / JUDGMENTS_PAGE_SIZE));
+  const currentListPage = Math.min(Math.max(1, listPage), totalListPages);
+  const listOffset = (currentListPage - 1) * JUDGMENTS_PAGE_SIZE;
+  const pagedJudgments = filteredJudgments.slice(listOffset, listOffset + JUDGMENTS_PAGE_SIZE);
 
   const handleOpenPDF = (judgmentId: number) => {
     const url = `/api/reported-judgments/pdf?id=${judgmentId}`;
@@ -186,7 +204,7 @@ export default function JudgmentsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredJudgments.map((judgment, index) => (
+                    {pagedJudgments.map((judgment, index) => (
                       <tr
                         key={judgment.id}
                         className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${
@@ -217,7 +235,7 @@ export default function JudgmentsPage() {
               </div>
 
               <div className="md:hidden divide-y divide-gray-200">
-                {filteredJudgments.map((judgment) => (
+                {pagedJudgments.map((judgment) => (
                   <div key={judgment.id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -240,6 +258,42 @@ export default function JudgmentsPage() {
                 ))}
               </div>
 
+              {totalFiltered > JUDGMENTS_PAGE_SIZE && (
+                <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-4 py-4 sm:flex-row">
+                  <p className="text-sm text-gray-600">
+                    Showing{' '}
+                    <span className="font-medium text-[#2c415e]">
+                      {totalFiltered === 0 ? 0 : listOffset + 1}–
+                      {Math.min(listOffset + JUDGMENTS_PAGE_SIZE, totalFiltered)}
+                    </span>{' '}
+                    of {totalFiltered}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={currentListPage <= 1}
+                      onClick={() => setListPage((p) => Math.max(1, p - 1))}
+                      className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-[#2c415e] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </button>
+                    <span className="min-w-[8rem] text-center text-sm text-gray-700">
+                      Page {currentListPage} of {totalListPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={currentListPage >= totalListPages}
+                      onClick={() => setListPage((p) => Math.min(totalListPages, p + 1))}
+                      className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-[#2c415e] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {filteredJudgments.length === 0 && (
                 <div className="text-center py-12">
                   <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -260,17 +314,13 @@ export default function JudgmentsPage() {
           )}
         </div>
 
-        <div className="mt-6 space-y-1 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm text-gray-600">
           <p>
             Total:{' '}
             <span className="font-semibold text-[#2c415e]">
               {loading ? '…' : totalCount}
             </span>{' '}
             Reported Judgments
-          </p>
-          <p className="text-xs text-gray-500 max-w-2xl mx-auto">
-            Sr. No. identifies one catalog row. Reusing a number updates that row; use the next Sr. No. to add another entry.
-            There is no fixed maximum—new rows appear after you add them (e.g. 70, 71).
           </p>
         </div>
       </div>

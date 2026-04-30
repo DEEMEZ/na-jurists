@@ -1607,9 +1607,23 @@ export async function portalApiJson(
   if (pathname === "/api/v1/admin/reported-judgments" && m === "POST") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
-    const b = body as { record?: unknown; displayOnWebsite?: boolean };
+    const b = body as { record?: unknown; displayOnWebsite?: boolean; previousId?: unknown };
     const rec = parseReportedJudgmentRecord(b.record ?? body);
     const displayOnWebsite = b.displayOnWebsite ?? false;
+    const prevRaw = b.previousId;
+    const previousId =
+      prevRaw !== undefined && prevRaw !== null && prevRaw !== ""
+        ? Number(prevRaw)
+        : undefined;
+    if (
+      previousId !== undefined &&
+      Number.isFinite(previousId) &&
+      previousId >= 1 &&
+      previousId !== rec.id
+    ) {
+      const { error: delErr } = await x.sb.from("reported_judgments").delete().eq("id", previousId);
+      if (delErr) throw new Error(delErr.message);
+    }
     const { data, error } = await x.sb
       .from("reported_judgments")
       .upsert(
