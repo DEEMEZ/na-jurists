@@ -354,14 +354,16 @@ export function AdminReportedJudgmentsPage() {
               {originalEditId !== null ? `Edit judgment (Sr. ${editing.id})` : "New judgment"}
             </h2>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled={importing}
-                onClick={() => void importFromWebsite()}
-                className="h-9 rounded-lg border border-secondary-navy/25 px-3 text-sm font-medium text-secondary-navy hover:bg-background-light disabled:opacity-60"
-              >
-                {importing ? "Importing…" : "Load from website API"}
-              </button>
+              {originalEditId !== null && (
+                <button
+                  type="button"
+                  disabled={importing}
+                  onClick={() => void importFromWebsite()}
+                  className="h-9 rounded-lg border border-secondary-navy/25 px-3 text-sm font-medium text-secondary-navy hover:bg-background-light disabled:opacity-60"
+                >
+                  {importing ? "Importing…" : "Load from website API"}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => closeEditor()}

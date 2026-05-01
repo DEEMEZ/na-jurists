@@ -106,6 +106,8 @@ When an **admin** updates matter status, posts a **message**, or adds a **hearin
 6. **`NOTIFY_EMAIL_FROM`** must use an address/domain **verified in the Resend dashboard** (same domain as in Resend → Domains). A mismatch often returns a Resend error; after redeploying the function, trigger an email and read **`detail`** in the browser console (`[portal-notify-email] invoke failed: …`) or in function logs.
 7. **Resend “To” always shows one address (e.g. your Gmail):** the app sends to whatever email is on the **assigned client** (`profiles.email` / `auth.users.email` for that `user_id` in `case_assignments`). If every matter is assigned to the same test client, or that client’s profile uses your Gmail, Resend will only show that inbox. Fix: create **separate client users** (each with the client’s real email), assign the matter to **that** client in the portal, then trigger again. Check **Edge Function logs** for `recipient resolved` → `toEmail` after redeploy.
 
+**Admin inbox notifications:** Firm admins only receive copies when **`NOTIFY_ADMIN_EMAILS`** is set on **`portal-notify-email`** (comma-separated inboxes) **and** an email provider is configured (Gmail / Brevo / Resend). After changing secrets, redeploy **`portal-notify-email`**. Events covered from the portal UI include **new user created**, **client assigned**, **hearing scheduled**, and **client messages**; the **daily hearing-alert digest** is separate (cron + **`portal-hearing-alert-digest`** + **`CRON_HEARING_DIGEST_SECRET`**).
+
 ### Scheduled hearing-alert digest (server cron)
 
 1. Apply migration **`20260430210000_portal_cron_state.sql`** (table `portal_cron_state`).

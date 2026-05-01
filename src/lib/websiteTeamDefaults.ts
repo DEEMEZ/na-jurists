@@ -21,6 +21,8 @@ export const WEBSITE_TEAM_IMAGE_KEYS: string[] = [
   "dsc05027",
   "dsc05108",
   "jabbar",
+  "sadia",
+  "hamza",
 ];
 
 export type WebsiteTeamPublicFounder = {
@@ -111,6 +113,16 @@ export const DEFAULT_WEBSITE_TEAM: WebsiteTeamPublicPayload = {
       delayMs: 200,
     },
     {
+      id: "default-hamza",
+      sortOrder: 35,
+      name: "Hamza Ali Chaudhary",
+      title: "Associate",
+      bio: "Hamza Ali Chaudhary is a corporate and commercial lawyer based in Karachi, Pakistan, with extensive experience in advising on complex legal, regulatory, and strategic matters. A graduate of Quaid-e-Azam University, Islamabad, he represents and advises businesses, institutions, and high-profile clients across a broad range of corporate and commercial disputes, regulatory frameworks, and governance issues. Known for his sharp legal acumen and strategic approach, Mr. Chaudhary combines strong advocacy with commercially focused legal solutions, enabling clients to navigate sophisticated legal challenges with confidence. His practice is distinguished by professionalism, discretion, and a commitment to delivering results in high-stakes matters within Pakistan's evolving corporate and regulatory landscape.",
+      imageKey: "hamza",
+      photoUrl: null,
+      delayMs: 225,
+    },
+    {
       id: "default-4",
       sortOrder: 40,
       name: "Ayesha Riaz",
@@ -166,7 +178,7 @@ export const DEFAULT_WEBSITE_TEAM: WebsiteTeamPublicPayload = {
       name: "Sadia Naveed",
       title: "Intern",
       bio: "Sadia Naveed is currently serving as an intern with the firm, supporting legal research and drafting, and assisting in matters before District Courts and High Courts.",
-      imageKey: null,
+      imageKey: "sadia",
       photoUrl: null,
       delayMs: 175,
     },

@@ -1,13 +1,33 @@
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import type { CSSProperties, FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { ChevronDown, ChevronUp, GripVertical } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
-import { getSupabase } from "@/lib/supabaseClient";
 import { uploadWebsiteTeamPhoto } from "@/lib/portalApi";
-import { DEFAULT_WEBSITE_TEAM, WEBSITE_TEAM_IMAGE_KEYS } from "@site/lib/websiteTeamDefaults";
+import { getSupabase } from "@/lib/supabaseClient";
+import { WEBSITE_TEAM_IMAGE_KEYS } from "@site/lib/websiteTeamDefaults";
+
 type TeamRow = {
   id: string;
   section: "founder" | "member";
@@ -28,7 +48,111 @@ function teamPhotoPreviewUrl(storagePath: string | null): string | null {
   const { data } = getSupabase().storage.from(TEAM_PHOTO_BUCKET).getPublicUrl(p);
   return data.publicUrl ?? null;
 }
+
 const IMAGE_OPTIONS: string[] = ["", ...WEBSITE_TEAM_IMAGE_KEYS];
+
+const FIXED_DELAY_MS = 100;
+
+async function persistOrderedRows(ordered: TeamRow[]): Promise<void> {
+  for (let idx = 0; idx < ordered.length; idx++) {
+    const sortOrder = (idx + 1) * 10;
+    await apiJson(`/api/v1/admin/website-team/${ordered[idx].id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ sortOrder }),
+    });
+  }
+}
+
+function SortableTeamCard({
+  row,
+  dragDisabled,
+  photoHint,
+  onEdit,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  disableUp,
+  disableDown,
+}: {
+  row: TeamRow;
+  dragDisabled: boolean;
+  photoHint: string;
+  onEdit: () => void;
+  onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  disableUp: boolean;
+  disableDown: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: row.id,
+    disabled: dragDisabled,
+  });
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.92 : 1,
+    zIndex: isDragging ? 5 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex flex-wrap items-stretch gap-3 rounded-xl border border-border-subtle bg-background-white p-4 shadow-sm"
+    >
+      <button
+        type="button"
+        className="flex h-10 w-10 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg border border-secondary-navy/20 text-secondary-navy hover:bg-background-light active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={dragDisabled}
+        aria-label="Drag to reorder"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-5 w-5" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-text-dark">{row.name}</p>
+        <p className="text-sm text-text-light">{row.title || "—"}</p>
+        <p className="mt-1 text-xs text-secondary-navy/80">{photoHint}</p>
+      </div>
+      <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          disabled={disableUp}
+          onClick={onMoveUp}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-secondary-navy/25 text-secondary-navy hover:bg-background-light disabled:opacity-35"
+          aria-label="Move up"
+        >
+          <ChevronUp className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          disabled={disableDown}
+          onClick={onMoveDown}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-secondary-navy/25 text-secondary-navy hover:bg-background-light disabled:opacity-35"
+          aria-label="Move down"
+        >
+          <ChevronDown className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="inline-flex h-9 min-w-[4rem] items-center justify-center rounded-md border border-secondary-navy/25 px-3 text-sm font-medium text-secondary-navy hover:bg-background-light"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="inline-flex h-9 min-w-[4rem] items-center justify-center rounded-md border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700 hover:bg-red-100"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function AdminWebsiteTeamPage() {
   const { user } = useAuth();
@@ -48,16 +172,19 @@ export function AdminWebsiteTeamPage() {
   const [editBio, setEditBio] = useState("");
   const [editImage, setEditImage] = useState("");
   const [editPhotoStoragePath, setEditPhotoStoragePath] = useState<string | null>(null);
-  const [editDelay, setEditDelay] = useState(100);
 
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newSection, setNewSection] = useState<"founder" | "member">("member");
-  const [newSort, setNewSort] = useState(120);
   const [newName, setNewName] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newBio, setNewBio] = useState("");
   const [newImage, setNewImage] = useState("");
-  const [newDelay, setNewDelay] = useState(100);
   const [saving, setSaving] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   async function load() {
     if (user?.role !== "ADMIN") return;
@@ -77,17 +204,24 @@ export function AdminWebsiteTeamPage() {
     void load();
   }, [user?.role]);
 
-  useEffect(() => {
-    const maxDefault = Math.max(...DEFAULT_WEBSITE_TEAM.members.map((m) => m.sortOrder));
-    const memberRows = rows.filter((r) => r.section === "member");
-    const maxDb =
-      memberRows.length > 0 ? Math.max(...memberRows.map((r) => r.sortOrder)) : 0;
-    setNewSort(Math.max(maxDefault, maxDb) + 10);
-  }, [rows]);
+  const founders = rows.filter((r) => r.section === "founder");
+  const members = rows.filter((r) => r.section === "member");
+
+  const nextSortForSection = (section: "founder" | "member") => {
+    const slice = rows.filter((r) => r.section === section);
+    if (slice.length === 0) return 10;
+    return Math.max(...slice.map((r) => r.sortOrder)) + 10;
+  };
 
   if (!user) return null;
   if (user.role !== "ADMIN") {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  function photoHintForRow(r: TeamRow): string {
+    if (r.photoStoragePath) return "Photo: uploaded";
+    if (r.imageKey) return `Photo: preset (${r.imageKey})`;
+    return "Photo: none";
   }
 
   function startEdit(r: TeamRow) {
@@ -99,7 +233,6 @@ export function AdminWebsiteTeamPage() {
     setEditBio(r.bio);
     setEditImage(r.imageKey ?? "");
     setEditPhotoStoragePath(r.photoStoragePath);
-    setEditDelay(r.delayMs);
   }
 
   async function saveEdit(e: FormEvent) {
@@ -126,7 +259,7 @@ export function AdminWebsiteTeamPage() {
           bio: editBio,
           photoStoragePath,
           imageKey: editImage === "" ? null : editImage,
-          delayMs: editDelay,
+          delayMs: FIXED_DELAY_MS,
         }),
       });
       setEditingId(null);
@@ -184,21 +317,20 @@ export function AdminWebsiteTeamPage() {
         method: "POST",
         body: JSON.stringify({
           section: newSection,
-          sortOrder: newSort,
+          sortOrder: nextSortForSection(newSection),
           name: newName,
           title: newTitle,
           bio: newBio,
           photoStoragePath,
           imageKey: imageKeyVal,
-          delayMs: newDelay,
+          delayMs: FIXED_DELAY_MS,
         }),
       });
       setNewName("");
       setNewTitle("");
       setNewBio("");
       setNewImage("");
-      setNewDelay(100);
-      setNewSection("member");
+      setShowAddForm(false);
       await load();
       showToast("Team row created.");
     } catch (err) {
@@ -210,8 +342,45 @@ export function AdminWebsiteTeamPage() {
     }
   }
 
-  const founders = rows.filter((r) => r.section === "founder");
-  const members = rows.filter((r) => r.section === "member");
+  async function runReorder(_section: "founder" | "member", ordered: TeamRow[]) {
+    if (editingId) {
+      showToast("Finish or cancel editing before reordering.", "error");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await persistOrderedRows(ordered);
+      await load();
+      showToast("Order updated.");
+    } catch (err) {
+      const m = err instanceof Error ? err.message : "Reorder failed";
+      setError(m);
+      showToast(m, "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function onDragEnd(section: "founder" | "member", list: TeamRow[], e: DragEndEvent) {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIdx = list.findIndex((x) => x.id === active.id);
+    const newIdx = list.findIndex((x) => x.id === over.id);
+    if (oldIdx < 0 || newIdx < 0) return;
+    void runReorder(section, arrayMove(list, oldIdx, newIdx));
+  }
+
+  function moveByDelta(_section: "founder" | "member", list: TeamRow[], id: string, delta: number) {
+    const i = list.findIndex((x) => x.id === id);
+    const j = i + delta;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    void runReorder(_section, arrayMove(list, i, j));
+  }
+
+  const dragLocked = Boolean(editingId) || saving;
+
+  const editingRow = useMemo(() => rows.find((r) => r.id === editingId), [rows, editingId]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-8">
@@ -219,118 +388,14 @@ export function AdminWebsiteTeamPage() {
       <div>
         <h1 className="text-2xl font-semibold text-primary-navy">Website team</h1>
         <p className="mt-1 text-sm text-text-light">
-          Manage the Leadership spotlight and Our Team grid on the public site (names, titles, bios, photos,
-          order).        </p>
+          Drag cards or use arrows to set order. Match how the Our Team grid appears on the public site. New
+          members are added at the end of their section.
+        </p>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-          {error}
-        </div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div>
       )}
-
-      <section className="rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm">
-        <h2 className="font-semibold text-secondary-navy">New row</h2>
-        <form onSubmit={onCreate} className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-xs font-medium text-secondary-navy">
-            Section
-            <select
-              value={newSection}
-              onChange={(e) => setNewSection(e.target.value as "founder" | "member")}
-              className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-            >
-              <option value="founder">Founder (Leadership panel)</option>
-              <option value="member">Member (Our Team grid)</option>
-            </select>
-          </label>
-          <label className="text-xs font-medium text-secondary-navy">
-            Sort order
-            <input
-              type="number"
-              value={newSort}
-              onChange={(e) => setNewSort(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-            />
-            <span className="mt-1 block text-[11px] text-text-light">
-              Built-in cards use 10–110. Use the suggested next value (or higher) to <strong>add</strong> a person
-              without replacing an existing slot.
-            </span>
-          </label>
-          <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
-            Name
-            <input
-              required
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
-            Title
-            <input
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
-            Bio / intro (use blank lines between paragraphs for the Leadership layout)
-            <textarea
-              value={newBio}
-              onChange={(e) => setNewBio(e.target.value)}
-              rows={5}
-              className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
-            Photo
-            <input
-              ref={newPhotoFileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="mt-1 block w-full text-sm text-secondary-navy file:mr-3 file:rounded-md file:border file:border-secondary-navy/25 file:bg-background-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
-            />
-            <span className="mt-1 block text-[11px] text-text-light">
-              JPEG, PNG, WebP, or GIF — max 5 MB. Uploaded photos replace preset library images for this row.
-            </span>
-          </label>
-          <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
-            Preset photo (optional)
-            <select
-              value={newImage}
-              onChange={(e) => {
-                setNewImage(e.target.value);
-                if (e.target.value !== "" && newPhotoFileRef.current) newPhotoFileRef.current.value = "";
-              }}
-              className="mt-1 w-full max-w-md rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-            >
-              {IMAGE_OPTIONS.map((k) => (
-                <option key={k || "none"} value={k}>
-                  {k === "" ? "(None)" : k}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-xs font-medium text-secondary-navy">
-            Animation delay (ms)
-            <input
-              type="number"
-              value={newDelay}
-              onChange={(e) => setNewDelay(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-            />
-          </label>
-          <div className="sm:col-span-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-primary-navy px-6 py-2 text-sm font-semibold text-white hover:bg-secondary-navy disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Add row"}
-            </button>
-          </div>
-        </form>
-      </section>
 
       {loading ? (
         <p className="text-text-light">Loading…</p>
@@ -338,198 +403,262 @@ export function AdminWebsiteTeamPage() {
         <p className="text-sm text-text-light">No rows yet.</p>
       ) : (
         <div className="space-y-8">
-          <div className="overflow-x-auto rounded-xl border border-border-subtle bg-background-white shadow-sm">
-            <h3 className="border-b border-border-subtle bg-background-light px-4 py-3 text-sm font-semibold text-secondary-navy">
-              Founder / Leadership ({founders.length})
-            </h3>
-            <table className="w-full min-w-[640px] table-fixed text-left text-sm">
-              <thead className="border-b border-border-subtle text-xs font-semibold uppercase tracking-wide text-secondary-navy/80">
-                <tr>
-                  <th className="px-4 py-3">Order</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Photo</th>
-                  <th className="w-[200px] px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {founders.map((r) => renderRow(r))}
-              </tbody>
-            </table>
-          </div>
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-secondary-navy">
+                Founder / Leadership ({founders.length})
+              </h2>
+            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => onDragEnd("founder", founders, e)}
+            >
+              <SortableContext items={founders.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-3">
+                  {founders.map((r, idx) => (
+                    <SortableTeamCard
+                      key={r.id}
+                      row={r}
+                      dragDisabled={dragLocked}
+                      photoHint={photoHintForRow(r)}
+                      onEdit={() => startEdit(r)}
+                      onDelete={() => void removeRow(r.id)}
+                      onMoveUp={() => moveByDelta("founder", founders, r.id, -1)}
+                      onMoveDown={() => moveByDelta("founder", founders, r.id, 1)}
+                      disableUp={idx === 0}
+                      disableDown={idx === founders.length - 1}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </section>
 
-          <div className="overflow-x-auto rounded-xl border border-border-subtle bg-background-white shadow-sm">
-            <h3 className="border-b border-border-subtle bg-background-light px-4 py-3 text-sm font-semibold text-secondary-navy">
-              Our Team grid ({members.length})
-            </h3>
-            <table className="w-full min-w-[640px] table-fixed text-left text-sm">
-              <thead className="border-b border-border-subtle text-xs font-semibold uppercase tracking-wide text-secondary-navy/80">
-                <tr>
-                  <th className="px-4 py-3">Order</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Photo</th>
-                  <th className="w-[200px] px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((r) => renderRow(r))}
-              </tbody>
-            </table>
-          </div>
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-secondary-navy">Our Team grid ({members.length})</h2>
+              <button
+                type="button"
+                onClick={() => setShowAddForm((v) => !v)}
+                className="h-10 rounded-lg bg-primary-navy px-4 text-sm font-semibold text-white hover:bg-secondary-navy"
+              >
+                {showAddForm ? "Hide add form" : "Add team member"}
+              </button>
+            </div>
+
+            {showAddForm && (
+              <div className="rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm">
+                <h3 className="font-semibold text-secondary-navy">New row</h3>
+                <form onSubmit={onCreate} className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <label className="text-xs font-medium text-secondary-navy">
+                    Section
+                    <select
+                      value={newSection}
+                      onChange={(e) => setNewSection(e.target.value as "founder" | "member")}
+                      className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
+                    >
+                      <option value="founder">Founder (Leadership panel)</option>
+                      <option value="member">Member (Our Team grid)</option>
+                    </select>
+                  </label>
+                  <div className="hidden sm:block" aria-hidden />
+                  <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
+                    Name
+                    <input
+                      required
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
+                    Title
+                    <input
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
+                    Bio / intro (use blank lines between paragraphs for the Leadership layout)
+                    <textarea
+                      value={newBio}
+                      onChange={(e) => setNewBio(e.target.value)}
+                      rows={5}
+                      className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
+                    Photo upload
+                    <input
+                      ref={newPhotoFileRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="mt-1 block w-full text-sm text-secondary-navy file:mr-3 file:rounded-md file:border file:border-secondary-navy/25 file:bg-background-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
+                    />
+                    <span className="mt-1 block text-[11px] text-text-light">
+                      JPEG, PNG, WebP, or GIF — max 5 MB.
+                    </span>
+                  </label>
+                  <label className="text-xs font-medium text-secondary-navy sm:col-span-2">
+                    Preset photo (optional)
+                    <select
+                      value={newImage}
+                      onChange={(e) => {
+                        setNewImage(e.target.value);
+                        if (e.target.value !== "" && newPhotoFileRef.current) newPhotoFileRef.current.value = "";
+                      }}
+                      className="mt-1 w-full max-w-md rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
+                    >
+                      {IMAGE_OPTIONS.map((k) => (
+                        <option key={k || "none"} value={k}>
+                          {k === "" ? "(None)" : k}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="sm:col-span-2">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="rounded-lg bg-primary-navy px-6 py-2 text-sm font-semibold text-white hover:bg-secondary-navy disabled:opacity-60"
+                    >
+                      {saving ? "Saving…" : "Save new row"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => onDragEnd("member", members, e)}
+            >
+              <SortableContext items={members.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-3">
+                  {members.map((r, idx) => (
+                    <SortableTeamCard
+                      key={r.id}
+                      row={r}
+                      dragDisabled={dragLocked}
+                      photoHint={photoHintForRow(r)}
+                      onEdit={() => startEdit(r)}
+                      onDelete={() => void removeRow(r.id)}
+                      onMoveUp={() => moveByDelta("member", members, r.id, -1)}
+                      onMoveDown={() => moveByDelta("member", members, r.id, 1)}
+                      disableUp={idx === 0}
+                      disableDown={idx === members.length - 1}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </section>
         </div>
+      )}
+
+      {editingRow && editingId && (
+        <section className="rounded-xl border border-accent-blue/30 bg-background-white p-6 shadow-md">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-semibold text-secondary-navy">Edit {editName || editingRow.name}</h2>
+            <button
+              type="button"
+              onClick={() => setEditingId(null)}
+              className="h-9 rounded-lg border border-border-subtle px-3 text-sm text-secondary-navy hover:bg-background-light"
+            >
+              Cancel edit
+            </button>
+          </div>
+          <form onSubmit={(e) => void saveEdit(e)} className="mt-6 flex flex-col gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="text-xs font-medium">
+                Section
+                <select
+                  value={editSection}
+                  onChange={(e) => setEditSection(e.target.value as "founder" | "member")}
+                  className="mt-1 w-full rounded border px-2 py-1 text-sm"
+                >
+                  <option value="founder">Founder</option>
+                  <option value="member">Member</option>
+                </select>
+              </label>
+            </div>
+            <input
+              required
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="rounded border px-2 py-1 text-sm"
+              placeholder="Name"
+            />
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="rounded border px-2 py-1 text-sm"
+              placeholder="Title"
+            />
+            <textarea
+              value={editBio}
+              onChange={(e) => setEditBio(e.target.value)}
+              rows={5}
+              className="rounded border px-2 py-1 text-sm"
+              placeholder="Bio"
+            />
+            <div className="rounded border border-border-subtle bg-background-white p-3">
+              <p className="text-xs font-medium text-secondary-navy">Photo</p>
+              {teamPhotoPreviewUrl(editPhotoStoragePath) ? (
+                <img
+                  src={teamPhotoPreviewUrl(editPhotoStoragePath) ?? ""}
+                  alt=""
+                  className="mt-2 h-20 w-20 rounded-full object-cover ring-1 ring-border-subtle"
+                />
+              ) : null}
+              <input
+                ref={editPhotoFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="mt-2 block w-full text-sm file:mr-2 file:rounded file:border file:px-2 file:py-1 file:text-xs"
+              />
+              <button
+                type="button"
+                className="mt-2 text-xs text-red-700 underline"
+                onClick={() => {
+                  setEditPhotoStoragePath(null);
+                  if (editPhotoFileRef.current) editPhotoFileRef.current.value = "";
+                }}
+              >
+                Remove uploaded photo
+              </button>
+              <label className="mt-2 block text-xs font-medium text-secondary-navy">
+                Preset photo (optional)
+                <select
+                  value={editImage}
+                  onChange={(e) => {
+                    setEditImage(e.target.value);
+                    if (e.target.value !== "") {
+                      setEditPhotoStoragePath(null);
+                      if (editPhotoFileRef.current) editPhotoFileRef.current.value = "";
+                    }
+                  }}
+                  className="mt-1 w-full rounded border px-2 py-1 text-sm"
+                >
+                  {IMAGE_OPTIONS.map((k) => (
+                    <option key={k || "none"} value={k}>
+                      {k === "" ? "(None)" : k}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" disabled={saving} className="rounded bg-primary-navy px-4 py-2 text-sm text-white">
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </form>
+        </section>
       )}
     </div>
   );
-
-  function renderRow(r: TeamRow) {
-    if (editingId === r.id) {
-      return (
-        <tr key={r.id} className="border-b border-border-subtle bg-background-light/60">
-          <td className="px-4 py-3" colSpan={5}>
-            <form onSubmit={saveEdit} className="flex flex-col gap-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-xs font-medium">
-                  Section
-                  <select
-                    value={editSection}
-                    onChange={(e) => setEditSection(e.target.value as "founder" | "member")}
-                    className="mt-1 w-full rounded border px-2 py-1 text-sm"
-                  >
-                    <option value="founder">Founder</option>
-                    <option value="member">Member</option>
-                  </select>
-                </label>
-                <label className="text-xs font-medium">
-                  Sort order
-                  <input
-                    type="number"
-                    value={editSort}
-                    onChange={(e) => setEditSort(Number(e.target.value))}
-                    className="mt-1 w-full rounded border px-2 py-1 text-sm"
-                  />
-                </label>
-              </div>
-              <input
-                required
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="rounded border px-2 py-1 text-sm"
-                placeholder="Name"
-              />
-              <input
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                className="rounded border px-2 py-1 text-sm"
-                placeholder="Title"
-              />
-              <textarea
-                value={editBio}
-                onChange={(e) => setEditBio(e.target.value)}
-                rows={5}
-                className="rounded border px-2 py-1 text-sm"
-                placeholder="Bio"
-              />
-              <div className="rounded border border-border-subtle bg-background-white p-3">
-                <p className="text-xs font-medium text-secondary-navy">Photo</p>
-                {teamPhotoPreviewUrl(editPhotoStoragePath) ? (
-                  <img
-                    src={teamPhotoPreviewUrl(editPhotoStoragePath) ?? ""}
-                    alt=""
-                    className="mt-2 h-20 w-20 rounded-full object-cover ring-1 ring-border-subtle"
-                  />
-                ) : null}
-                <input
-                  ref={editPhotoFileRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="mt-2 block w-full text-sm file:mr-2 file:rounded file:border file:px-2 file:py-1 file:text-xs"
-                />
-                <button
-                  type="button"
-                  className="mt-2 text-xs text-red-700 underline"
-                  onClick={() => {
-                    setEditPhotoStoragePath(null);
-                    if (editPhotoFileRef.current) editPhotoFileRef.current.value = "";
-                  }}
-                >
-                  Remove uploaded photo
-                </button>
-                <label className="mt-2 block text-xs font-medium text-secondary-navy">
-                  Preset photo (optional)
-                  <select
-                    value={editImage}
-                    onChange={(e) => {
-                      setEditImage(e.target.value);
-                      if (e.target.value !== "") {
-                        setEditPhotoStoragePath(null);
-                        if (editPhotoFileRef.current) editPhotoFileRef.current.value = "";
-                      }
-                    }}
-                    className="mt-1 w-full rounded border px-2 py-1 text-sm"
-                  >
-                    {IMAGE_OPTIONS.map((k) => (
-                      <option key={k || "none"} value={k}>
-                        {k === "" ? "(None)" : k}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <input
-                  type="number"
-                  value={editDelay}
-                  onChange={(e) => setEditDelay(Number(e.target.value))}
-                  className="rounded border px-2 py-1 text-sm"
-                  placeholder="Delay ms"
-                />
-              </div>              <div className="flex gap-2">
-                <button type="submit" disabled={saving} className="rounded bg-primary-navy px-3 py-1 text-xs text-white">
-                  Save
-                </button>
-                <button type="button" onClick={() => setEditingId(null)} className="rounded border px-3 py-1 text-xs">
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </td>
-        </tr>
-      );
-    }
-
-    return (
-      <tr key={r.id} className="border-b border-border-subtle last:border-0">
-        <td className="px-4 py-3 align-middle">{r.sortOrder}</td>
-        <td className="px-4 py-3 font-medium text-text-dark">{r.name}</td>
-        <td className="px-4 py-3 text-text-light">{r.title || "—"}</td>
-        <td className="px-4 py-3 align-middle">
-          {r.photoStoragePath ? (
-            <span className="text-green-800">Uploaded</span>
-          ) : r.imageKey ? (
-            <span className="font-mono text-xs text-text-light">{r.imageKey}</span>
-          ) : (
-            <span className="text-text-light">—</span>
-          )}
-        </td>        <td className="px-4 py-3 text-right align-middle">
-          <div className="inline-flex gap-2">
-            <button
-              type="button"
-              onClick={() => startEdit(r)}
-              className="inline-flex h-9 min-w-[4.5rem] items-center justify-center rounded-md border border-secondary-navy/25 bg-background-white px-3 text-sm font-medium text-secondary-navy shadow-sm hover:bg-background-light"
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={() => void removeRow(r.id)}
-              className="inline-flex h-9 min-w-[4.5rem] items-center justify-center rounded-md border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700 hover:bg-red-100"
-            >
-              Delete
-            </button>
-          </div>
-        </td>
-      </tr>
-    );
-  }
 }

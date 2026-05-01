@@ -1,5 +1,4 @@
 [
-
   {
     "id": "beb01893-29bb-4859-b819-3c12724cbde0",
     "sourceFile": "Cases List Supreme Court.docx",
@@ -3564,7 +3563,6 @@
     "Subject/Applicable Law": null,
     "Status": null
   },
- 
   {
     "id": "ca77e4a0-b6c8-452c-a985-3ee609307808",
     "sourceFile": "IHC Cases New List.docx",
@@ -16456,5 +16454,16 @@
     "Court": "Peshawar High Court",
     "Subject/Applicable Law": null,
     "Status": null
+  },
+  {
+    "id": "92aa0200-1f98-4cfc-8503-c5eafd087563",
+    "sourceFile": "Civil Courts cases list.docx",
+    "tableIndex": 0,
+    "rowIndex": 1,
+    "Case Number": "—",
+    "Case Title": "ETS v Standard Chartered",
+    "Court": "Civil Court",
+    "Subject/Applicable Law": "Civil, Company",
+    "Status": "Decided"
   }
 ]

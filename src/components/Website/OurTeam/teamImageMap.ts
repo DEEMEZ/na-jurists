@@ -13,6 +13,8 @@ import dsc05025 from "@/assets/images/DSC05025.jpg";
 import dsc05027 from "@/assets/images/DSC05027.jpg";
 import dsc05108 from "@/assets/images/DSC05108.jpg";
 import jabbar from "@/assets/images/jabbar.jpeg";
+import sadia from "@/assets/images/Sadia.jpg";
+import hamza from "@/assets/images/Hamza.jpg";
 
 /** Must match keys in `src/lib/websiteTeamDefaults.ts`. */
 export const TEAM_IMAGE_MAP: Record<string, StaticImageData> = {
@@ -30,6 +32,8 @@ export const TEAM_IMAGE_MAP: Record<string, StaticImageData> = {
   dsc05027,
   dsc05108,
   jabbar,
+  sadia,
+  hamza,
 };
 
 export type TeamAvatarSrc = string | StaticImageData | null;

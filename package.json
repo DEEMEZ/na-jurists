@@ -10,7 +10,8 @@
     "build": "npm run build:portal && next build --webpack",
     "start": "next start",
     "lint": "next lint",
-    "extract-judgments": "node scripts/extract-judgments.js"
+    "extract-judgments": "node scripts/extract-judgments.js",
+    "import:civil-cases": "node scripts/import-civil-court-cases.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
