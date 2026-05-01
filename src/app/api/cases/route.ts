@@ -185,6 +185,9 @@ function filterCases(
 }
 
 export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === 'development') {
+    cachedCases = null;
+  }
   const searchParams = request.nextUrl.searchParams;
   const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
   const limit = Math.min(

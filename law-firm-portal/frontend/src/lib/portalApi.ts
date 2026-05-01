@@ -40,7 +40,7 @@ type Ctx = {
 
 /** Avoid N× profile fetches when many API calls run in parallel (e.g. case detail). */
 let profileCache: { userId: string; ctx: Ctx; expires: number } | null = null;
-const PROFILE_CACHE_TTL_MS = 20_000;
+const PROFILE_CACHE_TTL_MS = 60_000;
 let authInvalidationStarted = false;
 
 function ensureProfileCacheInvalidation(): void {
@@ -1868,6 +1868,54 @@ export async function portalApiJson(
     };
   }
 
+  if (pathname === "/api/v1/admin/website-team/reorder" && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const b = body as Record<string, unknown>;
+    const section = b.section === "founder" ? "founder" : "member";
+    const orderedIds = Array.isArray(b.orderedIds) ? b.orderedIds.map((id) => String(id)) : [];
+    const uuidRe =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    for (const id of orderedIds) {
+      if (!uuidRe.test(id)) throw new Error("Invalid team row id");
+    }
+    if (new Set(orderedIds).size !== orderedIds.length) {
+      throw new Error("Duplicate ids in reorder list");
+    }
+
+    const { data: secRows, error: secErr } = await x.sb
+      .from("website_team_members")
+      .select("id")
+      .eq("section", section);
+    if (secErr) throw new Error(secErr.message);
+    const expectedIds = new Set((secRows ?? []).map((r: { id: string }) => String(r.id)));
+    if (orderedIds.length !== expectedIds.size) {
+      throw new Error("Reorder list must include every row in this section exactly once");
+    }
+    for (const id of orderedIds) {
+      if (!expectedIds.has(id)) throw new Error("Reorder id does not belong to this section");
+    }
+
+    const updatedAt = new Date().toISOString();
+    const results = await Promise.all(
+      orderedIds.map((id, idx) =>
+        x.sb
+          .from("website_team_members")
+          .update({
+            sort_order: (idx + 1) * 10,
+            updated_at: updatedAt,
+          })
+          .eq("id", id)
+          .eq("section", section),
+      ),
+    );
+    for (const r of results) {
+      if (r.error) throw new Error(r.error.message);
+    }
+
+    return { ok: true };
+  }
+
   const websiteTeamIdMatch = pathname.match(/^\/api\/v1\/admin\/website-team\/([^/]+)$/);
   if (websiteTeamIdMatch && (m === "PATCH" || m === "DELETE")) {
     const x = await requireProfile();
@@ -1892,6 +1940,36 @@ export async function portalApiJson(
       return { ok: true };
     }
 
+    const b = body as Record<string, unknown>;
+    const patchKeys = (
+      [
+        "section",
+        "name",
+        "title",
+        "bio",
+        "sortOrder",
+        "delayMs",
+        "photoStoragePath",
+        "imageKey",
+      ] as const
+    ).filter((k) => b[k] !== undefined);
+    const sortOrderOnly =
+      patchKeys.length === 1 && patchKeys[0] === "sortOrder";
+    const updatedAt = new Date().toISOString();
+
+    if (sortOrderOnly) {
+      const so = Number(b.sortOrder);
+      if (!Number.isFinite(so)) throw new Error("Invalid sort order");
+      const { data, error } = await x.sb
+        .from("website_team_members")
+        .update({ sort_order: so, updated_at: updatedAt })
+        .eq("id", rowId)
+        .select("id, section, sort_order, name, title, bio, image_key, photo_storage_path, delay_ms")
+        .single();
+      if (error) throw new Error(error.message);
+      return { row: mapWebsiteTeamAdminRow(data as Record<string, unknown>) };
+    }
+
     const { data: prevRow, error: prevErr } = await x.sb
       .from("website_team_members")
       .select("photo_storage_path, image_key")
@@ -1900,9 +1978,8 @@ export async function portalApiJson(
     if (prevErr) throw new Error(prevErr.message);
     const prev = prevRow as { photo_storage_path: string | null; image_key: string | null };
 
-    const b = body as Record<string, unknown>;
     const patch: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+      updated_at: updatedAt,
     };
     if (b.section === "founder" || b.section === "member") patch.section = b.section;
     if (typeof b.name === "string") patch.name = b.name;

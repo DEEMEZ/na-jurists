@@ -5,7 +5,8 @@ import {
   DndContext,
   closestCenter,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -18,7 +19,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronUp, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
@@ -53,14 +54,36 @@ const IMAGE_OPTIONS: string[] = ["", ...WEBSITE_TEAM_IMAGE_KEYS];
 
 const FIXED_DELAY_MS = 100;
 
-async function persistOrderedRows(ordered: TeamRow[]): Promise<void> {
-  for (let idx = 0; idx < ordered.length; idx++) {
-    const sortOrder = (idx + 1) * 10;
-    await apiJson(`/api/v1/admin/website-team/${ordered[idx].id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ sortOrder }),
-    });
-  }
+/** Match GET /website-team: founders by sortOrder, then members. */
+function canonicalTeamRows(prev: TeamRow[]): TeamRow[] {
+  const founders = prev
+    .filter((r) => r.section === "founder")
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const members = prev
+    .filter((r) => r.section === "member")
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  return [...founders, ...members];
+}
+
+function canonicalAfterSectionReorder(prev: TeamRow[], ordered: TeamRow[]): TeamRow[] {
+  const sortPatch = new Map(ordered.map((r, i) => [r.id, (i + 1) * 10]));
+  const merged = prev.map((r) =>
+    sortPatch.has(r.id) ? { ...r, sortOrder: sortPatch.get(r.id)! } : r,
+  );
+  return canonicalTeamRows(merged);
+}
+
+function canonicalReplaceRow(prev: TeamRow[], replacement: TeamRow): TeamRow[] {
+  const merged = prev.map((r) => (r.id === replacement.id ? replacement : r));
+  return canonicalTeamRows(merged);
+}
+
+function canonicalInsertRow(prev: TeamRow[], inserted: TeamRow): TeamRow[] {
+  return canonicalTeamRows([...prev, inserted]);
+}
+
+function canonicalRemoveRow(prev: TeamRow[], id: string): TeamRow[] {
+  return canonicalTeamRows(prev.filter((r) => r.id !== id));
 }
 
 function SortableTeamCard({
@@ -69,20 +92,12 @@ function SortableTeamCard({
   photoHint,
   onEdit,
   onDelete,
-  onMoveUp,
-  onMoveDown,
-  disableUp,
-  disableDown,
 }: {
   row: TeamRow;
   dragDisabled: boolean;
   photoHint: string;
   onEdit: () => void;
   onDelete: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  disableUp: boolean;
-  disableDown: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.id,
@@ -101,40 +116,27 @@ function SortableTeamCard({
       style={style}
       className="flex flex-wrap items-stretch gap-3 rounded-xl border border-border-subtle bg-background-white p-4 shadow-sm"
     >
-      <button
-        type="button"
-        className="flex h-10 w-10 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg border border-secondary-navy/20 text-secondary-navy hover:bg-background-light active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40"
-        disabled={dragDisabled}
-        aria-label="Drag to reorder"
+      {/* Whole primary column draggable (not only the grip) — keeps Edit/Delete clickable */}
+      <div
+        className={`flex min-w-0 flex-1 cursor-grab touch-none select-none items-start gap-3 rounded-lg active:cursor-grabbing ${
+          dragDisabled ? "cursor-not-allowed opacity-40" : ""
+        }`}
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="h-5 w-5" />
-      </button>
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold text-text-dark">{row.name}</p>
-        <p className="text-sm text-text-light">{row.title || "—"}</p>
-        <p className="mt-1 text-xs text-secondary-navy/80">{photoHint}</p>
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-secondary-navy/20 text-secondary-navy"
+          aria-hidden
+        >
+          <GripVertical className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <p className="font-semibold text-text-dark">{row.name}</p>
+          <p className="text-sm text-text-light">{row.title || "—"}</p>
+          <p className="mt-1 text-xs text-secondary-navy/80">{photoHint}</p>
+        </div>
       </div>
       <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center">
-        <button
-          type="button"
-          disabled={disableUp}
-          onClick={onMoveUp}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-secondary-navy/25 text-secondary-navy hover:bg-background-light disabled:opacity-35"
-          aria-label="Move up"
-        >
-          <ChevronUp className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          disabled={disableDown}
-          onClick={onMoveDown}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-secondary-navy/25 text-secondary-navy hover:bg-background-light disabled:opacity-35"
-          aria-label="Move down"
-        >
-          <ChevronDown className="h-4 w-4" />
-        </button>
         <button
           type="button"
           onClick={onEdit}
@@ -181,8 +183,16 @@ export function AdminWebsiteTeamPage() {
   const [newImage, setNewImage] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const rowsRef = useRef<TeamRow[]>([]);
+  rowsRef.current = rows;
+
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 220, tolerance: 6 },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -192,7 +202,7 @@ export function AdminWebsiteTeamPage() {
     setError(null);
     try {
       const data = await apiJson<{ rows: TeamRow[] }>("/api/v1/admin/website-team");
-      setRows(data.rows);
+      setRows(canonicalTeamRows(data.rows));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
@@ -216,6 +226,42 @@ export function AdminWebsiteTeamPage() {
   if (!user) return null;
   if (user.role !== "ADMIN") {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  async function seedBuiltInTeam() {
+    const ok =
+      rows.length === 0
+        ? await confirm({
+            title: "Load built-in website team?",
+            message:
+              "Insert the default founder + Our Team roster into the database so you can edit it here. Safe when the table is empty.",
+            variant: "default",
+            confirmLabel: "Load defaults",
+            cancelLabel: "Cancel",
+          })
+        : await confirm({
+            title: "Replace entire website team?",
+            message:
+              "This deletes all existing website team rows and inserts the built-in roster from the marketing site. Continue?",
+            variant: "danger",
+            confirmLabel: "Replace all",
+            cancelLabel: "Cancel",
+          });
+    if (!ok) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await apiJson("/api/v1/admin/website-team/seed-defaults", { method: "POST", body: "{}" });
+      const data = await apiJson<{ rows: TeamRow[] }>("/api/v1/admin/website-team");
+      setRows(canonicalTeamRows(data.rows));
+      showToast("Website team loaded from defaults.");
+    } catch (err) {
+      const m = err instanceof Error ? err.message : "Seed failed";
+      setError(m);
+      showToast(m, "error");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function photoHintForRow(r: TeamRow): string {
@@ -249,7 +295,7 @@ export function AdminWebsiteTeamPage() {
       }
       if (editPhotoFileRef.current) editPhotoFileRef.current.value = "";
 
-      await apiJson(`/api/v1/admin/website-team/${editingId}`, {
+      const { row } = await apiJson<{ row: TeamRow }>(`/api/v1/admin/website-team/${editingId}`, {
         method: "PATCH",
         body: JSON.stringify({
           section: editSection,
@@ -263,7 +309,7 @@ export function AdminWebsiteTeamPage() {
         }),
       });
       setEditingId(null);
-      await load();
+      setRows((prev) => canonicalReplaceRow(prev, row));
       showToast("Team row saved.");
     } catch (err) {
       const m = err instanceof Error ? err.message : "Save failed";
@@ -287,7 +333,7 @@ export function AdminWebsiteTeamPage() {
     setError(null);
     try {
       await apiJson(`/api/v1/admin/website-team/${id}`, { method: "DELETE" });
-      await load();
+      setRows((prev) => canonicalRemoveRow(prev, id));
       showToast("Row removed.");
       if (editingId === id) setEditingId(null);
     } catch (err) {
@@ -313,7 +359,7 @@ export function AdminWebsiteTeamPage() {
       }
       if (newPhotoFileRef.current) newPhotoFileRef.current.value = "";
 
-      await apiJson("/api/v1/admin/website-team", {
+      const { row } = await apiJson<{ row: TeamRow }>("/api/v1/admin/website-team", {
         method: "POST",
         body: JSON.stringify({
           section: newSection,
@@ -331,7 +377,7 @@ export function AdminWebsiteTeamPage() {
       setNewBio("");
       setNewImage("");
       setShowAddForm(false);
-      await load();
+      setRows((prev) => canonicalInsertRow(prev, row));
       showToast("Team row created.");
     } catch (err) {
       const m = err instanceof Error ? err.message : "Create failed";
@@ -342,18 +388,26 @@ export function AdminWebsiteTeamPage() {
     }
   }
 
-  async function runReorder(_section: "founder" | "member", ordered: TeamRow[]) {
+  async function runReorder(section: "founder" | "member", ordered: TeamRow[]) {
     if (editingId) {
       showToast("Finish or cancel editing before reordering.", "error");
       return;
     }
+    const snapshot = rowsRef.current.map((r) => ({ ...r }));
     setSaving(true);
     setError(null);
+    setRows(canonicalAfterSectionReorder(rowsRef.current, ordered));
     try {
-      await persistOrderedRows(ordered);
-      await load();
-      showToast("Order updated.");
+      await apiJson<{ ok: boolean }>("/api/v1/admin/website-team/reorder", {
+        method: "POST",
+        body: JSON.stringify({
+          section,
+          orderedIds: ordered.map((r) => r.id),
+        }),
+      });
+      showToast("Order saved.");
     } catch (err) {
+      setRows(snapshot);
       const m = err instanceof Error ? err.message : "Reorder failed";
       setError(m);
       showToast(m, "error");
@@ -371,13 +425,6 @@ export function AdminWebsiteTeamPage() {
     void runReorder(section, arrayMove(list, oldIdx, newIdx));
   }
 
-  function moveByDelta(_section: "founder" | "member", list: TeamRow[], id: string, delta: number) {
-    const i = list.findIndex((x) => x.id === id);
-    const j = i + delta;
-    if (i < 0 || j < 0 || j >= list.length) return;
-    void runReorder(_section, arrayMove(list, i, j));
-  }
-
   const dragLocked = Boolean(editingId) || saving;
 
   const editingRow = useMemo(() => rows.find((r) => r.id === editingId), [rows, editingId]);
@@ -388,8 +435,8 @@ export function AdminWebsiteTeamPage() {
       <div>
         <h1 className="text-2xl font-semibold text-primary-navy">Website team</h1>
         <p className="mt-1 text-sm text-text-light">
-          Drag cards or use arrows to set order. Match how the Our Team grid appears on the public site. New
-          members are added at the end of their section.
+          Drag rows by the handle area or anywhere on the name/title block (long-press on touch). The order here matches
+          the Our Team grid on the public site. New members are added at the end of their section.
         </p>
       </div>
 
@@ -400,7 +447,23 @@ export function AdminWebsiteTeamPage() {
       {loading ? (
         <p className="text-text-light">Loading…</p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-text-light">No rows yet.</p>
+        <section className="rounded-xl border border-border-subtle bg-background-white p-8 text-center shadow-sm">
+          <p className="text-sm text-text-dark">
+            No team rows in the database yet. The public site still uses built-in defaults from code until you add rows
+            here—or load them in one step.
+          </p>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void seedBuiltInTeam()}
+            className="mt-4 h-11 rounded-lg bg-primary-navy px-6 text-sm font-semibold text-white hover:bg-secondary-navy disabled:opacity-60"
+          >
+            {saving ? "Working…" : "Load built-in website team"}
+          </button>
+          <p className="mt-3 text-xs text-text-light">
+            After loading, you can reorder, edit photos, or add members. Empty database is normal on new projects.
+          </p>
+        </section>
       ) : (
         <div className="space-y-8">
           <section className="space-y-3">
@@ -416,7 +479,7 @@ export function AdminWebsiteTeamPage() {
             >
               <SortableContext items={founders.map((r) => r.id)} strategy={verticalListSortingStrategy}>
                 <div className="space-y-3">
-                  {founders.map((r, idx) => (
+                  {founders.map((r) => (
                     <SortableTeamCard
                       key={r.id}
                       row={r}
@@ -424,10 +487,6 @@ export function AdminWebsiteTeamPage() {
                       photoHint={photoHintForRow(r)}
                       onEdit={() => startEdit(r)}
                       onDelete={() => void removeRow(r.id)}
-                      onMoveUp={() => moveByDelta("founder", founders, r.id, -1)}
-                      onMoveDown={() => moveByDelta("founder", founders, r.id, 1)}
-                      disableUp={idx === 0}
-                      disableDown={idx === founders.length - 1}
                     />
                   ))}
                 </div>
@@ -538,7 +597,7 @@ export function AdminWebsiteTeamPage() {
             >
               <SortableContext items={members.map((r) => r.id)} strategy={verticalListSortingStrategy}>
                 <div className="space-y-3">
-                  {members.map((r, idx) => (
+                  {members.map((r) => (
                     <SortableTeamCard
                       key={r.id}
                       row={r}
@@ -546,10 +605,6 @@ export function AdminWebsiteTeamPage() {
                       photoHint={photoHintForRow(r)}
                       onEdit={() => startEdit(r)}
                       onDelete={() => void removeRow(r.id)}
-                      onMoveUp={() => moveByDelta("member", members, r.id, -1)}
-                      onMoveDown={() => moveByDelta("member", members, r.id, 1)}
-                      disableUp={idx === 0}
-                      disableDown={idx === members.length - 1}
                     />
                   ))}
                 </div>

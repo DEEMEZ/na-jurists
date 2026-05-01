@@ -1,5 +1,4 @@
 import {
-  Bell,
   Briefcase,
   CalendarDays,
   FolderOpen,
@@ -442,9 +441,7 @@ export function DashboardPage() {
 
       <section
         className={`grid gap-6 ${user?.role === "ADMIN" ? "lg:grid-cols-2" : ""}`}
-        aria-label={
-          user?.role === "ADMIN" ? "Cases and notifications" : "Cases"
-        }
+        aria-label={user?.role === "ADMIN" ? "Cases and messages" : "Cases"}
       >
         <article className="portal-stat-tile relative overflow-hidden rounded-2xl border border-border-subtle/90 bg-background-white shadow-md hover:shadow-xl">
           <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-gold-accent to-gold-accent/40" />
@@ -487,22 +484,24 @@ export function DashboardPage() {
             <div className="p-6 pl-7 sm:p-8 sm:pl-9">
               <div className="flex items-start gap-4">
                 <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-navy/5 text-primary-navy ring-1 ring-primary-navy/10">
-                  <Bell className="h-6 w-6" strokeWidth={1.75} />
+                  <Mail className="h-6 w-6" strokeWidth={1.75} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-lg font-semibold text-primary-navy">
-                    Notifications
+                    Client messages
                   </h2>
                   <p className="mt-1 text-sm text-text-light">
-                    Status changes and firm updates (in-app and by email when
-                    configured).
+                    Threads with clients on their matters — reply from the portal.
                   </p>
                 </div>
               </div>
-              <div className="mt-6">
-                <p className="text-sm text-text-light">
-                  Clients receive notifications when matter status changes.
-                </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Link
+                  to="/admin/messages"
+                  className="portal-link-chip inline-flex rounded-xl bg-primary-navy px-4 py-2.5 text-sm font-semibold text-background-white shadow-sm hover:bg-secondary-navy hover:shadow-md"
+                >
+                  Open messages
+                </Link>
               </div>
             </div>
           </article>

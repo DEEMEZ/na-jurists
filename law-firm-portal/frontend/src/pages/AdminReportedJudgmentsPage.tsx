@@ -5,7 +5,6 @@ import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
-import { resolvePublicWebsiteOrigin } from "@/lib/publicWebsiteOrigin";
 
 type JudgmentListItem = {
   id: number;
@@ -78,7 +77,6 @@ export function AdminReportedJudgmentsPage() {
   const [originalEditId, setOriginalEditId] = useState<number | null>(null);
   const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
 
   const nextSuggestedId = useMemo(() => {
     if (rows.length === 0) return 1;
@@ -146,57 +144,6 @@ export function AdminReportedJudgmentsPage() {
     setKeywordsText("");
     setDisplayOnWebsite(false);
     setOriginalEditId(null);
-  }
-
-  async function importFromWebsite() {
-    if (!editing) return;
-    const origin = resolvePublicWebsiteOrigin();
-    if (!origin) {
-      showToast(
-        "Set VITE_PUBLIC_WEBSITE_ORIGIN to your live site URL (e.g. https://example.com).",
-        "error",
-      );
-      return;
-    }
-    const id = editing.id;
-    setImporting(true);
-    setError(null);
-    try {
-      const base = origin.replace(/\/$/, "");
-      const res = await fetch(`${base}/api/reported-judgments?id=${encodeURIComponent(String(id))}`);
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t?.slice(0, 200) || res.statusText);
-      }
-      const json = (await res.json()) as { data?: JudgmentRecord };
-      const data = json.data;
-      if (!data || typeof data.id !== "number") {
-        throw new Error("Unexpected response from website API");
-      }
-      setEditing({
-        ...data,
-        judges: Array.isArray(data.judges) ? data.judges.map(String) : [],
-        sections: Array.isArray(data.sections) ? data.sections.map(String) : [],
-        keywords: Array.isArray(data.keywords) ? data.keywords.map(String) : [],
-        parties: {
-          petitioner: data.parties?.petitioner != null ? String(data.parties.petitioner) : "",
-          respondent: data.parties?.respondent != null ? String(data.parties.respondent) : "",
-        },
-      });
-      setJudgesText((data.judges ?? []).join("\n"));
-      setSectionsText((data.sections ?? []).join("\n"));
-      setKeywordsText((data.keywords ?? []).join(", "));
-      showToast("Loaded from website catalog into the form.");
-    } catch (e) {
-      const m =
-        e instanceof Error
-          ? e.message
-          : "Import failed (check CORS on the main site for your portal origin).";
-      setError(m);
-      showToast(m, "error");
-    } finally {
-      setImporting(false);
-    }
   }
 
   async function onSave(e: FormEvent) {
@@ -354,16 +301,6 @@ export function AdminReportedJudgmentsPage() {
               {originalEditId !== null ? `Edit judgment (Sr. ${editing.id})` : "New judgment"}
             </h2>
             <div className="flex flex-wrap gap-2">
-              {originalEditId !== null && (
-                <button
-                  type="button"
-                  disabled={importing}
-                  onClick={() => void importFromWebsite()}
-                  className="h-9 rounded-lg border border-secondary-navy/25 px-3 text-sm font-medium text-secondary-navy hover:bg-background-light disabled:opacity-60"
-                >
-                  {importing ? "Importing…" : "Load from website API"}
-                </button>
-              )}
               <button
                 type="button"
                 onClick={() => closeEditor()}

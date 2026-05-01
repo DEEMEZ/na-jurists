@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "extract-judgments": "node scripts/extract-judgments.js",
-    "import:civil-cases": "node scripts/import-civil-court-cases.mjs"
+    "import:civil-cases": "node scripts/import-civil-court-cases.mjs",
+    "verify:civil-doc-import": "node scripts/verify-civil-doc-import.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
