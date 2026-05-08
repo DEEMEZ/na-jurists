@@ -7,7 +7,7 @@ export async function GET() {
   const payload = await loadWebsiteTeamPayload();
   return NextResponse.json(payload, {
     headers: {
-      "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300",
+      "Cache-Control": "no-store, max-age=0",
     },
   });
 }

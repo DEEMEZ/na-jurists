@@ -78,6 +78,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Judgment not found.' }, { status: 404 });
     }
 
+    if (typeof found.pdfUrl === 'string' && found.pdfUrl.trim().length > 0) {
+      return NextResponse.redirect(found.pdfUrl.trim(), 302);
+    }
+
     const buffer = await judgmentToPdfBuffer(found);
     const safeName = `judgment-${found.id}.pdf`;
 

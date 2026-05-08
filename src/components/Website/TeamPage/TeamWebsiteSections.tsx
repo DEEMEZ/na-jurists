@@ -13,18 +13,27 @@ export default function TeamWebsiteSections() {
 
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
+    const load = async () => {
       try {
-        const res = await fetch("/api/website-team");
+        const res = await fetch("/api/website-team", { cache: "no-store" });
         if (!res.ok) throw new Error(String(res.status));
         const data = (await res.json()) as WebsiteTeamPublicPayload;
         if (!cancelled) setTeam(data);
       } catch {
         if (!cancelled) setTeam(DEFAULT_WEBSITE_TEAM);
       }
-    })();
+    };
+    void load();
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    }, 2000);
+
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
     };
   }, []);
 

@@ -19,21 +19,27 @@ const Hero = () => {
       subtitle: "Trusted Legal Expertise",
       description: "Providing comprehensive legal solutions with unwavering commitment to integrity, excellence, and client success",
       cta1: "Our Services",
-      cta2: "Schedule Consultation"
+      cta2: "Schedule Consultation",
+      cta1Href: "/services",
+      cta2Href: "/contact",
     },
     {
       title: "Corporate Solutions",
       subtitle: "Business Law Specialists",
       description: "Expert guidance in corporate formation, mergers & acquisitions, and commercial legal matters for sustainable business growth",
       cta1: "Corporate Services",
-      cta2: "Contact Us"
+      cta2: "Contact Us",
+      cta1Href: "/services",
+      cta2Href: "/contact",
     },
     {
       title: "Client Success",
       subtitle: "Client-Focused Approach",
       description: "Dedicated advocates with decades of experience, representing clients with the highest standards of legal excellence",
       cta1: "Meet Our Team",
-      cta2: "Case Studies"
+      cta2: "Case Studies",
+      cta1Href: "/team",
+      cta2Href: "/cases",
     }
   ];
 
@@ -189,7 +195,7 @@ const Hero = () => {
                 <div className="space-y-2 md:space-y-3">
                   <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                     <Link
-                      href="/services"
+                      href={heroSlides[currentSlide].cta1Href}
                       className="group flex items-center justify-between bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] text-white px-5 md:px-6 lg:px-7 py-2.5 md:py-3 lg:py-3.5 rounded-none hover:from-[#5a7a9b] hover:to-[#6a8aab] transition-all duration-300 font-bold w-full max-w-xs text-sm"
                     >
                       <span>{heroSlides[currentSlide].cta1}</span>
@@ -200,7 +206,7 @@ const Hero = () => {
                   </div>
                   <div className={`transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                     <Link
-                      href="/contact"
+                      href={heroSlides[currentSlide].cta2Href}
                       className="group flex items-center justify-between border-l-4 border-[#4a6789] bg-white/5 backdrop-blur-sm text-white px-5 md:px-6 lg:px-7 py-2.5 md:py-3 lg:py-3.5 hover:bg-white/10 transition-all duration-300 font-semibold w-full max-w-xs text-sm"
                     >
                       <span>{heroSlides[currentSlide].cta2}</span>

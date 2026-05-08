@@ -195,6 +195,7 @@ function parseReportedJudgmentRecord(body: unknown): {
   sections: string[];
   fullText: string;
   keywords: string[];
+  pdfUrl: string;
 } {
   const o = body as Record<string, unknown>;
   const src = (
@@ -225,6 +226,7 @@ function parseReportedJudgmentRecord(body: unknown): {
     sections: coerceStrArray(src.sections),
     fullText: coerceStr(src.fullText),
     keywords: coerceStrArray(src.keywords),
+    pdfUrl: coerceStr(src.pdfUrl),
   };
 }
 

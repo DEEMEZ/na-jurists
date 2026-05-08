@@ -88,8 +88,7 @@ export async function GET(request: NextRequest) {
         { data: found },
         {
           headers: {
-            'Cache-Control':
-              'public, s-maxage=3600, stale-while-revalidate=7200',
+            'Cache-Control': 'no-store, max-age=0',
           },
         },
       ),
@@ -116,8 +115,7 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          'Cache-Control':
-            'public, s-maxage=3600, stale-while-revalidate=7200',
+          'Cache-Control': 'no-store, max-age=0',
         },
       },
     ),

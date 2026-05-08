@@ -1,5 +1,6 @@
 'use client';
 
+import { createClient } from '@supabase/supabase-js';
 import { useState, useEffect } from 'react';
 import { ReportedJudgment } from '@/components/Website/ReportedJudgments/ReportedJudgements';
 import ReportedJudgmentsList from '@/components/Website/ReportedJudgments/ReportedJudgmentsList';
@@ -21,6 +22,7 @@ const ReportedJudgmentsPage = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -30,6 +32,30 @@ const ReportedJudgmentsPage = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch, courtFilter, yearFilter]);
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+    if (!url || !anon) return;
+
+    const supabase = createClient(url, anon, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const channel = supabase
+      .channel('website-reported-judgments-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reported_judgments' },
+        () => {
+          setRefreshTick((v) => v + 1);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -46,7 +72,8 @@ const ReportedJudgmentsPage = () => {
         if (yearFilter) params.set('year', yearFilter);
 
         const response = await fetch(`/api/reported-judgments?${params.toString()}`, {
-          signal: controller.signal
+          signal: controller.signal,
+          cache: 'no-store'
         });
         if (!response.ok) {
           throw new Error(`Failed to load judgments (HTTP ${response.status})`);
@@ -77,8 +104,10 @@ const ReportedJudgmentsPage = () => {
 
     loadJudgments();
 
-    return () => controller.abort();
-  }, [currentPage, debouncedSearch, courtFilter, yearFilter]);
+    return () => {
+      controller.abort();
+    };
+  }, [currentPage, debouncedSearch, courtFilter, yearFilter, refreshTick]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

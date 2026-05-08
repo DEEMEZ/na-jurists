@@ -24,11 +24,15 @@ const Footer = () => {
   ];
 
   const legalServices = [
-    { name: 'Corporate Formation', href: '/services#corporate' },
-    { name: 'Taxation', href: '/services#taxation' },
-    { name: 'Banking & Finance', href: '/services#banking' },
-    { name: 'Mergers & Acquisition', href: '/services#mergers' },
-    { name: 'Constitutional Law', href: '/services#constitutional' }
+    { name: 'Corporate and Commercial', href: '/services/1' },
+    { name: 'Taxation', href: '/services/2' },
+    { name: 'Banking and Project Finance', href: '/services/3' },
+    { name: 'Dispute Resolution', href: '/services/4' },
+    { name: 'Alternative Dispute Resolution', href: '/services/5' },
+    { name: 'Employment and Labour Laws', href: '/services/6' },
+    { name: 'Intellectual Property', href: '/services/7' },
+    { name: 'Corporate Crime and Anti-Money Laundering', href: '/services/8' },
+    { name: 'Criminal Law', href: '/services/9' }
   ];
 
   const legalResources = [

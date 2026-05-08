@@ -72,19 +72,24 @@ function mergeMembersWithDefaults(
   defaults: WebsiteTeamPublicMember[],
   dbMembers: WebsiteTeamPublicMember[],
 ): WebsiteTeamPublicMember[] {
-  const merged = defaults.map((m) => ({ ...m }));
-  const appended: WebsiteTeamPublicMember[] = [];
+  const normalizeName = (name: string) => name.trim().toLowerCase();
+  const dbNames = new Set(dbMembers.map((m) => normalizeName(m.name)));
 
-  for (const db of dbMembers) {
-    const idx = merged.findIndex((m) => m.sortOrder === db.sortOrder);
-    if (idx !== -1) {
-      merged[idx] = db;
-    } else {
-      appended.push(db);
-    }
+  const merged = defaults
+    .filter((m) => !dbNames.has(normalizeName(m.name)))
+    .map((m) => ({ ...m }));
+  const combined = [...merged, ...dbMembers].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const deduped: WebsiteTeamPublicMember[] = [];
+  const seen = new Set<string>();
+  for (const member of combined) {
+    const key = normalizeName(member.name);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(member);
   }
 
-  return [...merged, ...appended].sort((a, b) => a.sortOrder - b.sortOrder);
+  return deduped;
 }
 
 function mapRowsToPayload(rows: DbRow[], sb: SupabaseClient): WebsiteTeamPublicPayload {

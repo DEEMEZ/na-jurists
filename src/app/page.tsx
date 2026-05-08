@@ -16,9 +16,6 @@ const WhyChooseUs = dynamic(() => import('@/components/Website/HomePage/WhyChoos
 const ContactCTA = dynamic(() => import('@/components/Website/HomePage/ContactCTA'), {
   loading: () => <div className="h-48 bg-gray-100 animate-pulse" />,
 });
-const HomeCases = dynamic(() => import('@/components/Website/HomePage/HomeCases'), {
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse" />,
-});
 
 export default function Home() {
   return (
@@ -33,7 +30,6 @@ export default function Home() {
         <WhyChooseUs />
         <ContactCTA />
         {/* <ManagingPartner /> */}
-        <HomeCases />
       </div>
       <Footer />
     </main>

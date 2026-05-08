@@ -63,12 +63,15 @@ const ContactCTA = () => {
   ];
 
   const services = [
-    "Corporate Formation",
-    "Legal Consultation",
-    "Contract Drafting",
-    "Litigation Support",
-    "Tax Advisory",
-    "Regulatory Compliance"
+    "Corporate and Commercial",
+    "Taxation",
+    "Banking and Project Finance",
+    "Dispute Resolution",
+    "Alternative Dispute Resolution",
+    "Employment and Labour Laws",
+    "Intellectual Property",
+    "Corporate Crime and Anti-Money Laundering",
+    "Criminal Law",
   ];
 
   return (
@@ -222,31 +225,6 @@ const ContactCTA = () => {
           </div>
         </div>
 
-        {/* Trust Indicators */}
-        <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-        }`}>
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">250+</div>
-                <div className="text-blue-200 text-sm">Happy Clients</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">500+</div>
-                <div className="text-blue-200 text-sm">Cases Won</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">100+</div>
-                <div className="text-blue-200 text-sm">Happy Clients</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">24/7</div>
-                <div className="text-blue-200 text-sm">Support</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

@@ -19,6 +19,7 @@ export type ReportedJudgmentRecord = {
   sections: string[];
   fullText: string;
   keywords: string[];
+  pdfUrl?: string;
 };
 
 function getSupabaseUrl(): string | undefined {

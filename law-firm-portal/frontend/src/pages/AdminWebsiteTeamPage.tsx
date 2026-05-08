@@ -1,5 +1,6 @@
 import type { CSSProperties, FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Navigate } from "react-router-dom";
 import {
   DndContext,
@@ -614,8 +615,10 @@ export function AdminWebsiteTeamPage() {
         </div>
       )}
 
-      {editingRow && editingId && (
-        <section className="rounded-xl border border-accent-blue/30 bg-background-white p-6 shadow-md">
+      {editingRow && editingId && typeof document !== "undefined"
+        ? createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 p-4">
+        <section className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-accent-blue/30 bg-background-white p-6 shadow-md">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-semibold text-secondary-navy">Edit {editName || editingRow.name}</h2>
             <button
@@ -713,7 +716,10 @@ export function AdminWebsiteTeamPage() {
             </div>
           </form>
         </section>
-      )}
+        </div>,
+        document.body,
+      )
+        : null}
     </div>
   );
 }

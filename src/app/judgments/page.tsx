@@ -1,5 +1,6 @@
 'use client';
 
+import { createClient } from '@supabase/supabase-js';
 import { useEffect, useMemo, useState } from 'react';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Footer from '@/components/Website/Global/Footer/Footer';
@@ -30,7 +31,7 @@ async function fetchAllReportedJudgmentsFromApi(): Promise<Map<number, ApiJudgme
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('limit', String(pageSize));
-    const res = await fetch(`/api/reported-judgments?${params.toString()}`);
+    const res = await fetch(`/api/reported-judgments?${params.toString()}`, { cache: 'no-store' });
     if (!res.ok) {
       throw new Error(`Failed to load judgments (HTTP ${res.status})`);
     }
@@ -59,10 +60,11 @@ export default function JudgmentsPage() {
   const [overlay, setOverlay] = useState<Map<number, ApiJudgment> | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       try {
         setLoading(true);
         setLoadError(null);
@@ -76,9 +78,35 @@ export default function JudgmentsPage() {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    };
+    void load();
+
     return () => {
       cancelled = true;
+    };
+  }, [refreshTick]);
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+    if (!url || !anon) return;
+
+    const supabase = createClient(url, anon, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const channel = supabase
+      .channel('website-judgments-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reported_judgments' },
+        () => {
+          setRefreshTick((v) => v + 1);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
   }, []);
 

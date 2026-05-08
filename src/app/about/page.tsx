@@ -3,6 +3,7 @@ import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About Us - N&A Jurists',
@@ -131,23 +132,25 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              'Corporate Law',
-              'Taxation',
-              'Commercial Litigation',
-              'Banking & Finance',
-              'Mergers & Acquisitions',
-              'Intellectual Property',
-              'Energy Law',
-              'Dispute Resolution'
-            ].map((area, index) => (
-              <div 
-                key={index}
+              { label: 'Corporate and Commercial', href: '/services/1' },
+              { label: 'Taxation', href: '/services/2' },
+              { label: 'Banking and Project Finance', href: '/services/3' },
+              { label: 'Dispute Resolution', href: '/services/4' },
+              { label: 'Alternative Dispute Resolution', href: '/services/5' },
+              { label: 'Employment and Labour Laws', href: '/services/6' },
+              { label: 'Intellectual Property', href: '/services/7' },
+              { label: 'Corporate Crime and Anti-Money Laundering', href: '/services/8' },
+              { label: 'Criminal Law', href: '/services/9' }
+            ].map((area) => (
+              <Link
+                key={area.href}
+                href={area.href}
                 className="bg-white/10 hover:bg-white/20 rounded-lg p-4 text-center transition-colors duration-300"
               >
-                <div className="text-lg font-medium">{area}</div>
-              </div>
+                <div className="text-lg font-medium">{area.label}</div>
+              </Link>
             ))}
           </div>
         </div>

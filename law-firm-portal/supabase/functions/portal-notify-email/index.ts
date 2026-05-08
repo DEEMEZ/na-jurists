@@ -178,7 +178,7 @@ async function sendAdminNotifyEmails(subject: string, text: string): Promise<Res
   }
 
   const raw = Deno.env.get("NOTIFY_ADMIN_EMAILS")?.trim() ?? "";
-  const emails = [
+  const envEmails = [
     ...new Set(
       raw
         .split(/[,;\s]+/)
@@ -186,12 +186,40 @@ async function sendAdminNotifyEmails(subject: string, text: string): Promise<Res
         .filter((e) => e.includes("@")),
     ),
   ];
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey =
+    Deno.env.get("SERVICE_ROLE_KEY") ??
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+    "";
+  let dbAdminEmails: string[] = [];
+  if (supabaseUrl && serviceKey) {
+    try {
+      const adminSb = createClient(supabaseUrl, serviceKey);
+      const { data: admins, error } = await adminSb
+        .from("profiles")
+        .select("email, disabled, role")
+        .eq("role", "ADMIN")
+        .eq("disabled", false);
+      if (error) {
+        console.warn("[portal-notify-email] admin profile query failed:", error.message);
+      } else {
+        dbAdminEmails = (admins ?? [])
+          .map((row) => String((row as { email?: string }).email ?? "").trim().toLowerCase())
+          .filter((email) => email.includes("@"));
+      }
+    } catch (e) {
+      console.warn("[portal-notify-email] admin profile query error:", e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  const emails = [...new Set([...envEmails, ...dbAdminEmails])];
   if (emails.length === 0) {
-    console.log("[portal-notify-email] NOTIFY_ADMIN_EMAILS empty — skip admin notify:", subject.slice(0, 80));
+    console.log("[portal-notify-email] no admin recipients configured/found — skip admin notify:", subject.slice(0, 80));
     return json({
       ok: true,
       skipped: true,
-      reason: "Set NOTIFY_ADMIN_EMAILS (comma-separated) on the edge function",
+      reason: "No admin recipients found in NOTIFY_ADMIN_EMAILS or active ADMIN profiles",
     });
   }
   const results: string[] = [];

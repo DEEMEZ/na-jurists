@@ -2,6 +2,16 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+function resolveContactRecipients(): string[] {
+  const envValue = process.env.CONTACT_FORM_RECIPIENTS ?? process.env.NOTIFY_ADMIN_EMAILS ?? '';
+  const recipients = envValue
+    .split(/[,;\s]+/)
+    .map((x) => x.trim())
+    .filter((x) => x.includes('@'));
+  if (recipients.length > 0) return [...new Set(recipients)];
+  return ['ali.rayyan001@gmail.com'];
+}
+
 export async function POST(request: Request) {
   try {
     const { name, email, phone, subject, message } = await request.json();
@@ -23,7 +33,7 @@ export async function POST(request: Request) {
 
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: 'ali.rayyan001@gmail.com',
+      to: resolveContactRecipients(),
       subject: `New Contact Form: ${subject}`,
       html: `
         <h2>N&A JURISTS - New Message</h2>
