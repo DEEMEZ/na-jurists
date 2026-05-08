@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import pdf from "pdf-parse";
+import { createRequire } from "module";
 
 export const runtime = "nodejs";
+const require = createRequire(import.meta.url);
+
+type PdfParseFn = (dataBuffer: Buffer) => Promise<{ text?: string }>;
+
+function loadPdfParse(): PdfParseFn {
+  // Force CommonJS build to avoid Next webpack ESM worker import issue in deployments.
+  const mod = require("pdf-parse") as
+    | PdfParseFn
+    | {
+        default?: PdfParseFn;
+        pdf?: PdfParseFn;
+      };
+  if (typeof mod === "function") return mod;
+  if (typeof mod.default === "function") return mod.default;
+  if (typeof mod.pdf === "function") return mod.pdf;
+  throw new Error("Unable to load pdf-parse parser function.");
+}
 
 function withCors(response: NextResponse) {
   response.headers.set("Access-Control-Allow-Origin", "*");
@@ -135,7 +152,8 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const parsed = await pdf(buffer);
+    const pdfParse = loadPdfParse();
+    const parsed = await pdfParse(buffer);
     const extracted = extractFromText(parsed.text ?? "");
 
     return withCors(NextResponse.json({ ok: true, extracted }));
