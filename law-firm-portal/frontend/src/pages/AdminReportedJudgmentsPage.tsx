@@ -84,7 +84,6 @@ export function AdminReportedJudgmentsPage() {
   const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [pdfBusy, setPdfBusy] = useState(false);
   const [autoFillFromPdf, setAutoFillFromPdf] = useState(false);
   const [websiteRecordsById, setWebsiteRecordsById] = useState<Map<number, JudgmentRecord>>(new Map());
 
@@ -314,7 +313,6 @@ export function AdminReportedJudgmentsPage() {
         throw new Error("Enable auto-fill only when a PDF is selected.");
       }
       if (autoFillFromPdf && pdfFile) {
-        setPdfBusy(true);
         const merged = await uploadPdfAndExtract(rec, pdfFile);
         rec = {
           ...merged,
@@ -344,7 +342,6 @@ export function AdminReportedJudgmentsPage() {
       setError(m);
       showToast(m, "error");
     } finally {
-      setPdfBusy(false);
       setSaving(false);
     }
   }
