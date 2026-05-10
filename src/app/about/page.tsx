@@ -147,9 +147,9 @@ export default function AboutPage() {
               <Link
                 key={area.href}
                 href={area.href}
-                className="w-[min(100%,280px)] shrink-0 rounded-lg bg-white/10 p-4 text-center transition-colors duration-300 hover:bg-white/20"
+                className="flex w-[min(100%,280px)] shrink-0 items-center justify-center rounded-lg bg-white/10 p-4 text-center transition-colors duration-300 hover:bg-white/20"
               >
-                <div className="text-lg font-medium">{area.label}</div>
+                <span className="w-full text-center text-lg font-medium leading-snug">{area.label}</span>
               </Link>
             ))}
           </div>
