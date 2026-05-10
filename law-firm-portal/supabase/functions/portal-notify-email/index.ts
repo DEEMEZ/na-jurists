@@ -18,11 +18,56 @@ type Body = {
   recipientUserId?: string;
   subject?: string;
   text?: string;
-  /** When true, send to NOTIFY_ADMIN_EMAILS (comma-separated) instead of a client profile. */
+  /** When true, send to active portal ADMIN profiles only (not arbitrary env email lists). */
   notifyAdmin?: boolean;
+  /** Logged-in admin only: extra admin profile emails to omit (lowercase). Ignored for service_role calls. */
+  suppressAdminTo?: string[];
 };
 
 /** NOTIFY_EMAIL_FROM: `Name <email@domain.com>` or plain `email@domain.com`. */
+/** Comma/space-separated lowercased addresses from an env var (optional suppression lists). */
+function emailSuppressionSet(envName: string): Set<string> {
+  const raw = Deno.env.get(envName)?.trim() ?? "";
+  return new Set(
+    raw
+      .split(/[,;\s]+/)
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e.includes("@")),
+  );
+}
+
+/** Non-existent client mailbox → bounces hit the Gmail SMTP inbox; never send here. */
+const SUPPRESS_CLIENT_NOTIFY_ALWAYS = new Set<string>(["najurist@gmail.com"]);
+
+/** Inbox that should not receive `[Portal] …` admin copies (firm routing). */
+const SUPPRESS_ADMIN_NOTIFY_ALWAYS = new Set<string>(["ab887812@gmail.com"]);
+
+function mergedClientSuppress(): Set<string> {
+  const s = emailSuppressionSet("CLIENT_NOTIFY_EXCLUDE_EMAILS");
+  for (const e of SUPPRESS_CLIENT_NOTIFY_ALWAYS) s.add(e);
+  return s;
+}
+
+function mergedAdminSuppress(): Set<string> {
+  const s = emailSuppressionSet("ADMIN_NOTIFY_EXCLUDE_EMAILS");
+  for (const e of SUPPRESS_ADMIN_NOTIFY_ALWAYS) s.add(e);
+  return s;
+}
+
+/** Only addresses the server already treats as omit-from-admin can be reinforced from the portal (no arbitrary coworker suppression). */
+function parseRequesterAdminSuppress(payload: Body): Set<string> | undefined {
+  const raw = payload.suppressAdminTo;
+  if (!Array.isArray(raw)) return undefined;
+  const s = new Set<string>();
+  for (const x of raw) {
+    if (typeof x !== "string" || !x.includes("@")) continue;
+    const e = x.trim().toLowerCase();
+    if (SUPPRESS_ADMIN_NOTIFY_ALWAYS.has(e)) s.add(e);
+    if (s.size > 48) break;
+  }
+  return s.size ? s : undefined;
+}
+
 function parseNotifyFrom(header: string): { name?: string; email: string } {
   const t = header.trim();
   const m = t.match(/^(.+?)\s*<([^>]+)>\s*$/);
@@ -156,8 +201,12 @@ async function sendOne(
   return { ok: true, provider: "resend" };
 }
 
-/** NOTIFY_ADMIN_EMAILS only — used by logged-in admins and by server-side callers with service role JWT. */
-async function sendAdminNotifyEmails(subject: string, text: string): Promise<Response> {
+/** Active `profiles` with role ADMIN only (service role reads all rows). */
+async function sendAdminNotifyEmails(
+  subject: string,
+  text: string,
+  requesterSuppress?: ReadonlySet<string>,
+): Promise<Response> {
   const ctx = loadSendCtx();
   if (!ctx.sender.email.includes("@")) {
     return json({ ok: false, error: "Invalid NOTIFY_EMAIL_FROM" }, 400);
@@ -176,16 +225,6 @@ async function sendAdminNotifyEmails(subject: string, text: string): Promise<Res
         "No provider: set GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY",
     });
   }
-
-  const raw = Deno.env.get("NOTIFY_ADMIN_EMAILS")?.trim() ?? "";
-  const envEmails = [
-    ...new Set(
-      raw
-        .split(/[,;\s]+/)
-        .map((e) => e.trim().toLowerCase())
-        .filter((e) => e.includes("@")),
-    ),
-  ];
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey =
@@ -213,13 +252,17 @@ async function sendAdminNotifyEmails(subject: string, text: string): Promise<Res
     }
   }
 
-  const emails = [...new Set([...envEmails, ...dbAdminEmails])];
+  const adminExclude = mergedAdminSuppress();
+  if (requesterSuppress) {
+    for (const e of requesterSuppress) adminExclude.add(e);
+  }
+  const emails = [...new Set(dbAdminEmails)].filter((e) => !adminExclude.has(e));
   if (emails.length === 0) {
-    console.log("[portal-notify-email] no admin recipients configured/found — skip admin notify:", subject.slice(0, 80));
+    console.log("[portal-notify-email] no admin recipients after exclude list — skip admin notify:", subject.slice(0, 80));
     return json({
       ok: true,
       skipped: true,
-      reason: "No admin recipients found in NOTIFY_ADMIN_EMAILS or active ADMIN profiles",
+      reason: "No active ADMIN profile emails, or all excluded by ADMIN_NOTIFY_EXCLUDE_EMAILS",
     });
   }
   const results: string[] = [];
@@ -308,7 +351,8 @@ Deno.serve(async (req) => {
   }
 
   if (payload.notifyAdmin === true) {
-    return await sendAdminNotifyEmails(subject, text);
+    const extra = parseRequesterAdminSuppress(payload);
+    return await sendAdminNotifyEmails(subject, text, extra);
   }
 
   const ctx = loadSendCtx();
@@ -361,6 +405,17 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: "Invalid recipient" }, 400);
     }
     toEmail = authData.user.email.trim();
+  }
+
+  const lower = toEmail.toLowerCase();
+  const clientExclude = mergedClientSuppress();
+  if (clientExclude.has(lower)) {
+    console.info("[portal-notify-email] skip client (CLIENT_NOTIFY_EXCLUDE_EMAILS):", lower);
+    return json({ ok: true, skipped: true, reason: "client_recipient_excluded" });
+  }
+  if (ctx.useGmail && ctx.gmailUser.toLowerCase() === lower) {
+    console.info("[portal-notify-email] skip client: recipient equals GMAIL_SMTP_USER (avoids bogus sends/bounces)");
+    return json({ ok: true, skipped: true, reason: "client_recipient_is_smtp_login" });
   }
 
   const providerName = useGmail ? "gmail" : brevoKey ? "brevo" : "resend";

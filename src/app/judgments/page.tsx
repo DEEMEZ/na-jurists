@@ -47,11 +47,11 @@ async function fetchAllReportedJudgmentsFromApi(): Promise<Map<number, ApiJudgme
 }
 
 function shortLawForDatabaseOnlyRow(rec: ApiJudgment): string {
+  const d = (rec.dictumLaw ?? '').trim().replace(/\s+/g, ' ');
+  if (d) return d.length > 160 ? `${d.slice(0, 157)}…` : d;
   const sub = (rec.subject ?? '').trim();
   if (sub && sub.length <= 180) return sub;
-  const d = (rec.dictumLaw ?? '').trim().replace(/\s+/g, ' ');
-  if (!d) return '—';
-  return d.length > 160 ? `${d.slice(0, 157)}…` : d;
+  return '—';
 }
 
 export default function JudgmentsPage() {
@@ -116,10 +116,11 @@ export default function JudgmentsPage() {
 
     const fromList: DisplayRow[] = reportedJudgmentsList.map((item) => {
       const o = merged.get(item.srNo);
+      const lawFromApi = (o?.dictumLaw ?? '').trim();
       return {
         id: item.srNo,
         citation: (o?.citation ?? item.citation).trim() || item.citation,
-        law: item.dictumLaw,
+        law: lawFromApi || item.dictumLaw,
       };
     });
 

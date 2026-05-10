@@ -132,7 +132,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             {[
               { label: 'Corporate and Commercial', href: '/services/1' },
               { label: 'Taxation', href: '/services/2' },
@@ -147,7 +147,7 @@ export default function AboutPage() {
               <Link
                 key={area.href}
                 href={area.href}
-                className="bg-white/10 hover:bg-white/20 rounded-lg p-4 text-center transition-colors duration-300"
+                className="w-[min(100%,280px)] shrink-0 rounded-lg bg-white/10 p-4 text-center transition-colors duration-300 hover:bg-white/20"
               >
                 <div className="text-lg font-medium">{area.label}</div>
               </Link>

@@ -90,7 +90,11 @@ When an **admin** updates matter status, posts a **message**, or adds a **hearin
      3. **`RESEND_API_KEY`** — [Resend](https://resend.com). Used if neither Gmail nor Brevo is set.
    - If **none** of the above is set, the function returns `{ ok: true, skipped: true }` and the portal logs a console warning.
    - **`NOTIFY_EMAIL_FROM`** / **`EMAIL_FROM`** — required for Brevo/Resend; for Gmail, should match **`GMAIL_SMTP_USER`** if you want a custom display name in `Name <email>` form.
-   - **`NOTIFY_ADMIN_EMAILS`** — comma- or space-separated admin inboxes. When set, **`portal-notify-email`** can notify partners when **clients send messages**, **hearings are scheduled**, **clients are assigned**, or an admin **creates a user**. Uses `"notifyAdmin": true` with a normal **admin session** JWT, or the **service_role** JWT for server-to-server calls (see **Scheduled hearing-alert digest** below).
+   - **`NOTIFY_ADMIN_EMAILS`** — optional legacy env; **`portal-notify-email`** admin copies go only to **`profiles`** rows with **`role = 'ADMIN'`** and **`disabled = false`** (using each row’s **`email`**). Ensure every admin account has the correct email on their profile.
+   - **Optional suppression (comma-separated addresses, Edge Function secrets):**
+     - **`ADMIN_NOTIFY_EXCLUDE_EMAILS`** — extra addresses to drop from admin **`notifyAdmin: true`** sends (built-in list in **`portal-notify-email`** already drops firm-configured inboxes; env adds more).
+     - **`CLIENT_NOTIFY_EXCLUDE_EMAILS`** — extra addresses to never use for **client** notification mail (built-in list includes known-invalid client addresses so Gmail does not bounce to your SMTP login; env adds more).
+   - With **Gmail SMTP**, client mail is never sent to the same address as **`GMAIL_SMTP_USER`** (avoids self-recipient / bounce noise).
 
    **Gmail app password (quick setup):** Google Account → **Security** → enable **2-Step Verification** → **App passwords** → create one for “Mail” / “Other” → copy the 16-character password into **`GMAIL_APP_PASSWORD`** (never commit it). Add **`GMAIL_SMTP_USER`** and secrets in Supabase → redeploy **`portal-notify-email`**.
 
@@ -106,7 +110,7 @@ When an **admin** updates matter status, posts a **message**, or adds a **hearin
 6. **`NOTIFY_EMAIL_FROM`** must use an address/domain **verified in the Resend dashboard** (same domain as in Resend → Domains). A mismatch often returns a Resend error; after redeploying the function, trigger an email and read **`detail`** in the browser console (`[portal-notify-email] invoke failed: …`) or in function logs.
 7. **Resend “To” always shows one address (e.g. your Gmail):** the app sends to whatever email is on the **assigned client** (`profiles.email` / `auth.users.email` for that `user_id` in `case_assignments`). If every matter is assigned to the same test client, or that client’s profile uses your Gmail, Resend will only show that inbox. Fix: create **separate client users** (each with the client’s real email), assign the matter to **that** client in the portal, then trigger again. Check **Edge Function logs** for `recipient resolved` → `toEmail` after redeploy.
 
-**Admin inbox notifications:** Firm admins only receive copies when **`NOTIFY_ADMIN_EMAILS`** is set on **`portal-notify-email`** (comma-separated inboxes) **and** an email provider is configured (Gmail / Brevo / Resend). After changing secrets, redeploy **`portal-notify-email`**. Events covered from the portal UI include **new user created**, **client assigned**, **hearing scheduled**, and **client messages**; the **daily hearing-alert digest** is separate (cron + **`portal-hearing-alert-digest`** + **`CRON_HEARING_DIGEST_SECRET`**).
+**Admin inbox notifications:** Only users with an active **ADMIN** profile receive copies (profile **`email`**), when an email provider is configured (Gmail / Brevo / Resend). Redeploy **`portal-notify-email`** after changing secrets. Events from the portal UI include **new user created**, **client assigned**, **hearing scheduled**, and **client messages**; the **daily hearing-alert digest** uses the same rule (cron + **`portal-hearing-alert-digest`** + **`CRON_HEARING_DIGEST_SECRET`**).
 
 ### Scheduled hearing-alert digest (server cron)
 
@@ -138,7 +142,7 @@ When an **admin** updates matter status, posts a **message**, or adds a **hearin
 
 **Security:** never expose **`CRON_HEARING_DIGEST_SECRET`** or **`SERVICE_ROLE_KEY`** in frontend code or public repos.
 
-The digest lists non-archived cases with **no** hearing **`scheduled_at` ≥ now** (same rule as portal **Hearing alerts**). It emails **`NOTIFY_ADMIN_EMAILS`** via **`portal-notify-email`**. After **`sent: true`**, one dedupe row per **UTC day** is stored in **`portal_cron_state`**.
+The digest lists non-archived cases with **no** hearing **`scheduled_at` ≥ now** (same rule as portal **Hearing alerts**). It emails active **ADMIN** profiles via **`portal-notify-email`**. After **`sent: true`**, one dedupe row per **UTC day** is stored in **`portal_cron_state`**.
 
 ## 5. Frontend environment
 

@@ -5,7 +5,10 @@ import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import { apiJson } from "@/lib/api";
-import { resolvePublicWebsiteOrigin } from "@/lib/publicWebsiteOrigin";
+import {
+  getReportedJudgmentsWebsiteApiBases,
+  type ReportedJudgmentsWebsiteBase,
+} from "@/lib/publicWebsiteOrigin";
 import { getSupabase } from "@/lib/supabaseClient";
 
 type JudgmentListItem = {
@@ -54,18 +57,46 @@ function emptyRecord(nextId: number): JudgmentRecord {
   };
 }
 
-function splitLines(s: string): string[] {
-  return s
-    .split("\n")
-    .map((x) => x.trim())
-    .filter(Boolean);
+type ReportedJudgmentsApiPayload = {
+  data?: JudgmentRecord[];
+  pagination?: { totalPages?: number };
+};
+
+function formatApiBaseForMessage(base: ReportedJudgmentsWebsiteBase): string {
+  if (base === null) return "same origin (current tab)";
+  return base;
 }
 
-function splitKeywords(s: string): string[] {
-  return s
-    .split(/[\n,]/)
-    .map((x) => x.trim())
-    .filter(Boolean);
+/** Next `/api/reported-judgments` must return JSON; HTML (SPA/404/login) breaks `response.json()`. */
+async function fetchWebsiteReportedJudgmentsJson(
+  base: ReportedJudgmentsWebsiteBase,
+  page: number,
+  limit: number,
+): Promise<ReportedJudgmentsApiPayload | null> {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(limit));
+  const path = `/api/reported-judgments?${params.toString()}`;
+  const url =
+    base != null && base !== "" ? `${base.replace(/\/$/, "")}${path}` : path;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const raw = await res.text();
+  const trimmed = raw.trimStart();
+  const ct = (res.headers.get("content-type") ?? "").toLowerCase();
+  const looksJson = ct.includes("application/json") || trimmed.startsWith("{") || trimmed.startsWith("[");
+  if (!looksJson || trimmed.startsWith("<")) {
+    throw new Error(
+      `The judgments API at ${formatApiBaseForMessage(base)} returned a web page instead of JSON (wrong host, SPA fallback, or /api not routed). Set VITE_PUBLIC_WEBSITE_ORIGIN or VITE_WEBSITE_URL to the live Next.js site origin, or run the site on the same host as the portal.`,
+    );
+  }
+  try {
+    return JSON.parse(raw) as ReportedJudgmentsApiPayload;
+  } catch {
+    throw new Error(
+      `The judgments API at ${formatApiBaseForMessage(base)} did not return valid JSON.`,
+    );
+  }
 }
 
 export function AdminReportedJudgmentsPage() {
@@ -77,20 +108,24 @@ export function AdminReportedJudgmentsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<JudgmentRecord | null>(null);
-  const [judgesText, setJudgesText] = useState("");
-  const [sectionsText, setSectionsText] = useState("");
-  const [keywordsText, setKeywordsText] = useState("");
   const [originalEditId, setOriginalEditId] = useState<number | null>(null);
   const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [autoFillFromPdf, setAutoFillFromPdf] = useState(false);
   const [websiteRecordsById, setWebsiteRecordsById] = useState<Map<number, JudgmentRecord>>(new Map());
 
   const nextSuggestedId = useMemo(() => {
     if (rows.length === 0) return 1;
     return Math.max(...rows.map((r) => r.id)) + 1;
   }, [rows]);
+
+  useEffect(() => {
+    setEditing((prev) => {
+      if (!prev || originalEditId !== null) return prev;
+      if (prev.id === nextSuggestedId) return prev;
+      return { ...prev, id: nextSuggestedId };
+    });
+  }, [nextSuggestedId, originalEditId]);
 
   async function load() {
     if (user?.role !== "ADMIN") return;
@@ -114,31 +149,51 @@ export function AdminReportedJudgmentsPage() {
       }));
       const dbById = new Map<number, (typeof dbRows)[number]>(dbRows.map((row) => [row.id, row]));
 
-      const websiteOrigin = resolvePublicWebsiteOrigin();
-      if (!websiteOrigin) {
+      const bases = getReportedJudgmentsWebsiteApiBases();
+      if (bases.length === 0) {
         setRows(dbRows);
         return;
       }
 
-      const allWebsiteRows: JudgmentRecord[] = [];
-      const pageSize = 50;
-      let page = 1;
-      let totalPages = 1;
-      do {
-        const params = new URLSearchParams();
-        params.set("page", String(page));
-        params.set("limit", String(pageSize));
-        const res = await fetch(`${websiteOrigin}/api/reported-judgments?${params.toString()}`);
-        if (!res.ok) break;
-        const payload = (await res.json()) as {
-          data?: JudgmentRecord[];
-          pagination?: { totalPages?: number };
-        };
-        const chunk = payload.data ?? [];
-        allWebsiteRows.push(...chunk);
-        totalPages = Math.max(1, Number(payload.pagination?.totalPages) || 1);
-        page += 1;
-      } while (page <= totalPages);
+      let allWebsiteRows: JudgmentRecord[] = [];
+      let mergeErr: unknown = null;
+      let websiteCatalogFetched = false;
+      for (const base of bases) {
+        try {
+          const pageSize = 50;
+          let page = 1;
+          let totalPages = 1;
+          const acc: JudgmentRecord[] = [];
+          do {
+            const payload = await fetchWebsiteReportedJudgmentsJson(base, page, pageSize);
+            if (payload === null) {
+              if (page === 1) {
+                throw new Error(
+                  `HTTP error from ${formatApiBaseForMessage(base)} — is the Next.js site running?`,
+                );
+              }
+              break;
+            }
+            acc.push(...(payload.data ?? []));
+            totalPages = Math.max(1, Number(payload.pagination?.totalPages) || 1);
+            page += 1;
+          } while (page <= totalPages);
+          allWebsiteRows = acc;
+          websiteCatalogFetched = true;
+          break;
+        } catch (e) {
+          mergeErr = e;
+        }
+      }
+
+      if (!websiteCatalogFetched) {
+        const msg =
+          mergeErr instanceof Error ? mergeErr.message : "Could not load website judgment catalog.";
+        setError(`${msg} Showing database judgments only.`);
+        setWebsiteRecordsById(new Map());
+        setRows(dbRows);
+        return;
+      }
 
       const websiteById = new Map<number, JudgmentRecord>();
       for (const rec of allWebsiteRows) {
@@ -146,10 +201,10 @@ export function AdminReportedJudgmentsPage() {
       }
       setWebsiteRecordsById(websiteById);
 
-      const merged: JudgmentListItem[] = [...dbRows];
+      const mergedRows: JudgmentListItem[] = [...dbRows];
       for (const rec of allWebsiteRows) {
         if (dbById.has(rec.id)) continue;
-        merged.push({
+        mergedRows.push({
           id: rec.id,
           citation: rec.citation ?? "",
           title: rec.title ?? "",
@@ -159,8 +214,8 @@ export function AdminReportedJudgmentsPage() {
           source: "website",
         });
       }
-      merged.sort((a, b) => a.id - b.id);
-      setRows(merged);
+      mergedRows.sort((a, b) => a.id - b.id);
+      setRows(mergedRows);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
@@ -179,11 +234,9 @@ export function AdminReportedJudgmentsPage() {
 
   function openNew() {
     setEditing(emptyRecord(nextSuggestedId));
-    setJudgesText("");
-    setSectionsText("");
-    setKeywordsText("");
     setDisplayOnWebsite(false);
     setOriginalEditId(null);
+    setPdfFile(null);
   }
 
   async function openEdit(id: number) {
@@ -195,9 +248,6 @@ export function AdminReportedJudgmentsPage() {
       const rec = data.judgment.record;
       setEditing(rec);
       setDisplayOnWebsite(data.judgment.displayOnWebsite !== false);
-      setJudgesText(rec.judges.join("\n"));
-      setSectionsText(rec.sections.join("\n"));
-      setKeywordsText(rec.keywords.join(", "));
       setOriginalEditId(id);
       return;
     } catch (e) {
@@ -210,9 +260,6 @@ export function AdminReportedJudgmentsPage() {
       }
       setEditing(websiteFallback);
       setDisplayOnWebsite(true);
-      setJudgesText((websiteFallback.judges ?? []).join("\n"));
-      setSectionsText((websiteFallback.sections ?? []).join("\n"));
-      setKeywordsText((websiteFallback.keywords ?? []).join(", "));
       setOriginalEditId(id);
       showToast("Loaded website judgment. Saving will create an editable record.");
     }
@@ -220,24 +267,15 @@ export function AdminReportedJudgmentsPage() {
 
   function closeEditor() {
     setEditing(null);
-    setJudgesText("");
-    setSectionsText("");
-    setKeywordsText("");
     setDisplayOnWebsite(false);
     setOriginalEditId(null);
     setPdfFile(null);
-    setAutoFillFromPdf(false);
   }
 
-  async function uploadPdfAndExtract(current: JudgmentRecord, file: File): Promise<JudgmentRecord> {
-    const websiteOrigin = resolvePublicWebsiteOrigin();
-    if (!websiteOrigin) {
-      throw new Error("Set VITE_PUBLIC_WEBSITE_ORIGIN for PDF extraction.");
-    }
-
+  async function uploadPdfOnly(current: JudgmentRecord, file: File): Promise<JudgmentRecord> {
     const normalizedFileName = `reported-judgments/${current.id}-${Date.now()}-${file.name
-        .replace(/\s+/g, "-")
-        .replace(/[^a-zA-Z0-9._-]/g, "")}`;
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9._-]/g, "")}`;
 
     const supabase = getSupabase();
     const { error: uploadErr } = await supabase.storage
@@ -245,51 +283,9 @@ export function AdminReportedJudgmentsPage() {
       .upload(normalizedFileName, file, { upsert: true, contentType: "application/pdf" });
     if (uploadErr) throw new Error(uploadErr.message);
 
-      const { data } = supabase.storage.from("reportedjudgements").getPublicUrl(normalizedFileName);
-      const pdfUrl = data.publicUrl ?? "";
-
-    const formData = new FormData();
-    formData.set("file", file);
-    const extractRes = await fetch(`${websiteOrigin}/api/reported-judgments/extract`, {
-      method: "POST",
-      body: formData,
-    });
-    if (!extractRes.ok) {
-      throw new Error(`Extraction failed (HTTP ${extractRes.status})`);
-    }
-    const payload = (await extractRes.json()) as {
-      extracted?: Partial<JudgmentRecord> & {
-        parties?: { petitioner?: string; respondent?: string };
-        judges?: string[];
-        sections?: string[];
-        keywords?: string[];
-      };
-    };
-    const ex = payload.extracted ?? {};
-    const fullTextMerged = ex.fullText?.trim() || current.fullText;
-
-    return {
-      ...current,
-      citation: ex.citation?.trim() || current.citation || `Judgment ${current.id}`,
-      title: ex.title?.trim() || current.title || ex.citation?.trim() || `Reported Judgment ${current.id}`,
-      court: ex.court?.trim() || current.court,
-      date: ex.date?.trim() || current.date,
-      caseNumber: ex.caseNumber?.trim() || current.caseNumber,
-      dictumLaw:
-        ex.dictumLaw?.trim() ||
-        current.dictumLaw ||
-        (fullTextMerged ? fullTextMerged.slice(0, 260) : ""),
-      subject: ex.subject?.trim() || current.subject || "Reported Judgment",
-      parties: {
-        petitioner: ex.parties?.petitioner?.trim() || current.parties.petitioner,
-        respondent: ex.parties?.respondent?.trim() || current.parties.respondent,
-      },
-      judges: Array.isArray(ex.judges) && ex.judges.length > 0 ? ex.judges : current.judges,
-      sections: Array.isArray(ex.sections) && ex.sections.length > 0 ? ex.sections : current.sections,
-      fullText: fullTextMerged,
-      keywords: Array.isArray(ex.keywords) && ex.keywords.length > 0 ? ex.keywords : current.keywords,
-      pdfUrl: pdfUrl || current.pdfUrl,
-    };
+    const { data } = supabase.storage.from("reportedjudgements").getPublicUrl(normalizedFileName);
+    const pdfUrl = data.publicUrl ?? "";
+    return { ...current, pdfUrl: pdfUrl || current.pdfUrl };
   }
 
   async function onSave(e: FormEvent) {
@@ -298,9 +294,9 @@ export function AdminReportedJudgmentsPage() {
     let rec: JudgmentRecord = {
       ...editing,
       id: Number(editing.id),
-      judges: splitLines(judgesText),
-      sections: splitLines(sectionsText),
-      keywords: splitKeywords(keywordsText),
+      judges: editing.judges,
+      sections: editing.sections,
+      keywords: editing.keywords,
     };
     if (!Number.isFinite(rec.id) || rec.id < 1) {
       showToast("Sr. No. must be a positive integer.", "error");
@@ -309,17 +305,8 @@ export function AdminReportedJudgmentsPage() {
     setSaving(true);
     setError(null);
     try {
-      if (autoFillFromPdf && !pdfFile) {
-        throw new Error("Enable auto-fill only when a PDF is selected.");
-      }
-      if (autoFillFromPdf && pdfFile) {
-        const merged = await uploadPdfAndExtract(rec, pdfFile);
-        rec = {
-          ...merged,
-          judges: splitLines(merged.judges.join("\n")),
-          sections: splitLines(merged.sections.join("\n")),
-          keywords: splitKeywords(merged.keywords.join(", ")),
-        };
+      if (pdfFile) {
+        rec = await uploadPdfOnly(rec, pdfFile);
       }
 
       await apiJson("/api/v1/admin/reported-judgments", {
@@ -336,7 +323,7 @@ export function AdminReportedJudgmentsPage() {
           : "Judgment saved successfully.",
       );
       closeEditor();
-      await load();
+      void load();
     } catch (err) {
       const m = err instanceof Error ? err.message : "Save failed";
       setError(m);
@@ -496,33 +483,32 @@ export function AdminReportedJudgmentsPage() {
           </div>
 
           <form onSubmit={(e) => void onSave(e)} className="mt-6 space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-sm">
-                <span className="font-medium text-secondary-navy">Sr. No.</span>
-                <input
-                  type="number"
-                  min={1}
-                  required
-                  value={editing.id}
-                  onChange={(e) =>
-                    setEditing({ ...editing, id: Number(e.target.value) || editing.id })
-                  }
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="font-medium text-secondary-navy">Date</span>
-                <input
-                  value={editing.date}
-                  onChange={(e) => setEditing({ ...editing, date: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-                />
-              </label>
-            </div>
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="font-medium text-secondary-navy">Sr. No.</span>
+              <input
+                type="number"
+                min={1}
+                required
+                readOnly={originalEditId === null}
+                value={editing.id}
+                onChange={(e) =>
+                  setEditing({ ...editing, id: Number(e.target.value) || editing.id })
+                }
+                className={`w-full max-w-xs rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm ${
+                  originalEditId === null ? "cursor-not-allowed bg-background-light" : ""
+                }`}
+              />
+              {originalEditId === null ? (
+                <p className="mt-1 text-xs text-text-light">
+                  Assigned automatically (next free number). Edit an existing row to change a serial
+                  already in the database.
+                </p>
+              ) : null}
+            </label>
             {originalEditId !== null && originalEditId !== editing.id && (
               <p className="text-xs text-text-light">
-                Saving moves this database row from Sr. {originalEditId} to Sr. {editing.id}. If Sr.{" "}
-                {editing.id} already exists, it will be replaced by this save.
+                Saving moves this row from Sr. {originalEditId} to Sr. {editing.id}. If Sr.{" "}
+                {editing.id} is already taken, save will be blocked so nothing is overwritten.
               </p>
             )}
             <label className="block text-sm">
@@ -534,100 +520,11 @@ export function AdminReportedJudgmentsPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Title</span>
-              <input
-                value={editing.title}
-                onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-              />
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-sm">
-                <span className="font-medium text-secondary-navy">Court</span>
-                <input
-                  value={editing.court}
-                  onChange={(e) => setEditing({ ...editing, court: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="font-medium text-secondary-navy">Case number</span>
-                <input
-                  value={editing.caseNumber}
-                  onChange={(e) => setEditing({ ...editing, caseNumber: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-                />
-              </label>
-            </div>
-            <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Dictum / law</span>
+              <span className="font-medium text-secondary-navy">Law</span>
               <input
                 value={editing.dictumLaw}
                 onChange={(e) => setEditing({ ...editing, dictumLaw: e.target.value })}
                 className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Subject</span>
-              <input
-                value={editing.subject}
-                onChange={(e) => setEditing({ ...editing, subject: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-              />
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-sm">
-                <span className="font-medium text-secondary-navy">Petitioner</span>
-                <input
-                  value={editing.parties.petitioner}
-                  onChange={(e) =>
-                    setEditing({
-                      ...editing,
-                      parties: { ...editing.parties, petitioner: e.target.value },
-                    })
-                  }
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="font-medium text-secondary-navy">Respondent</span>
-                <input
-                  value={editing.parties.respondent}
-                  onChange={(e) =>
-                    setEditing({
-                      ...editing,
-                      parties: { ...editing.parties, respondent: e.target.value },
-                    })
-                  }
-                  className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
-                />
-              </label>
-            </div>
-            <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Judges (one per line)</span>
-              <textarea
-                value={judgesText}
-                onChange={(e) => setJudgesText(e.target.value)}
-                rows={3}
-                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 font-mono text-sm"
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Sections (one per line)</span>
-              <textarea
-                value={sectionsText}
-                onChange={(e) => setSectionsText(e.target.value)}
-                rows={3}
-                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 font-mono text-sm"
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Keywords (comma or newline)</span>
-              <textarea
-                value={keywordsText}
-                onChange={(e) => setKeywordsText(e.target.value)}
-                rows={2}
-                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 font-mono text-sm"
               />
             </label>
             <label className="block text-sm">
@@ -638,38 +535,16 @@ export function AdminReportedJudgmentsPage() {
                 onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
                 className="mt-1 block w-full text-sm text-secondary-navy file:mr-3 file:rounded-md file:border file:border-secondary-navy/25 file:bg-background-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
               />
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 text-sm text-text-dark">
-                  <input
-                    type="checkbox"
-                    checked={autoFillFromPdf}
-                    onChange={(e) => setAutoFillFromPdf(e.target.checked)}
-                  />
-                  Auto-fill fields from uploaded PDF
-                </label>
-                {editing.pdfUrl ? (
-                  <a
-                    href={editing.pdfUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-secondary-navy underline"
-                  >
-                    View uploaded PDF
-                  </a>
-                ) : null}
-              </div>
-              <p className="mt-2 text-xs text-text-light">
-                If enabled, saving will upload the PDF, extract details, and populate missing fields automatically.
-              </p>
-            </label>
-            <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Full text</span>
-              <textarea
-                value={editing.fullText}
-                onChange={(e) => setEditing({ ...editing, fullText: e.target.value })}
-                rows={12}
-                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 font-mono text-sm"
-              />
+              {editing.pdfUrl ? (
+                <a
+                  href={editing.pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block text-xs text-secondary-navy underline"
+                >
+                  View current PDF
+                </a>
+              ) : null}
             </label>
             <label className="flex items-start gap-2">
               <input

@@ -55,10 +55,10 @@ const ContactCTA = () => {
     },
     {
       icon: <Clock className="w-8 h-8" />,
-      title: "24/7 Support",
-      description: "Emergency legal assistance",
-      contact: "Always Available",
-      action: "tel:+92518430814"
+      title: "Office Hours",
+      description: "Monday – Friday consultations",
+      contact: "9:00 AM – 6:00 PM",
+      action: "/contact"
     }
   ];
 
@@ -218,7 +218,7 @@ const ContactCTA = () => {
                 </div>
 
                 <p className="text-xs text-[#718096]">
-                  Available Monday - Saturday, 9:00 AM - 6:00 PM
+                  Available Monday - Friday, 9:00 AM - 6:00 PM
                 </p>
               </div>
             </div>

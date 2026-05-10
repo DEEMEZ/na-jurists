@@ -5,8 +5,10 @@ import { NextResponse } from 'next/server';
 function allowedPortalOrigins(): Set<string> {
   const out = new Set<string>();
   if (process.env.NODE_ENV === 'development') {
-    out.add('http://localhost:5173');
-    out.add('http://127.0.0.1:5173');
+    for (const p of [5173, 5174, 5175, 5176, 5177, 5178]) {
+      out.add(`http://localhost:${p}`);
+      out.add(`http://127.0.0.1:${p}`);
+    }
   }
   const portal = process.env.NEXT_PUBLIC_PORTAL_URL?.trim();
   if (portal) {

@@ -54,7 +54,6 @@ const LEGAL_KNOWLEDGE_BASE: Record<string, string> = {
 
 🕒 Office Hours:
 Monday - Friday: 9:00 AM - 6:00 PM
-Saturday - Sunday: Closed
 
 💡 You can also use the contact form on our website to send us a message directly.`,
 
@@ -83,8 +82,6 @@ Monday - Friday: 9:00 AM - 6:00 PM`,
   "hours": `🕒 N&A Jurists Office Hours:
 
 Monday - Friday: 9:00 AM - 6:00 PM
-Saturday - Sunday: Closed
-Public Holidays: Closed
 
 📞 After hours:
 Please email ishfaqnaqvi@hotmail.com for urgent inquiries.`,

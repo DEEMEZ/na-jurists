@@ -232,9 +232,9 @@ const PracticeAreas = () => {
         }} />
         <div className="container mx-auto px-6 relative z-10">
           {/* Header */}
-          <div className="text-center mb-16">
-            <div className="inline-block mb-4">
-              <span className="bg-[#1a2b3d]/10 text-[#1a2b3d] px-4 py-2 rounded-full text-sm font-semibold">
+          <div className="mb-16 flex flex-col items-center text-center">
+            <div className="mb-4 flex justify-center">
+              <span className="inline-flex items-center justify-center rounded-full bg-[#1a2b3d]/10 px-4 py-2 text-center text-sm font-semibold text-[#1a2b3d]">
                 Our Expertise
               </span>
             </div>

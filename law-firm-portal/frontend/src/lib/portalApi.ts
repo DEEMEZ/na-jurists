@@ -274,6 +274,12 @@ type NotifyEmailFnResponse = {
   detail?: string;
 };
 
+/** Do not invoke edge for client mail to these profile emails (stops bounces to Gmail SMTP). */
+const CLIENT_NOTIFY_PROFILE_DENY = new Set<string>(["najurist@gmail.com", "ab887812@gmail.com"]);
+
+/** Omit from admin `[Portal] …` copies when edge is stale; merged server-side with env/hardcoded lists. */
+const ADMIN_NOTIFY_SUPPRESS_FROM_PORTAL = ["ab887812@gmail.com"];
+
 async function invokeNotifyEmail(body: Record<string, unknown>): Promise<void> {
   try {
     const sb = getSupabase();
@@ -298,7 +304,7 @@ async function invokeNotifyEmail(body: Record<string, unknown>): Promise<void> {
       console.warn(
         "[portal-notify-email] Email not sent —",
         res.reason ?? "skipped",
-        "| Add GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY (+ NOTIFY_EMAIL_FROM) in Supabase → Edge Functions → Secrets, then redeploy portal-notify-email. For admin alerts set NOTIFY_ADMIN_EMAILS.",
+        "| Add GMAIL_SMTP_USER + GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY (+ NOTIFY_EMAIL_FROM) in Supabase → Edge Functions → Secrets, then redeploy portal-notify-email. Admin alerts go to active ADMIN profiles only.",
       );
       return;
     }
@@ -327,12 +333,37 @@ async function notifyClientByEmail(payload: {
   subject: string;
   text: string;
 }): Promise<void> {
+  try {
+    const sb = getSupabase();
+    const { data: row } = await sb
+      .from("profiles")
+      .select("email")
+      .eq("id", payload.recipientUserId)
+      .maybeSingle();
+    const em = String((row as { email?: string } | null)?.email ?? "")
+      .trim()
+      .toLowerCase();
+    if (em && CLIENT_NOTIFY_PROFILE_DENY.has(em)) {
+      console.info(
+        "[portal-notify-email] skip client invoke (profile email on denylist):",
+        em,
+      );
+      return;
+    }
+  } catch {
+    /* RLS/network — still try edge (may resolve auth.users email) */
+  }
   await invokeNotifyEmail(payload);
 }
 
-/** Notify firm inboxes (NOTIFY_ADMIN_EMAILS on edge function). Safe to fire-and-forget. */
+/** Notify firm: edge function sends only to active portal ADMIN profiles. Safe to fire-and-forget. */
 export async function notifyPortalAdmins(subject: string, text: string): Promise<void> {
-  await invokeNotifyEmail({ notifyAdmin: true, subject, text });
+  await invokeNotifyEmail({
+    notifyAdmin: true,
+    subject,
+    text,
+    suppressAdminTo: ADMIN_NOTIFY_SUPPRESS_FROM_PORTAL,
+  });
 }
 
 async function invokeAdmin(body: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -1626,27 +1657,36 @@ export async function portalApiJson(
       const { error: delErr } = await x.sb.from("reported_judgments").delete().eq("id", previousId);
       if (delErr) throw new Error(delErr.message);
     }
-    const { data, error } = await x.sb
+    const { data: rowAtSerial, error: selSerialErr } = await x.sb
       .from("reported_judgments")
-      .upsert(
-        {
-          id: rec.id,
-          record: rec,
-          display_on_website: displayOnWebsite,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" },
-      )
-      .select("id, record, updated_at, display_on_website")
-      .single();
+      .select("id")
+      .eq("id", rec.id)
+      .maybeSingle();
+    if (selSerialErr) throw new Error(selSerialErr.message);
+    const updatingSameRowInPlace =
+      previousId !== undefined && Number.isFinite(previousId) && previousId === rec.id;
+    if (rowAtSerial && !updatingSameRowInPlace) {
+      throw new Error(
+        "That serial number is already in use. Edit the existing judgment or use the next available number for a new entry.",
+      );
+    }
+    const updatedAt = new Date().toISOString();
+    const { error } = await x.sb.from("reported_judgments").upsert(
+      {
+        id: rec.id,
+        record: rec,
+        display_on_website: displayOnWebsite,
+        updated_at: updatedAt,
+      },
+      { onConflict: "id" },
+    );
     if (error) throw new Error(error.message);
-    const row = data as Record<string, unknown>;
     return {
       judgment: {
-        id: row.id,
-        record: row.record,
-        updatedAt: row.updated_at,
-        displayOnWebsite: row.display_on_website !== false,
+        id: rec.id,
+        record: rec,
+        updatedAt: updatedAt,
+        displayOnWebsite: displayOnWebsite,
       },
     };
   }
