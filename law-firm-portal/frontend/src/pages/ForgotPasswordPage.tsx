@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { useToast } from "@/components/ui/ToastProvider";
+import { withPortalLoading } from "@/lib/portalLoadingBus";
 import { getSupabase } from "@/lib/supabaseClient";
 
 const inputClass =
@@ -34,12 +35,14 @@ export function ForgotPasswordPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const origin = window.location.origin.replace(/\/$/, "");
-      const { error: supaErr } = await getSupabase().auth.resetPasswordForEmail(
-        email,
-        { redirectTo: `${origin}/reset-password` },
-      );
-      if (supaErr) throw new Error(supaErr.message);
+      await withPortalLoading(async () => {
+        const origin = window.location.origin.replace(/\/$/, "");
+        const { error: supaErr } = await getSupabase().auth.resetPasswordForEmail(
+          email,
+          { redirectTo: `${origin}/reset-password` },
+        );
+        if (supaErr) throw new Error(supaErr.message);
+      });
       setDone(true);
       showToast(
         "If this email is registered, you will receive reset instructions shortly.",

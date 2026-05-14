@@ -1,5 +1,6 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { getDefaultWebsiteTeamSeedRows } from "@site/lib/websiteTeamDefaults";
+import { withPortalLoading } from "./portalLoadingBus";
 import { getSupabase } from "./supabaseClient";
 
 async function edgeFunctionErrorMessage(error: Error): Promise<string> {
@@ -189,6 +190,7 @@ function parseReportedJudgmentRecord(body: unknown): {
   date: string;
   caseNumber: string;
   dictumLaw: string;
+  judgmentHeading: string;
   subject: string;
   parties: { petitioner: string; respondent: string };
   judges: string[];
@@ -217,6 +219,7 @@ function parseReportedJudgmentRecord(body: unknown): {
     date: coerceStr(src.date),
     caseNumber: coerceStr(src.caseNumber),
     dictumLaw: coerceStr(src.dictumLaw),
+    judgmentHeading: coerceStr(src.judgmentHeading),
     subject: coerceStr(src.subject),
     parties: {
       petitioner: coerceStr(partiesRaw.petitioner),
@@ -502,7 +505,7 @@ async function buildCaseDetail(sb: ReturnType<typeof getSupabase>, caseId: strin
   };
 }
 
-export async function portalApiJson(
+async function portalApiJsonInner(
   method: string,
   pathWithQuery: string,
   body?: unknown,
@@ -1376,9 +1379,10 @@ export async function portalApiJson(
       subject: `[N&A Jurists] ${assignTitle} — ${matterLabel}`,
       text: `${assignBody}\n\nSign in to the client portal to view your matter.`,
     });
+    const clientEmail = String(prof?.email ?? "").trim();
     void notifyPortalAdmins(
       `[Portal] Client assigned — ${matterLabel}`,
-      `Client user id ${assignUserId} was assigned to matter:\n${matterLabel}`,
+      `A client was assigned to this matter.\n\nMatter: ${matterLabel}\nClient email: ${clientEmail || "(not set on profile)"}\nInternal user id: ${assignUserId}\n\nOpen the portal to manage the matter.`,
     );
     return { assignment: { user: { id: prof.id, email: prof.email } } };
   }
@@ -1642,7 +1646,7 @@ export async function portalApiJson(
     if (x.role !== "ADMIN") throw new Error("Forbidden");
     const b = body as { record?: unknown; displayOnWebsite?: boolean; previousId?: unknown };
     const rec = parseReportedJudgmentRecord(b.record ?? body);
-    const displayOnWebsite = b.displayOnWebsite ?? false;
+    const displayOnWebsite = b.displayOnWebsite === false ? false : true;
     const prevRaw = b.previousId;
     const previousId =
       prevRaw !== undefined && prevRaw !== null && prevRaw !== ""
@@ -2069,37 +2073,49 @@ export async function portalApiJson(
   throw new Error(`Unsupported API: ${m} ${pathname}`);
 }
 
+export async function portalApiJson(
+  method: string,
+  pathWithQuery: string,
+  body?: unknown,
+): Promise<unknown> {
+  return withPortalLoading(() => portalApiJsonInner(method, pathWithQuery, body));
+}
+
 export async function downloadCaseDocumentBlob(caseId: string, docId: string): Promise<Blob> {
-  await requireProfile();
-  const sb = getSupabase();
-  const { data: doc, error } = await sb
-    .from("documents")
-    .select("storage_path")
-    .eq("id", docId)
-    .eq("case_id", caseId)
-    .maybeSingle();
-  if (error || !doc) throw new Error("Not found");
-  const { data: signed, error: se } = await sb.storage
-    .from("case-files")
-    .createSignedUrl((doc as { storage_path: string }).storage_path, 120);
-  if (se || !signed?.signedUrl) throw new Error(se?.message ?? "Could not sign URL");
-  const r = await fetch(signed.signedUrl);
-  if (!r.ok) throw new Error("Download failed");
-  return r.blob();
+  return withPortalLoading(async () => {
+    await requireProfile();
+    const sb = getSupabase();
+    const { data: doc, error } = await sb
+      .from("documents")
+      .select("storage_path")
+      .eq("id", docId)
+      .eq("case_id", caseId)
+      .maybeSingle();
+    if (error || !doc) throw new Error("Not found");
+    const { data: signed, error: se } = await sb.storage
+      .from("case-files")
+      .createSignedUrl((doc as { storage_path: string }).storage_path, 120);
+    if (se || !signed?.signedUrl) throw new Error(se?.message ?? "Could not sign URL");
+    const r = await fetch(signed.signedUrl);
+    if (!r.ok) throw new Error("Download failed");
+    return r.blob();
+  });
 }
 
 export async function uploadWebsiteTeamPhoto(file: File): Promise<{ photoStoragePath: string }> {
-  const x = await requireProfile();
-  if (x.role !== "ADMIN") throw new Error("Forbidden");
-  if (!file.type.startsWith("image/")) throw new Error("Please choose an image file");
-  if (file.size > 5 * 1024 * 1024) throw new Error("Image must be 5 MB or smaller");
-  const path = `${crypto.randomUUID()}.${teamPhotoExtension(file)}`;
-  const { error: upErr } = await x.sb.storage.from(WEBSITE_TEAM_BUCKET).upload(path, file, {
-    contentType: file.type || "image/jpeg",
-    upsert: false,
+  return withPortalLoading(async () => {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    if (!file.type.startsWith("image/")) throw new Error("Please choose an image file");
+    if (file.size > 5 * 1024 * 1024) throw new Error("Image must be 5 MB or smaller");
+    const path = `${crypto.randomUUID()}.${teamPhotoExtension(file)}`;
+    const { error: upErr } = await x.sb.storage.from(WEBSITE_TEAM_BUCKET).upload(path, file, {
+      contentType: file.type || "image/jpeg",
+      upsert: false,
+    });
+    if (upErr) throw new Error(upErr.message);
+    return { photoStoragePath: path };
   });
-  if (upErr) throw new Error(upErr.message);
-  return { photoStoragePath: path };
 }
 
 export async function portalApiUpload(
@@ -2107,28 +2123,30 @@ export async function portalApiUpload(
   file: File,
   opts?: { visibleToClient?: boolean },
 ): Promise<unknown> {
-  const x = await requireProfile();
-  if (x.role !== "ADMIN") throw new Error("Forbidden");
-  const path = `${caseId}/${crypto.randomUUID()}_${file.name}`;
-  const { error: upErr } = await x.sb.storage.from("case-files").upload(path, file, {
-    contentType: file.type || "application/octet-stream",
-    upsert: false,
+  return withPortalLoading(async () => {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const path = `${caseId}/${crypto.randomUUID()}_${file.name}`;
+    const { error: upErr } = await x.sb.storage.from("case-files").upload(path, file, {
+      contentType: file.type || "application/octet-stream",
+      upsert: false,
+    });
+    if (upErr) throw new Error(upErr.message);
+    const visibleToClient = opts?.visibleToClient !== false;
+    const { data: row, error } = await x.sb
+      .from("documents")
+      .insert({
+        case_id: caseId,
+        uploaded_by_id: x.uid,
+        original_name: file.name,
+        storage_path: path,
+        mime_type: file.type || "application/octet-stream",
+        size: file.size,
+        visible_to_client: visibleToClient,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return { document: row };
   });
-  if (upErr) throw new Error(upErr.message);
-  const visibleToClient = opts?.visibleToClient !== false;
-  const { data: row, error } = await x.sb
-    .from("documents")
-    .insert({
-      case_id: caseId,
-      uploaded_by_id: x.uid,
-      original_name: file.name,
-      storage_path: path,
-      mime_type: file.type || "application/octet-stream",
-      size: file.size,
-      visible_to_client: visibleToClient,
-    })
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return { document: row };
 }

@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { useToast } from "@/components/ui/ToastProvider";
+import { withPortalLoading } from "@/lib/portalLoadingBus";
 import { getSupabase } from "@/lib/supabaseClient";
 
 const inputClass =
@@ -47,13 +48,15 @@ export function ResetPasswordPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const { error: supaErr } = await getSupabase().auth.updateUser({
-        password,
+      await withPortalLoading(async () => {
+        const { error: supaErr } = await getSupabase().auth.updateUser({
+          password,
+        });
+        if (supaErr) throw new Error(supaErr.message);
+        await getSupabase().auth.signOut();
       });
-      if (supaErr) throw new Error(supaErr.message);
       setDone(true);
       showToast("Password updated. You can sign in with your new password.");
-      await getSupabase().auth.signOut();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Reset failed");
     } finally {

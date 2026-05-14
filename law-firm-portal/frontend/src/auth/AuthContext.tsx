@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { invalidatePortalProfileCache } from "@/lib/portalApi";
+import { withPortalLoading } from "@/lib/portalLoadingBus";
 import { getSupabase } from "@/lib/supabaseClient";
 import type { AuthUser } from "@/lib/api";
 
@@ -83,16 +84,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const sb = getSupabase();
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
-    await loadProfile();
+    await withPortalLoading(async () => {
+      const sb = getSupabase();
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw new Error(error.message);
+      await loadProfile();
+    });
   }, [loadProfile]);
 
   const logout = useCallback(async () => {
-    await getSupabase().auth.signOut();
-    invalidatePortalProfileCache();
-    setUser(null);
+    await withPortalLoading(async () => {
+      await getSupabase().auth.signOut();
+      invalidatePortalProfileCache();
+      setUser(null);
+    });
   }, []);
 
   const value = useMemo(

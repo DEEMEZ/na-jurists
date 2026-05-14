@@ -7,14 +7,10 @@ import {
   Calculator,
   Briefcase,
   Landmark,
-  GitMerge,
-  Copyright,
-  Monitor,
-  Shield,
   Scale,
-  FileText,
   MessageSquare,
   Users,
+  Copyright,
   ShieldAlert,
   Gavel
 } from 'lucide-react';
@@ -27,14 +23,10 @@ const Icon = ({ name }: { name: string }) => {
     taxation: <Calculator size={36} strokeWidth={2} className={className} />,
     commercial: <Briefcase size={36} strokeWidth={2} className={className} />,
     banking: <Landmark size={36} strokeWidth={2} className={className} />,
-    merger: <GitMerge size={36} strokeWidth={2} className={className} />,
-    ip: <Copyright size={36} strokeWidth={2} className={className} />,
-    it: <Monitor size={36} strokeWidth={2} className={className} />,
-    insurance: <Shield size={36} strokeWidth={2} className={className} />,
-    constitutional: <Scale size={36} strokeWidth={2} className={className} />,
-    contracts: <FileText size={36} strokeWidth={2} className={className} />,
+    dispute: <Scale size={36} strokeWidth={2} className={className} />,
     adr: <MessageSquare size={36} strokeWidth={2} className={className} />,
     employment: <Users size={36} strokeWidth={2} className={className} />,
+    ip: <Copyright size={36} strokeWidth={2} className={className} />,
     corporateCrimeAml: <ShieldAlert size={36} strokeWidth={2} className={className} />,
     criminalLaw: <Gavel size={36} strokeWidth={2} className={className} />,
   };
@@ -88,7 +80,7 @@ const PracticeAreas = () => {
     };
   }, []);
 
-  /** Matches `id` in `src/constants.js` services (Pages router `/services/[id]`). */
+  /** Nine core practice areas — `serviceId` matches `src/constants.js` and `/services/[id]`. */
   const practiceAreas: {
     icon: string;
     title: string;
@@ -97,101 +89,75 @@ const PracticeAreas = () => {
     serviceId: number;
   }[] = [
     {
-      icon: 'corporate',
-      title: 'Corporate Formation',
-      description: 'We help you in establishing every type of business i.e. partnership, company & Joint Venture (JV).',
+      icon: 'commercial',
+      title: 'Corporate and Commercial',
+      description:
+        'Incorporation, governance, M&A support, commercial contracts, procurement, and corporate dispute resolution.',
       delay: 100,
       serviceId: 1,
     },
     {
       icon: 'taxation',
       title: 'Taxation',
-      description: 'From tax advisory to tax planning & litigation, NA Jurists help your organization to save money.',
+      description:
+        'From tax advisory and planning to litigation before tribunals and superior courts, including AML and Benami compliance.',
       delay: 150,
       serviceId: 2,
     },
     {
-      icon: 'commercial',
-      title: 'Corporate & Commercial',
-      description: 'We help your organization with robust practical advice on various corporate and commercial matters.',
-      delay: 200,
-      serviceId: 1,
-    },
-    {
       icon: 'banking',
-      title: 'Banking & Finance',
-      description: 'Firm\'s substantial experience in banking & finance helps various banks in saving their cost & resources.',
-      delay: 250,
+      title: 'Banking and Project Finance',
+      description:
+        'Financing documentation, inter-creditor arrangements, security due diligence, and charge registration for banks and developers.',
+      delay: 200,
       serviceId: 3,
     },
     {
-      icon: 'merger',
-      title: 'Mergers and Acquisition',
-      description: 'Our firm helps your organization / business on all legal and regulatory aspects of Merger and Acquisition.',
-      delay: 300,
-      serviceId: 1,
-    },
-    {
-      icon: 'ip',
-      title: 'Intellectual Property (IP)',
-      description: 'NA Jurists creates strategic advantages by helping your business in registration & protection IP of your business.',
-      delay: 350,
-      serviceId: 7,
-    },
-    {
-      icon: 'it',
-      title: 'Information Technology (IT)',
-      description: 'We help our clients in changing/updating software licensing, data privacy & security and e-signature issues.',
-      delay: 400,
-      serviceId: 1,
-    },
-    {
-      icon: 'insurance',
-      title: 'Insurance',
-      description: 'Our firm assists insurance companies in ensuring regulatory compliance, distributing products & resolving disputes.',
-      delay: 450,
-      serviceId: 1,
-    },
-    {
-      icon: 'constitutional',
-      title: 'Constitutional Law',
-      description: 'We protect all the rights of our clients as provided and guaranteed by the Constitution of Pakistan.',
-      delay: 500,
+      icon: 'dispute',
+      title: 'Dispute Resolution',
+      description:
+        'Civil and regulatory litigation, company jurisdiction, tax appeals, and international arbitration representation.',
+      delay: 250,
       serviceId: 4,
     },
     {
-      icon: 'contracts',
-      title: 'Contracts, Deeds & Instruments Drafting',
-      description: 'Our experienced team manages the complete life cycle of your business contracts.',
-      delay: 550,
-      serviceId: 1,
-    },
-    {
       icon: 'adr',
-      title: 'Alternative Dispute Resolution (ADR)',
-      description: "NA Jurists represents your organization before various ADRs to protect your organization's rights.",
-      delay: 600,
+      title: 'Alternative Dispute Resolution',
+      description:
+        'Domestic and international arbitration under the Arbitration Act, 1940, and ADR under tax, company, and insurance laws.',
+      delay: 300,
       serviceId: 5,
     },
     {
       icon: 'employment',
-      title: 'Employment and Labor Laws',
-      description: 'Firm advises organizations to develop & draft employment policies by complying relevant laws to save cost & lengthy litigation.',
-      delay: 650,
+      title: 'Employment and Labour Laws',
+      description:
+        'Employment policies, contracts for foreign nationals, disciplinary rules, union matters, and tribunal representation.',
+      delay: 350,
       serviceId: 6,
+    },
+    {
+      icon: 'ip',
+      title: 'Intellectual Property',
+      description:
+        'IP ownership and disclosure compliance, disputes and appeals, trade mark and patent-related advice.',
+      delay: 400,
+      serviceId: 7,
     },
     {
       icon: 'corporateCrimeAml',
       title: 'Corporate Crime and Anti-Money Laundering',
-      description: 'Corporate crime advisory and litigation, AML/CFT compliance, internal investigations, due diligence, and responses to regulatory enforcement.',
-      delay: 700,
+      description:
+        'Corporate crime advisory and litigation, AML/CFT compliance, internal investigations, and regulatory enforcement.',
+      delay: 450,
       serviceId: 8,
     },
     {
       icon: 'criminalLaw',
       title: 'Criminal Law',
-      description: 'Criminal trials and bail, narcotics and serious offences, white-collar and statutory crimes, and appeals before High Courts and the Supreme Court.',
-      delay: 750,
+      description:
+        'Trials and bail, narcotics and serious offences, white-collar crime, and criminal appeals before higher courts.',
+      delay: 500,
       serviceId: 9,
     },
   ];

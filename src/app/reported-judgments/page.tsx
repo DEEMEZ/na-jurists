@@ -1,37 +1,31 @@
 'use client';
 
 import { createClient } from '@supabase/supabase-js';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ReportedJudgment } from '@/components/Website/ReportedJudgments/ReportedJudgements';
 import ReportedJudgmentsList from '@/components/Website/ReportedJudgments/ReportedJudgmentsList';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Footer from '@/components/Website/Global/Footer/Footer';
+import { filterReportedJudgments } from '@/lib/reportedJudgmentsFilter';
 import { Search, Building2, Calendar, RotateCcw } from 'lucide-react';
+
+const PAGE_SIZE = 10;
+const CATALOG_FETCH_LIMIT = 500;
 
 const ReportedJudgmentsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [courtFilter, setCourtFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
-  const [paginationData, setPaginationData] = useState({
-    judgments: [] as ReportedJudgment[],
-    totalPages: 0,
-    currentPage: 1,
-    totalCount: 0
-  });
+  const [catalog, setCatalog] = useState<ReportedJudgment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const hasLoadedCatalog = useRef(false);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, courtFilter, yearFilter]);
+  }, [searchQuery, courtFilter, yearFilter]);
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
@@ -59,55 +53,72 @@ const ReportedJudgmentsPage = () => {
 
   useEffect(() => {
     const controller = new AbortController();
-    const loadJudgments = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    const loadCatalog = async () => {
+      const quiet = hasLoadedCatalog.current;
+      if (!quiet) setIsLoading(true);
+      setError(null);
 
+      try {
         const params = new URLSearchParams();
-        params.set('page', currentPage.toString());
-        params.set('limit', '10');
-        if (debouncedSearch) params.set('search', debouncedSearch);
-        if (courtFilter) params.set('court', courtFilter);
-        if (yearFilter) params.set('year', yearFilter);
+        params.set('page', '1');
+        params.set('limit', String(CATALOG_FETCH_LIMIT));
 
         const response = await fetch(`/api/reported-judgments?${params.toString()}`, {
           signal: controller.signal,
-          cache: 'no-store'
+          cache: 'no-store',
         });
         if (!response.ok) {
           throw new Error(`Failed to load judgments (HTTP ${response.status})`);
         }
 
         const payload = await response.json();
-        const judgments: ReportedJudgment[] = payload.data || [];
-        setPaginationData({
-          judgments,
-          totalPages: payload.pagination?.totalPages || 1,
-          currentPage: payload.pagination?.page || 1,
-          totalCount: payload.pagination?.total || judgments.length
-        });
+        const rows: ReportedJudgment[] = payload.data || [];
+        setCatalog(rows);
+        hasLoadedCatalog.current = true;
       } catch (err) {
         if ((err as Error).name === 'AbortError') return;
         console.error('Error loading judgments:', err);
         setError(err instanceof Error ? err.message : 'Failed to load judgments');
-        setPaginationData({
-          judgments: [],
-          totalPages: 0,
-          currentPage: 1,
-          totalCount: 0
-        });
+        setCatalog([]);
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    loadJudgments();
+    void loadCatalog();
 
     return () => {
       controller.abort();
     };
-  }, [currentPage, debouncedSearch, courtFilter, yearFilter, refreshTick]);
+  }, [refreshTick]);
+
+  const filtered = useMemo(
+    () =>
+      filterReportedJudgments(catalog, {
+        search: searchQuery,
+        court: courtFilter,
+        year: yearFilter,
+      }),
+    [catalog, searchQuery, courtFilter, yearFilter],
+  );
+
+  const paginationData = useMemo(() => {
+    const totalCount = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+    const safePage = Math.min(Math.max(1, currentPage), totalPages);
+    const start = (safePage - 1) * PAGE_SIZE;
+    return {
+      judgments: filtered.slice(start, start + PAGE_SIZE),
+      totalPages,
+      currentPage: safePage,
+      totalCount,
+    };
+  }, [filtered, currentPage]);
+
+  useEffect(() => {
+    const tp = paginationData.totalPages;
+    setCurrentPage((p) => Math.min(p, tp));
+  }, [paginationData.totalPages]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -115,7 +126,7 @@ const ReportedJudgmentsPage = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
@@ -131,17 +142,14 @@ const ReportedJudgmentsPage = () => {
 
       <div className="flex-grow bg-gray-50">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[#2c415e] mb-2">Reported Judgments</h1>
             <p className="text-[#666b6f]">Browse through our collection of reported legal judgments</p>
           </div>
 
-          {/* Search and Filter Section */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <form onSubmit={handleSearch} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Search Input */}
                 <div className="md:col-span-2">
                   <label htmlFor="search" className="block text-sm font-medium text-[#2c415e] mb-1 flex items-center gap-2">
                     <Search className="w-4 h-4" />
@@ -160,7 +168,6 @@ const ReportedJudgmentsPage = () => {
                   </div>
                 </div>
 
-                {/* Court Filter */}
                 <div>
                   <label htmlFor="court" className="block text-sm font-medium text-[#2c415e] mb-1 flex items-center gap-2">
                     <Building2 className="w-4 h-4" />
@@ -182,7 +189,6 @@ const ReportedJudgmentsPage = () => {
                   </select>
                 </div>
 
-                {/* Year Filter */}
                 <div>
                   <label htmlFor="year" className="block text-sm font-medium text-[#2c415e] mb-1 flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
@@ -210,7 +216,6 @@ const ReportedJudgmentsPage = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -231,21 +236,20 @@ const ReportedJudgmentsPage = () => {
             </form>
           </div>
 
-          {/* Results Summary */}
           <div className="mb-4">
             <p className="text-sm text-[#666b6f]">
               Showing {paginationData.judgments.length} of {paginationData.totalCount} judgments
             </p>
           </div>
 
-          {/* Judgments List */}
           <div className="bg-white rounded-lg shadow-sm">
             {error ? (
               <div className="text-center py-12 px-4">
                 <h3 className="text-xl font-medium text-red-600 mb-2">Error</h3>
                 <p className="text-[#666b6f] mb-4">{error}</p>
                 <button
-                  onClick={() => setCurrentPage(1)}
+                  type="button"
+                  onClick={() => setRefreshTick((t) => t + 1)}
                   className="px-4 py-2 bg-[#2c415e] text-white rounded-md hover:bg-[#1e2d3f] transition-colors"
                 >
                   Retry
@@ -259,7 +263,7 @@ const ReportedJudgmentsPage = () => {
                 onPageChange={handlePageChange}
               />
             )}
-            {isLoading && (
+            {isLoading && catalog.length === 0 && (
               <div className="p-4 text-sm text-[#666b6f]">Loading judgments...</div>
             )}
           </div>

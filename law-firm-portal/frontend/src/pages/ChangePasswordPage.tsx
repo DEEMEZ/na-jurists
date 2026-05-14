@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { useToast } from "@/components/ui/ToastProvider";
+import { withPortalLoading } from "@/lib/portalLoadingBus";
 import { getSupabase } from "@/lib/supabaseClient";
 
 const inputClass =
@@ -45,9 +46,11 @@ export function ChangePasswordPage() {
     }
     setSubmitting(true);
     try {
-      const sb = getSupabase();
-      const { error: ue } = await sb.auth.updateUser({ password });
-      if (ue) throw new Error(ue.message);
+      await withPortalLoading(async () => {
+        const sb = getSupabase();
+        const { error: ue } = await sb.auth.updateUser({ password });
+        if (ue) throw new Error(ue.message);
+      });
       setPassword("");
       setConfirm("");
       showToast("Password updated.");

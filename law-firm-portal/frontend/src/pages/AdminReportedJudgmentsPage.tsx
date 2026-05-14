@@ -9,6 +9,7 @@ import {
   getReportedJudgmentsWebsiteApiBases,
   type ReportedJudgmentsWebsiteBase,
 } from "@/lib/publicWebsiteOrigin";
+import { withPortalLoading } from "@/lib/portalLoadingBus";
 import { getSupabase } from "@/lib/supabaseClient";
 
 type JudgmentListItem = {
@@ -18,8 +19,9 @@ type JudgmentListItem = {
   updatedAt: string;
   displayOnWebsite: boolean;
   hasOverride: boolean;
-  source: "database" | "website";
 };
+
+const ADMIN_JUDGMENTS_LIST_PAGE_SIZE = 20;
 
 type JudgmentRecord = {
   id: number;
@@ -29,6 +31,8 @@ type JudgmentRecord = {
   date: string;
   caseNumber: string;
   dictumLaw: string;
+  /** Shown above the PDF on the website (manual paste from the reported judgment). */
+  judgmentHeading?: string;
   subject: string;
   parties: { petitioner: string; respondent: string };
   judges: string[];
@@ -47,6 +51,7 @@ function emptyRecord(nextId: number): JudgmentRecord {
     date: "",
     caseNumber: "",
     dictumLaw: "",
+    judgmentHeading: "",
     subject: "",
     parties: { petitioner: "", respondent: "" },
     judges: [],
@@ -73,30 +78,65 @@ async function fetchWebsiteReportedJudgmentsJson(
   page: number,
   limit: number,
 ): Promise<ReportedJudgmentsApiPayload | null> {
-  const params = new URLSearchParams();
-  params.set("page", String(page));
-  params.set("limit", String(limit));
-  const path = `/api/reported-judgments?${params.toString()}`;
-  const url =
-    base != null && base !== "" ? `${base.replace(/\/$/, "")}${path}` : path;
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const raw = await res.text();
-  const trimmed = raw.trimStart();
-  const ct = (res.headers.get("content-type") ?? "").toLowerCase();
-  const looksJson = ct.includes("application/json") || trimmed.startsWith("{") || trimmed.startsWith("[");
-  if (!looksJson || trimmed.startsWith("<")) {
-    throw new Error(
-      `The judgments API at ${formatApiBaseForMessage(base)} returned a web page instead of JSON (wrong host, SPA fallback, or /api not routed). Set VITE_PUBLIC_WEBSITE_ORIGIN or VITE_WEBSITE_URL to the live Next.js site origin, or run the site on the same host as the portal.`,
-    );
+  return withPortalLoading(async () => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("limit", String(limit));
+    params.set("includeFullText", "1");
+    const path = `/api/reported-judgments?${params.toString()}`;
+    const url =
+      base != null && base !== "" ? `${base.replace(/\/$/, "")}${path}` : path;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const raw = await res.text();
+    const trimmed = raw.trimStart();
+    const ct = (res.headers.get("content-type") ?? "").toLowerCase();
+    const looksJson = ct.includes("application/json") || trimmed.startsWith("{") || trimmed.startsWith("[");
+    if (!looksJson || trimmed.startsWith("<")) {
+      throw new Error(
+        `The judgments API at ${formatApiBaseForMessage(base)} returned a web page instead of JSON (wrong host, SPA fallback, or /api not routed). Set VITE_PUBLIC_WEBSITE_ORIGIN or VITE_WEBSITE_URL to the live Next.js site origin, or run the site on the same host as the portal.`,
+      );
+    }
+    try {
+      return JSON.parse(raw) as ReportedJudgmentsApiPayload;
+    } catch {
+      throw new Error(
+        `The judgments API at ${formatApiBaseForMessage(base)} did not return valid JSON.`,
+      );
+    }
+  });
+}
+
+async function fetchWebsiteCatalogRowsForMerge(
+  bases: ReturnType<typeof getReportedJudgmentsWebsiteApiBases>,
+): Promise<{ ok: true; rows: JudgmentRecord[] } | { ok: false; error: unknown }> {
+  let mergeErr: unknown = null;
+  for (const base of bases) {
+    try {
+      const pageSize = 500;
+      let page = 1;
+      let totalPages = 1;
+      const acc: JudgmentRecord[] = [];
+      do {
+        const payload = await fetchWebsiteReportedJudgmentsJson(base, page, pageSize);
+        if (payload === null) {
+          if (page === 1) {
+            throw new Error(
+              `HTTP error from ${formatApiBaseForMessage(base)} — is the Next.js site running?`,
+            );
+          }
+          break;
+        }
+        acc.push(...(payload.data ?? []));
+        totalPages = Math.max(1, Number(payload.pagination?.totalPages) || 1);
+        page += 1;
+      } while (page <= totalPages);
+      return { ok: true, rows: acc };
+    } catch (e) {
+      mergeErr = e;
+    }
   }
-  try {
-    return JSON.parse(raw) as ReportedJudgmentsApiPayload;
-  } catch {
-    throw new Error(
-      `The judgments API at ${formatApiBaseForMessage(base)} did not return valid JSON.`,
-    );
-  }
+  return { ok: false, error: mergeErr };
 }
 
 export function AdminReportedJudgmentsPage() {
@@ -109,10 +149,10 @@ export function AdminReportedJudgmentsPage() {
 
   const [editing, setEditing] = useState<JudgmentRecord | null>(null);
   const [originalEditId, setOriginalEditId] = useState<number | null>(null);
-  const [displayOnWebsite, setDisplayOnWebsite] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
   const [websiteRecordsById, setWebsiteRecordsById] = useState<Map<number, JudgmentRecord>>(new Map());
+  const [adminListPage, setAdminListPage] = useState(1);
 
   const nextSuggestedId = useMemo(() => {
     if (rows.length === 0) return 1;
@@ -127,73 +167,66 @@ export function AdminReportedJudgmentsPage() {
     });
   }, [nextSuggestedId, originalEditId]);
 
+  const adminListTotalPages = Math.max(1, Math.ceil(rows.length / ADMIN_JUDGMENTS_LIST_PAGE_SIZE));
+  const adminListPageSafe = Math.min(Math.max(1, adminListPage), adminListTotalPages);
+  const adminPagedRows = useMemo(() => {
+    const start = (adminListPageSafe - 1) * ADMIN_JUDGMENTS_LIST_PAGE_SIZE;
+    return rows.slice(start, start + ADMIN_JUDGMENTS_LIST_PAGE_SIZE);
+  }, [rows, adminListPageSafe]);
+
+  useEffect(() => {
+    setAdminListPage((p) =>
+      Math.min(Math.max(1, p), Math.max(1, Math.ceil(rows.length / ADMIN_JUDGMENTS_LIST_PAGE_SIZE))),
+    );
+  }, [rows.length]);
+
   async function load() {
     if (user?.role !== "ADMIN") return;
     setLoading(true);
     setError(null);
     try {
-      const data = await apiJson<{
+      const bases = getReportedJudgmentsWebsiteApiBases();
+      const adminPromise = apiJson<{
         judgments: Array<
-          Omit<JudgmentListItem, "hasOverride" | "source"> & {
+          Omit<JudgmentListItem, "hasOverride"> & {
             displayOnWebsite: boolean;
           }
         >;
-      }>(
-        "/api/v1/admin/reported-judgments",
-      );
+      }>("/api/v1/admin/reported-judgments");
 
-      const dbRows = data.judgments.map((j) => ({
-        ...j,
-        hasOverride: true,
-        source: "database" as const,
-      }));
-      const dbById = new Map<number, (typeof dbRows)[number]>(dbRows.map((row) => [row.id, row]));
-
-      const bases = getReportedJudgmentsWebsiteApiBases();
       if (bases.length === 0) {
+        const data = await adminPromise;
+        const dbRows = data.judgments.map((j) => ({
+          ...j,
+          hasOverride: true,
+        }));
         setRows(dbRows);
         return;
       }
 
-      let allWebsiteRows: JudgmentRecord[] = [];
-      let mergeErr: unknown = null;
-      let websiteCatalogFetched = false;
-      for (const base of bases) {
-        try {
-          const pageSize = 50;
-          let page = 1;
-          let totalPages = 1;
-          const acc: JudgmentRecord[] = [];
-          do {
-            const payload = await fetchWebsiteReportedJudgmentsJson(base, page, pageSize);
-            if (payload === null) {
-              if (page === 1) {
-                throw new Error(
-                  `HTTP error from ${formatApiBaseForMessage(base)} — is the Next.js site running?`,
-                );
-              }
-              break;
-            }
-            acc.push(...(payload.data ?? []));
-            totalPages = Math.max(1, Number(payload.pagination?.totalPages) || 1);
-            page += 1;
-          } while (page <= totalPages);
-          allWebsiteRows = acc;
-          websiteCatalogFetched = true;
-          break;
-        } catch (e) {
-          mergeErr = e;
-        }
-      }
+      const [data, website] = await Promise.all([
+        adminPromise,
+        fetchWebsiteCatalogRowsForMerge(bases),
+      ]);
 
-      if (!websiteCatalogFetched) {
+      const dbRows = data.judgments.map((j) => ({
+        ...j,
+        hasOverride: true,
+      }));
+      const dbById = new Map<number, (typeof dbRows)[number]>(dbRows.map((row) => [row.id, row]));
+
+      if (!website.ok) {
         const msg =
-          mergeErr instanceof Error ? mergeErr.message : "Could not load website judgment catalog.";
+          website.error instanceof Error
+            ? website.error.message
+            : "Could not load website judgment catalog.";
         setError(`${msg} Showing database judgments only.`);
         setWebsiteRecordsById(new Map());
         setRows(dbRows);
         return;
       }
+
+      const allWebsiteRows = website.rows;
 
       const websiteById = new Map<number, JudgmentRecord>();
       for (const rec of allWebsiteRows) {
@@ -211,7 +244,6 @@ export function AdminReportedJudgmentsPage() {
           updatedAt: "",
           displayOnWebsite: true,
           hasOverride: false,
-          source: "website",
         });
       }
       mergedRows.sort((a, b) => a.id - b.id);
@@ -234,7 +266,6 @@ export function AdminReportedJudgmentsPage() {
 
   function openNew() {
     setEditing(emptyRecord(nextSuggestedId));
-    setDisplayOnWebsite(false);
     setOriginalEditId(null);
     setPdfFile(null);
   }
@@ -245,9 +276,8 @@ export function AdminReportedJudgmentsPage() {
       const data = await apiJson<{
         judgment: { record: JudgmentRecord; displayOnWebsite?: boolean };
       }>(`/api/v1/admin/reported-judgments/${id}`);
-      const rec = data.judgment.record;
-      setEditing(rec);
-      setDisplayOnWebsite(data.judgment.displayOnWebsite !== false);
+      const rec = data.judgment.record as JudgmentRecord;
+      setEditing({ ...rec, judgmentHeading: rec.judgmentHeading ?? "" });
       setOriginalEditId(id);
       return;
     } catch (e) {
@@ -258,8 +288,10 @@ export function AdminReportedJudgmentsPage() {
         showToast(m, "error");
         return;
       }
-      setEditing(websiteFallback);
-      setDisplayOnWebsite(true);
+      setEditing({
+        ...websiteFallback,
+        judgmentHeading: websiteFallback.judgmentHeading ?? "",
+      });
       setOriginalEditId(id);
       showToast("Loaded website judgment. Saving will create an editable record.");
     }
@@ -267,25 +299,26 @@ export function AdminReportedJudgmentsPage() {
 
   function closeEditor() {
     setEditing(null);
-    setDisplayOnWebsite(false);
     setOriginalEditId(null);
     setPdfFile(null);
   }
 
   async function uploadPdfOnly(current: JudgmentRecord, file: File): Promise<JudgmentRecord> {
-    const normalizedFileName = `reported-judgments/${current.id}-${Date.now()}-${file.name
-      .replace(/\s+/g, "-")
-      .replace(/[^a-zA-Z0-9._-]/g, "")}`;
+    return withPortalLoading(async () => {
+      const normalizedFileName = `reported-judgments/${current.id}-${Date.now()}-${file.name
+        .replace(/\s+/g, "-")
+        .replace(/[^a-zA-Z0-9._-]/g, "")}`;
 
-    const supabase = getSupabase();
-    const { error: uploadErr } = await supabase.storage
-      .from("reportedjudgements")
-      .upload(normalizedFileName, file, { upsert: true, contentType: "application/pdf" });
-    if (uploadErr) throw new Error(uploadErr.message);
+      const supabase = getSupabase();
+      const { error: uploadErr } = await supabase.storage
+        .from("reportedjudgements")
+        .upload(normalizedFileName, file, { upsert: true, contentType: "application/pdf" });
+      if (uploadErr) throw new Error(uploadErr.message);
 
-    const { data } = supabase.storage.from("reportedjudgements").getPublicUrl(normalizedFileName);
-    const pdfUrl = data.publicUrl ?? "";
-    return { ...current, pdfUrl: pdfUrl || current.pdfUrl };
+      const { data } = supabase.storage.from("reportedjudgements").getPublicUrl(normalizedFileName);
+      const pdfUrl = data.publicUrl ?? "";
+      return { ...current, pdfUrl: pdfUrl || current.pdfUrl };
+    });
   }
 
   async function onSave(e: FormEvent) {
@@ -313,15 +346,10 @@ export function AdminReportedJudgmentsPage() {
         method: "POST",
         body: JSON.stringify({
           record: rec,
-          displayOnWebsite,
           ...(originalEditId != null ? { previousId: originalEditId } : {}),
         }),
       });
-      showToast(
-        displayOnWebsite
-          ? "Judgment saved and published on the website."
-          : "Judgment saved successfully.",
-      );
+      showToast("Judgment saved and published on the website.");
       closeEditor();
       void load();
     } catch (err) {
@@ -389,78 +417,114 @@ export function AdminReportedJudgmentsPage() {
 
       {!editing && (
         <section className="rounded-xl border border-border-subtle bg-background-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-semibold text-secondary-navy">Website + Database judgments</h2>
-            <button
-              type="button"
-              onClick={() => openNew()}
-              className="h-10 rounded-lg bg-primary-navy px-4 text-sm font-semibold text-white hover:bg-secondary-navy"
-            >
-              New judgment
-            </button>
-          </div>
           {loading ? (
-            <p className="mt-4 text-text-light">Loading…</p>
+            <>
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => openNew()}
+                  className="h-10 shrink-0 rounded-lg bg-primary-navy px-4 text-sm font-semibold text-white hover:bg-secondary-navy"
+                >
+                  New judgment
+                </button>
+              </div>
+              <p className="mt-4 text-text-light">Loading…</p>
+            </>
           ) : rows.length === 0 ? (
-            <p className="mt-4 text-sm text-text-light">
-              No rows yet.
-            </p>
+            <>
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => openNew()}
+                  className="h-10 shrink-0 rounded-lg bg-primary-navy px-4 text-sm font-semibold text-white hover:bg-secondary-navy"
+                >
+                  New judgment
+                </button>
+              </div>
+              <p className="mt-4 text-sm text-text-light">No rows yet.</p>
+            </>
           ) : (
-            <div className="mt-4 overflow-x-auto rounded-lg border border-border-subtle">
-              <table className="w-full min-w-[640px] table-fixed text-left text-sm">
-                <thead className="border-b border-border-subtle bg-background-light text-xs font-semibold uppercase tracking-wide text-secondary-navy/80">
-                  <tr>
-                    <th className="w-16 px-4 py-3">Sr.</th>
-                    <th className="px-4 py-3">Citation</th>
-                    <th className="px-4 py-3">Title</th>
-                    <th className="w-28 px-4 py-3">Website</th>
-                    <th className="w-28 px-4 py-3">Source</th>
-                    <th className="w-[220px] px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.id} className="border-b border-border-subtle last:border-0">
-                      <td className="px-4 py-3 tabular-nums text-secondary-navy">{r.id}</td>
-                      <td className="px-4 py-3 font-medium text-text-dark">{r.citation || "—"}</td>
-                      <td className="px-4 py-3 text-text-light">{r.title || "—"}</td>
-                      <td className="px-4 py-3 text-sm text-secondary-navy">
-                        {r.displayOnWebsite ? (
-                          <span className="text-green-800">Yes</span>
-                        ) : (
-                          <span className="text-text-light">No</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {r.source === "database" ? (
-                          <span className="text-secondary-navy">Portal record</span>
-                        ) : (
-                          <span className="text-text-light">Website baseline</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="inline-flex flex-wrap justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => void openEdit(r.id)}
-                            className="inline-flex h-9 items-center justify-center rounded-md border border-secondary-navy/25 px-3 text-sm font-medium text-secondary-navy hover:bg-background-light"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void removeRow(r.id)}
-                            className="inline-flex h-9 items-center justify-center rounded-md border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700 hover:bg-red-100"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                <p className="min-h-10 flex items-center text-xs text-text-light tabular-nums">
+                  Showing{" "}
+                  {(adminListPageSafe - 1) * ADMIN_JUDGMENTS_LIST_PAGE_SIZE + 1}–
+                  {Math.min(adminListPageSafe * ADMIN_JUDGMENTS_LIST_PAGE_SIZE, rows.length)} of {rows.length}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openNew()}
+                  className="h-10 shrink-0 rounded-lg bg-primary-navy px-4 text-sm font-semibold text-white hover:bg-secondary-navy"
+                >
+                  New judgment
+                </button>
+              </div>
+              <div className="mt-2 overflow-x-auto rounded-lg border border-border-subtle">
+                <table className="w-full min-w-[520px] table-fixed text-left text-sm">
+                  <thead className="border-b border-border-subtle bg-background-light text-xs font-semibold uppercase tracking-wide text-secondary-navy/80">
+                    <tr>
+                      <th className="w-16 px-4 py-3">Sr.</th>
+                      <th className="px-4 py-3">Citation</th>
+                      <th className="px-4 py-3">Title</th>
+                      <th className="w-[220px] px-4 py-3 text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {adminPagedRows.map((r) => (
+                      <tr key={r.id} className="border-b border-border-subtle last:border-0">
+                        <td className="px-4 py-3 tabular-nums text-secondary-navy">{r.id}</td>
+                        <td className="px-4 py-3 font-medium text-text-dark">{r.citation || "—"}</td>
+                        <td className="px-4 py-3 text-text-light">{r.title || "—"}</td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="inline-flex flex-wrap justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => void openEdit(r.id)}
+                              className="inline-flex h-9 items-center justify-center rounded-md border border-secondary-navy/25 px-3 text-sm font-medium text-secondary-navy hover:bg-background-light"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void removeRow(r.id)}
+                              className="inline-flex h-9 items-center justify-center rounded-md border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700 hover:bg-red-100"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {adminListTotalPages > 1 ? (
+                <nav
+                  className="mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-border-subtle pt-4"
+                  aria-label="Judgments list pagination"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setAdminListPage((p) => Math.max(1, p - 1))}
+                    disabled={adminListPageSafe <= 1}
+                    className="rounded-md border border-border-subtle px-3 py-1.5 text-sm font-medium text-secondary-navy transition-colors hover:bg-background-light disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm tabular-nums text-text-light">
+                    Page {adminListPageSafe} of {adminListTotalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAdminListPage((p) => Math.min(adminListTotalPages, p + 1))}
+                    disabled={adminListPageSafe >= adminListTotalPages}
+                    className="rounded-md border border-border-subtle px-3 py-1.5 text-sm font-medium text-secondary-navy transition-colors hover:bg-background-light disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </nav>
+              ) : null}
+            </>
           )}
         </section>
       )}
@@ -521,10 +585,29 @@ export function AdminReportedJudgmentsPage() {
             </label>
             <label className="block text-sm">
               <span className="font-medium text-secondary-navy">Law</span>
+              <p className="mt-0.5 text-xs text-text-light">
+                Provide the official headnote or digest for the public Law field. Transcribe directly from the
+                reported judgment; automated extraction is not applied here.
+              </p>
               <input
                 value={editing.dictumLaw}
                 onChange={(e) => setEditing({ ...editing, dictumLaw: e.target.value })}
                 className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium text-secondary-navy">Heading</span>
+              <p className="mt-0.5 text-xs text-text-light">
+                Optional. You may enter the full heading block (citation, court, parties, case number, and material
+                headnotes). On the public site, this text appears above the judgment PDF when a visitor opens the
+                document.
+              </p>
+              <textarea
+                value={editing.judgmentHeading ?? ""}
+                onChange={(e) => setEditing({ ...editing, judgmentHeading: e.target.value })}
+                rows={12}
+                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 font-mono text-xs leading-relaxed"
+                placeholder="Citation, court, parties, case number, and headnotes (multiple lines)."
               />
             </label>
             <label className="block text-sm">
@@ -545,17 +628,6 @@ export function AdminReportedJudgmentsPage() {
                   View current PDF
                 </a>
               ) : null}
-            </label>
-            <label className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={displayOnWebsite}
-                onChange={(e) => setDisplayOnWebsite(e.target.checked)}
-              />
-              <span className="text-sm text-text-dark">
-                Display on public website (reported judgments pages and API)
-              </span>
             </label>
             <button
               type="submit"

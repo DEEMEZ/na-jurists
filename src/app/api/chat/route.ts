@@ -53,7 +53,7 @@ const LEGAL_KNOWLEDGE_BASE: Record<string, string> = {
 🗺️ View on Map: https://goo.gl/maps/...
 
 🕒 Office Hours:
-Monday - Friday: 9:00 AM - 6:00 PM
+Monday - Saturday: 9:00 AM - 5:00 PM
 
 💡 You can also use the contact form on our website to send us a message directly.`,
 
@@ -70,7 +70,7 @@ We typically respond within 24 hours during business days.`,
 For urgent matters outside office hours, please email ishfaqnaqvi@hotmail.com and we will respond as soon as possible.
 
 🕒 Phone hours:
-Monday - Friday: 9:00 AM - 6:00 PM`,
+Monday - Saturday: 9:00 AM - 5:00 PM`,
 
   "address": `Our offices:
 
@@ -81,7 +81,7 @@ Monday - Friday: 9:00 AM - 6:00 PM`,
 
   "hours": `🕒 N&A Jurists Office Hours:
 
-Monday - Friday: 9:00 AM - 6:00 PM
+Monday - Saturday: 9:00 AM - 5:00 PM
 
 📞 After hours:
 Please email ishfaqnaqvi@hotmail.com for urgent inquiries.`,

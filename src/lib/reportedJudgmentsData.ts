@@ -10,6 +10,8 @@ export type ReportedJudgmentRecord = {
   date: string;
   caseNumber: string;
   dictumLaw: string;
+  /** Optional: full heading block (citation, parties, headnotes) shown above the PDF on the website. */
+  judgmentHeading?: string;
   subject: string;
   parties: {
     petitioner: string;
@@ -89,11 +91,16 @@ async function loadSupabasePublishedOverrides(
   return byId;
 }
 
+let cachedFileRows: ReportedJudgmentRecord[] | null = null;
+
 async function loadFromFile(): Promise<ReportedJudgmentRecord[]> {
+  if (cachedFileRows) return cachedFileRows;
   const filePath = path.join(process.cwd(), 'public', 'data', 'reported-judgments.json');
   const file = await fs.readFile(filePath, 'utf-8');
   const parsed = JSON.parse(file);
-  return Array.isArray(parsed) ? parsed : [];
+  const rows = Array.isArray(parsed) ? parsed : [];
+  cachedFileRows = rows;
+  return rows;
 }
 
 /**

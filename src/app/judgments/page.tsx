@@ -1,11 +1,11 @@
 'use client';
 
 import { createClient } from '@supabase/supabase-js';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import { reportedJudgmentsList } from '@/data/reportedJudgmentsList';
-import { FileText, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type ApiJudgment = {
   id: number;
@@ -15,7 +15,10 @@ type ApiJudgment = {
 };
 
 type DisplayRow = {
+  /** Canonical serial / merge key from catalog or database. */
   id: number;
+  /** Consecutive index in the public list (no gaps when rows are ordered). */
+  displaySerial: number;
   citation: string;
   law: string;
 };
@@ -23,35 +26,26 @@ type DisplayRow = {
 const JUDGMENTS_PAGE_SIZE = 25;
 
 async function fetchAllReportedJudgmentsFromApi(): Promise<Map<number, ApiJudgment>> {
-  const pageSize = 50;
+  const params = new URLSearchParams();
+  params.set('page', '1');
+  params.set('limit', '500');
+  const res = await fetch(`/api/reported-judgments?${params.toString()}`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to load judgments (HTTP ${res.status})`);
+  }
+  const payload = await res.json();
   const map = new Map<number, ApiJudgment>();
-  let page = 1;
-  let totalPages = 1;
-  do {
-    const params = new URLSearchParams();
-    params.set('page', String(page));
-    params.set('limit', String(pageSize));
-    const res = await fetch(`/api/reported-judgments?${params.toString()}`, { cache: 'no-store' });
-    if (!res.ok) {
-      throw new Error(`Failed to load judgments (HTTP ${res.status})`);
-    }
-    const payload = await res.json();
-    const chunk = (payload.data ?? []) as ApiJudgment[];
-    for (const row of chunk) {
-      if (typeof row.id === 'number') map.set(row.id, row);
-    }
-    totalPages = Math.max(1, Number(payload.pagination?.totalPages) || 1);
-    page += 1;
-  } while (page <= totalPages);
+  for (const row of (payload.data ?? []) as ApiJudgment[]) {
+    if (typeof row.id === 'number') map.set(row.id, row);
+  }
   return map;
 }
 
-function shortLawForDatabaseOnlyRow(rec: ApiJudgment): string {
-  const d = (rec.dictumLaw ?? '').trim().replace(/\s+/g, ' ');
-  if (d) return d.length > 160 ? `${d.slice(0, 157)}…` : d;
-  const sub = (rec.subject ?? '').trim();
-  if (sub && sub.length <= 180) return sub;
-  return '—';
+/** Law column for API-only rows (not in static catalog): manual `dictumLaw` only. */
+function tableLawText(api: ApiJudgment | undefined, staticCatalogLaw: string): string {
+  const fromApi = (api?.dictumLaw ?? '').trim();
+  if (fromApi) return fromApi;
+  return (staticCatalogLaw ?? '').trim() || '—';
 }
 
 export default function JudgmentsPage() {
@@ -61,15 +55,20 @@ export default function JudgmentsPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const hasLoadedOverlay = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
+      const quiet = hasLoadedOverlay.current;
+      if (!quiet) setLoading(true);
+      setLoadError(null);
       try {
-        setLoading(true);
-        setLoadError(null);
         const map = await fetchAllReportedJudgmentsFromApi();
-        if (!cancelled) setOverlay(map);
+        if (!cancelled) {
+          setOverlay(map);
+          hasLoadedOverlay.current = true;
+        }
       } catch (e) {
         if (!cancelled) {
           setLoadError(e instanceof Error ? e.message : 'Failed to load judgments');
@@ -114,17 +113,14 @@ export default function JudgmentsPage() {
     const listIds = new Set(reportedJudgmentsList.map((j) => j.srNo));
     const merged = overlay ?? new Map<number, ApiJudgment>();
 
-    const fromList: DisplayRow[] = reportedJudgmentsList.map((item) => {
-      const o = merged.get(item.srNo);
-      const lawFromApi = (o?.dictumLaw ?? '').trim();
-      return {
-        id: item.srNo,
-        citation: (o?.citation ?? item.citation).trim() || item.citation,
-        law: lawFromApi || item.dictumLaw,
-      };
-    });
+    const fromList: Omit<DisplayRow, 'displaySerial'>[] = reportedJudgmentsList.map((item) => ({
+      id: item.srNo,
+      /** Firm-approved catalog (Sr 1–69); portal/API overrides must not replace these columns on the public table. */
+      citation: item.citation.trim() || item.citation,
+      law: (item.dictumLaw ?? '').trim() || '—',
+    }));
 
-    const extras: DisplayRow[] = [];
+    const extras: Omit<DisplayRow, 'displaySerial'>[] = [];
     for (const id of [...merged.keys()].sort((a, b) => a - b)) {
       if (listIds.has(id)) continue;
       const rec = merged.get(id);
@@ -132,11 +128,12 @@ export default function JudgmentsPage() {
       extras.push({
         id,
         citation: rec.citation.trim() || '—',
-        law: shortLawForDatabaseOnlyRow(rec),
+        law: tableLawText(rec, ''),
       });
     }
 
-    return [...fromList, ...extras];
+    const combined = [...fromList, ...extras].sort((a, b) => a.id - b.id);
+    return combined.map((r, i) => ({ ...r, displaySerial: i + 1 }));
   }, [overlay]);
 
   const filteredJudgments = useMemo(() => {
@@ -146,7 +143,8 @@ export default function JudgmentsPage() {
       (judgment) =>
         judgment.citation.toLowerCase().includes(q) ||
         judgment.law.toLowerCase().includes(q) ||
-        judgment.id.toString().includes(q)
+        judgment.id.toString().includes(q) ||
+        judgment.displaySerial.toString().includes(q),
     );
   }, [rows, searchTerm]);
 
@@ -164,11 +162,6 @@ export default function JudgmentsPage() {
   const currentListPage = Math.min(Math.max(1, listPage), totalListPages);
   const listOffset = (currentListPage - 1) * JUDGMENTS_PAGE_SIZE;
   const pagedJudgments = filteredJudgments.slice(listOffset, listOffset + JUDGMENTS_PAGE_SIZE);
-
-  const handleOpenPDF = (judgmentId: number) => {
-    const url = `/api/reported-judgments/pdf?id=${judgmentId}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
 
   const totalCount = rows.length;
 
@@ -227,7 +220,7 @@ export default function JudgmentsPage() {
                       <th className="px-6 py-4 text-left text-sm font-semibold w-24">Sr. No</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold">Citation</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold">Law</th>
-                      <th className="px-6 py-4 text-center text-sm font-semibold w-32">
+                      <th className="px-6 py-4 text-center text-sm font-semibold w-36">
                         Detail/View
                       </th>
                     </tr>
@@ -241,21 +234,24 @@ export default function JudgmentsPage() {
                         }`}
                       >
                         <td className="px-6 py-4 text-sm font-medium text-[#2c415e]">
-                          {judgment.id}
+                          {judgment.displaySerial}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 font-medium">
                           {judgment.citation}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{judgment.law}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700 max-h-48 max-w-xl overflow-y-auto whitespace-pre-wrap align-top">
+                          {judgment.law}
+                        </td>
                         <td className="px-6 py-4 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenPDF(judgment.id)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#2c415e] text-white text-sm font-medium rounded-lg hover:bg-[#1a2a3e] transition-colors"
+                          <a
+                            href={`/api/reported-judgments/pdf?id=${judgment.id}`}
+                            download={`judgment-${judgment.id}.pdf`}
+                            rel="noopener"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#2c415e] text-white text-sm font-medium rounded-lg hover:bg-[#1a2a3e] transition-colors no-underline"
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            <FileText className="h-4 w-4" />
                             Open PDF
-                          </button>
+                          </a>
                         </td>
                       </tr>
                     ))}
@@ -268,21 +264,22 @@ export default function JudgmentsPage() {
                   <div key={judgment.id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-8 h-8 bg-[#2c415e] text-white rounded-full text-sm font-bold">
-                          {judgment.id}
+                        <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 bg-[#2c415e] text-white rounded-full text-sm font-bold">
+                          {judgment.displaySerial}
                         </span>
                         <span className="font-semibold text-gray-900">{judgment.citation}</span>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-700 mb-3">{judgment.law}</p>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenPDF(judgment.id)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#2c415e] text-white text-sm font-medium rounded-lg hover:bg-[#1a2a3e] transition-colors"
+                    <p className="text-sm text-gray-700 mb-3 whitespace-pre-wrap">{judgment.law}</p>
+                    <a
+                      href={`/api/reported-judgments/pdf?id=${judgment.id}`}
+                      download={`judgment-${judgment.id}.pdf`}
+                      rel="noopener"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#2c415e] text-white text-sm font-medium rounded-lg hover:bg-[#1a2a3e] transition-colors no-underline"
                     >
-                      <ExternalLink className="h-4 w-4" />
+                      <FileText className="h-4 w-4" />
                       Open PDF
-                    </button>
+                    </a>
                   </div>
                 ))}
               </div>

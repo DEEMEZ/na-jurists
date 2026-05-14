@@ -78,8 +78,43 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Judgment not found.' }, { status: 404 });
     }
 
+    /** Stream storage PDF through this origin so the site can trigger download without cross-origin fetch/CORS issues. */
     if (typeof found.pdfUrl === 'string' && found.pdfUrl.trim().length > 0) {
-      return NextResponse.redirect(found.pdfUrl.trim(), 302);
+      const pdfUrl = found.pdfUrl.trim();
+      let upstream: Response;
+      try {
+        upstream = await fetch(pdfUrl, {
+          cache: 'no-store',
+          headers: { Accept: 'application/pdf,*/*' },
+        });
+      } catch (err) {
+        console.error('[api/reported-judgments/pdf] upstream fetch', pdfUrl.slice(0, 120), err);
+        return NextResponse.json(
+          {
+            error: 'Could not retrieve PDF from storage.',
+            detail: err instanceof Error ? err.message : String(err),
+          },
+          { status: 502 },
+        );
+      }
+      if (!upstream.ok) {
+        return NextResponse.json(
+          { error: 'PDF storage returned an error.', detail: String(upstream.status) },
+          { status: 502 },
+        );
+      }
+      const buf = Buffer.from(await upstream.arrayBuffer());
+      const ct =
+        upstream.headers.get('content-type')?.split(';')[0]?.trim() || 'application/pdf';
+      const safeName = `judgment-${found.id}.pdf`;
+      return new NextResponse(buf, {
+        status: 200,
+        headers: {
+          'Content-Type': ct,
+          'Content-Disposition': `attachment; filename="${safeName}"`,
+          'Cache-Control': 'public, max-age=300, s-maxage=300',
+        },
+      });
     }
 
     const buffer = await judgmentToPdfBuffer(found);
@@ -89,7 +124,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${safeName}"`,
+        'Content-Disposition': `attachment; filename="${safeName}"`,
         'Cache-Control': 'public, max-age=300, s-maxage=300',
       },
     });
