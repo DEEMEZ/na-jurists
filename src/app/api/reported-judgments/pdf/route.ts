@@ -3,6 +3,7 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { loadReportedJudgments, type ReportedJudgmentRecord } from '@/lib/reportedJudgmentsData';
+import { downloadReportedJudgmentFromStorage } from '@/lib/reportedJudgmentStoragePdf.server';
 import { CATALOG_PDF_ID_MAX } from '@/lib/stakeholderJudgmentPdf';
 import { readStakeholderJudgmentPdf } from '@/lib/stakeholderJudgmentPdf.server';
 
@@ -143,16 +144,6 @@ export async function GET(request: NextRequest) {
     if (typeof found.pdfUrl === 'string' && found.pdfUrl.trim().length > 0) {
       const pdfUrl = found.pdfUrl.trim();
 
-      if (!pdfUrl.startsWith('/') && pdfUrl.includes('supabase.co')) {
-        return NextResponse.json(
-          {
-            error: 'External PDF storage is not used for this judgment.',
-            detail: 'Re-upload or use the site catalog PDF path.',
-          },
-          { status: 502 },
-        );
-      }
-
       if (pdfUrl.startsWith('/')) {
         const rel = pdfUrl.replace(/^\/+/, '');
         const filePath = path.resolve(publicRoot, rel);
@@ -172,6 +163,13 @@ export async function GET(request: NextRequest) {
             },
             { status: 502 },
           );
+        }
+      }
+
+      if (pdfUrl.includes('supabase.co')) {
+        const stored = await downloadReportedJudgmentFromStorage(pdfUrl);
+        if (stored) {
+          return pdfResponse(stored, safeName, true);
         }
       }
 
@@ -198,8 +196,6 @@ export async function GET(request: NextRequest) {
         );
       }
       const buf = Buffer.from(await upstream.arrayBuffer());
-      const ct =
-        upstream.headers.get('content-type')?.split(';')[0]?.trim() || 'application/pdf';
       return pdfResponse(buf, safeName, true);
     }
 
