@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
-import {
-  catalogSerialForPdfFile,
-  readStakeholderJudgmentPdf,
-} from '@/lib/stakeholderJudgmentPdf';
+import { catalogSerialForPdfFile } from '@/lib/stakeholderJudgmentPdf';
+import { readStakeholderJudgmentPdf } from '@/lib/stakeholderJudgmentPdf.server';
 import { isAllowedReportedJudgmentPdf } from '@/lib/reportedJudgmentPdfAllowlist';
 
-function pdfResponse(body: Uint8Array, fileName: string) {
-  return new NextResponse(body, {
+function pdfResponse(body: Buffer, fileName: string) {
+  return new NextResponse(new Blob([new Uint8Array(body)], { type: 'application/pdf' }), {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
@@ -33,7 +31,7 @@ export async function GET(request: NextRequest) {
     const publicRoot = path.resolve(process.cwd(), 'public');
     const buf = await readStakeholderJudgmentPdf(publicRoot, serial);
     if (buf) {
-      return pdfResponse(new Uint8Array(buf), `${serial}.pdf`);
+      return pdfResponse(buf, `${serial}.pdf`);
     }
     return NextResponse.json(
       {

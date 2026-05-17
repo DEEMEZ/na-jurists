@@ -3,10 +3,8 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { loadReportedJudgments, type ReportedJudgmentRecord } from '@/lib/reportedJudgmentsData';
-import {
-  CATALOG_PDF_ID_MAX,
-  readStakeholderJudgmentPdf,
-} from '@/lib/stakeholderJudgmentPdf';
+import { CATALOG_PDF_ID_MAX } from '@/lib/stakeholderJudgmentPdf';
+import { readStakeholderJudgmentPdf } from '@/lib/stakeholderJudgmentPdf.server';
 
 export const runtime = 'nodejs';
 
@@ -37,9 +35,9 @@ function downloadFileName(id: number, kind: JudgmentFileKind): string {
   return `judgment-${id}.pdf`;
 }
 
-function pdfResponse(buf: Uint8Array, fileName: string, inline = true) {
+function pdfResponse(buf: Buffer, fileName: string, inline = true) {
   const disposition = inline ? 'inline' : 'attachment';
-  return new NextResponse(buf, {
+  return new NextResponse(new Blob([new Uint8Array(buf)], { type: 'application/pdf' }), {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
@@ -130,7 +128,7 @@ export async function GET(request: NextRequest) {
     if (found.id >= 1 && found.id <= CATALOG_PDF_ID_MAX) {
       const buf = await readStakeholderJudgmentPdf(publicRoot, found.id);
       if (buf) {
-        return pdfResponse(new Uint8Array(buf), safeName, true);
+        return pdfResponse(buf, safeName, true);
       }
       return NextResponse.json(
         {
@@ -164,7 +162,7 @@ export async function GET(request: NextRequest) {
         }
         try {
           const buf = await fs.readFile(filePath);
-          return pdfResponse(new Uint8Array(buf), safeName, true);
+          return pdfResponse(buf, safeName, true);
         } catch (err) {
           console.error('[api/reported-judgments/pdf] local file', filePath, err);
           return NextResponse.json(
@@ -202,12 +200,12 @@ export async function GET(request: NextRequest) {
       const buf = Buffer.from(await upstream.arrayBuffer());
       const ct =
         upstream.headers.get('content-type')?.split(';')[0]?.trim() || 'application/pdf';
-      return pdfResponse(new Uint8Array(buf), safeName, true);
+      return pdfResponse(buf, safeName, true);
     }
 
     const buffer = await judgmentToPdfBuffer(found);
 
-    return pdfResponse(new Uint8Array(buffer), safeName, true);
+    return pdfResponse(buffer, safeName, true);
   } catch (e) {
     console.error('[api/reported-judgments/pdf]', e);
     return NextResponse.json(
