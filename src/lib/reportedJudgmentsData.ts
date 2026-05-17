@@ -1,4 +1,3 @@
-import { existsSync } from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
@@ -131,9 +130,9 @@ export async function loadReportedJudgments(): Promise<ReportedJudgmentRecord[]>
     byId.set(id, rec);
   }
 
-  const stakeholderPdfDir = path.join(process.cwd(), 'public', 'reported-judgement-pdfs');
+  /** Always use deployed static PDFs for the firm catalog (never stale Supabase storage URLs). */
   for (const rec of byId.values()) {
-    if (rec.id >= 1 && rec.id <= 69 && existsSync(path.join(stakeholderPdfDir, `${rec.id}.pdf`))) {
+    if (rec.id >= 1 && rec.id <= 69) {
       rec.pdfUrl = `/reported-judgement-pdfs/${rec.id}.pdf`;
     }
   }

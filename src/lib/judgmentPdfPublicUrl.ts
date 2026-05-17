@@ -1,10 +1,15 @@
+import { catalogSerialForPdfFile, stakeholderJudgmentPdfHref } from '@/lib/stakeholderJudgmentPdf';
+
 /**
- * URL opened in the browser for judgment PDFs (Legal Resources table).
- * - Cloudinary: direct raw URL when NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is set.
- * - Supabase: same-origin `/api/judgments/pdf` so PDFs work with the service role and/or
- *   after the `reportedjudgements` bucket is created and files are uploaded (avoids broken public URLs when the bucket is missing).
+ * URL opened for judgment PDFs (Legal Resources table).
+ * Catalog rows use static files under `/reported-judgement-pdfs/{id}.pdf` (same as the public judgments table).
  */
 export function getJudgmentPdfPublicUrl(pdfFile: string): string | null {
+  const serial = catalogSerialForPdfFile(pdfFile);
+  if (serial != null) {
+    return stakeholderJudgmentPdfHref(serial);
+  }
+
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   if (cloudName) {
     const base = pdfFile.replace(/\.pdf$/i, '');

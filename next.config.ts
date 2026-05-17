@@ -74,6 +74,15 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/reported-judgement-pdfs/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, s-maxage=86400, immutable',
+          },
+        ],
+      },
     ];
   },
 };

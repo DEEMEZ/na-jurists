@@ -5,7 +5,12 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import { reportedJudgmentsList } from '@/data/reportedJudgmentsList';
+import { stakeholderJudgmentPdfHref } from '@/lib/stakeholderJudgmentPdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+
+function judgmentPdfHref(id: number): string {
+  return stakeholderJudgmentPdfHref(id) ?? `/api/reported-judgments/pdf?id=${id}`;
+}
 
 type ApiJudgment = {
   id: number;
@@ -244,9 +249,7 @@ export default function JudgmentsPage() {
                         </td>
                         <td className="px-6 py-4 align-middle text-center">
                           <a
-                            href={`/api/reported-judgments/pdf?id=${judgment.id}`}
-                            download={`judgment-${judgment.id}.pdf`}
-                            rel="noopener"
+                            href={judgmentPdfHref(judgment.id)}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#2c415e] text-white text-sm font-medium rounded-lg hover:bg-[#1a2a3e] transition-colors no-underline"
                           >
                             <FileText className="h-4 w-4" />
@@ -272,9 +275,7 @@ export default function JudgmentsPage() {
                     </div>
                     <p className="text-sm text-gray-700 mb-3 whitespace-pre-wrap">{judgment.law}</p>
                     <a
-                      href={`/api/reported-judgments/pdf?id=${judgment.id}`}
-                      download={`judgment-${judgment.id}.pdf`}
-                      rel="noopener"
+                      href={judgmentPdfHref(judgment.id)}
                       className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#2c415e] text-white text-sm font-medium rounded-lg hover:bg-[#1a2a3e] transition-colors no-underline"
                     >
                       <FileText className="h-4 w-4" />

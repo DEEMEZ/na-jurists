@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import path from 'path';
+import {
+  catalogSerialForPdfFile,
+  readStakeholderJudgmentPdf,
+} from '@/lib/stakeholderJudgmentPdf';
 import { isAllowedReportedJudgmentPdf } from '@/lib/reportedJudgmentPdfAllowlist';
 
-const BUCKET = 'reportedjudgements';
-
-function pdfResponse(body: Blob, fileName: string) {
+function pdfResponse(body: Uint8Array, fileName: string) {
   return new NextResponse(body, {
     status: 200,
     headers: {
@@ -15,54 +17,38 @@ function pdfResponse(body: Blob, fileName: string) {
   });
 }
 
+/** Legacy `/api/judgments/pdf?file=…` — serve catalog PDFs from `public/`, not Supabase. */
 export async function GET(request: NextRequest) {
   const file = request.nextUrl.searchParams.get('file')?.trim() ?? '';
 
   if (!file || !isAllowedReportedJudgmentPdf(file)) {
     return NextResponse.json(
       { error: 'Invalid or unknown judgment file.', hint: file ? undefined : 'Missing file query parameter.' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
-  if (!supabaseUrl) {
-    return NextResponse.json(
-      { error: 'Server missing NEXT_PUBLIC_SUPABASE_URL.' },
-      { status: 503 }
-    );
-  }
-
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (serviceKey) {
-    const supabase = createClient(supabaseUrl, serviceKey);
-    const { data, error } = await supabase.storage.from(BUCKET).download(file);
-
-    if (!error && data) {
-      return pdfResponse(data, file);
+  const serial = catalogSerialForPdfFile(file);
+  if (serial != null) {
+    const publicRoot = path.resolve(process.cwd(), 'public');
+    const buf = await readStakeholderJudgmentPdf(publicRoot, serial);
+    if (buf) {
+      return pdfResponse(new Uint8Array(buf), `${serial}.pdf`);
     }
-
-    console.error('[api/judgments/pdf] service download failed', file, error?.message);
+    return NextResponse.json(
+      {
+        error: 'PDF not found.',
+        detail: `Missing public/reported-judgement-pdfs/${serial}.pdf`,
+      },
+      { status: 404 },
+    );
   }
-
-  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(file)}`;
-  const upstream = await fetch(publicUrl, { next: { revalidate: 60 } });
-
-  if (upstream.ok) {
-    const buf = await upstream.blob();
-    return pdfResponse(buf, file);
-  }
-
-  const errText = await upstream.text().catch(() => '');
-  console.error('[api/judgments/pdf] public fetch failed', publicUrl, upstream.status, errText.slice(0, 200));
 
   return NextResponse.json(
     {
       error: 'PDF not found.',
-      detail:
-        'Create the Storage bucket `reportedjudgements`, apply the migration in law-firm-portal/supabase/migrations, upload PDFs (e.g. scripts/upload-to-supabase.js), and set SUPABASE_SERVICE_ROLE_KEY in .env.local for local proxy access.',
-      status: upstream.status,
+      detail: 'Use /reported-judgement-pdfs/{serial}.pdf or /api/reported-judgments/pdf?id=…',
     },
-    { status: 404 }
+    { status: 404 },
   );
 }

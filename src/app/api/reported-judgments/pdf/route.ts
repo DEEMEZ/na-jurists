@@ -1,9 +1,12 @@
-import { existsSync } from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { loadReportedJudgments, type ReportedJudgmentRecord } from '@/lib/reportedJudgmentsData';
+import {
+  CATALOG_PDF_ID_MAX,
+  readStakeholderJudgmentPdf,
+} from '@/lib/stakeholderJudgmentPdf';
 
 export const runtime = 'nodejs';
 
@@ -32,6 +35,18 @@ function downloadFileName(id: number, kind: JudgmentFileKind): string {
   if (kind === 'docx') return `judgment-${id}.docx`;
   if (kind === 'doc') return `judgment-${id}.doc`;
   return `judgment-${id}.pdf`;
+}
+
+function pdfResponse(buf: Uint8Array, fileName: string, inline = true) {
+  const disposition = inline ? 'inline' : 'attachment';
+  return new NextResponse(buf, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `${disposition}; filename="${fileName}"`,
+      'Cache-Control': 'public, max-age=300, s-maxage=300',
+    },
+  });
 }
 
 /** Normalize text so PDF built-in fonts don’t throw on common Unicode punctuation. */
@@ -111,29 +126,34 @@ export async function GET(request: NextRequest) {
     const safeName = `judgment-${found.id}.pdf`;
     const publicRoot = path.resolve(process.cwd(), 'public');
 
-    /** Stakeholder PDFs synced from `Reported Judgements/` — always preferred for catalog ids 1–69. */
-    if (found.id >= 1 && found.id <= 69) {
-      const stakeholderPath = path.join(publicRoot, 'reported-judgement-pdfs', `${found.id}.pdf`);
-      if (existsSync(stakeholderPath)) {
-        try {
-          const buf = await fs.readFile(stakeholderPath);
-          return new NextResponse(new Uint8Array(buf), {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename="${safeName}"`,
-              'Cache-Control': 'public, max-age=300, s-maxage=300',
-            },
-          });
-        } catch (err) {
-          console.error('[api/reported-judgments/pdf] stakeholder file', stakeholderPath, err);
-        }
+    /** Catalog PDFs: only `public/reported-judgement-pdfs/{id}.pdf` — never Supabase. */
+    if (found.id >= 1 && found.id <= CATALOG_PDF_ID_MAX) {
+      const buf = await readStakeholderJudgmentPdf(publicRoot, found.id);
+      if (buf) {
+        return pdfResponse(new Uint8Array(buf), safeName, true);
       }
+      return NextResponse.json(
+        {
+          error: 'PDF file not found on server.',
+          detail: `Missing public/reported-judgement-pdfs/${found.id}.pdf`,
+        },
+        { status: 404 },
+      );
     }
 
-    /** Same-origin PDF path (under /public), remote URL, or storage; stream without modifying file bytes. */
+    /** Same-origin PDF path (under /public) or remote URL for non-catalog rows only. */
     if (typeof found.pdfUrl === 'string' && found.pdfUrl.trim().length > 0) {
       const pdfUrl = found.pdfUrl.trim();
+
+      if (!pdfUrl.startsWith('/') && pdfUrl.includes('supabase.co')) {
+        return NextResponse.json(
+          {
+            error: 'External PDF storage is not used for this judgment.',
+            detail: 'Re-upload or use the site catalog PDF path.',
+          },
+          { status: 502 },
+        );
+      }
 
       if (pdfUrl.startsWith('/')) {
         const rel = pdfUrl.replace(/^\/+/, '');
@@ -144,14 +164,7 @@ export async function GET(request: NextRequest) {
         }
         try {
           const buf = await fs.readFile(filePath);
-          return new NextResponse(new Uint8Array(buf), {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename="${safeName}"`,
-              'Cache-Control': 'public, max-age=300, s-maxage=300',
-            },
-          });
+          return pdfResponse(new Uint8Array(buf), safeName, true);
         } catch (err) {
           console.error('[api/reported-judgments/pdf] local file', filePath, err);
           return NextResponse.json(
@@ -189,26 +202,12 @@ export async function GET(request: NextRequest) {
       const buf = Buffer.from(await upstream.arrayBuffer());
       const ct =
         upstream.headers.get('content-type')?.split(';')[0]?.trim() || 'application/pdf';
-      return new NextResponse(buf, {
-        status: 200,
-        headers: {
-          'Content-Type': ct,
-          'Content-Disposition': `attachment; filename="${safeName}"`,
-          'Cache-Control': 'public, max-age=300, s-maxage=300',
-        },
-      });
+      return pdfResponse(new Uint8Array(buf), safeName, true);
     }
 
     const buffer = await judgmentToPdfBuffer(found);
 
-    return new NextResponse(new Uint8Array(buffer), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${safeName}"`,
-        'Cache-Control': 'public, max-age=300, s-maxage=300',
-      },
-    });
+    return pdfResponse(new Uint8Array(buffer), safeName, true);
   } catch (e) {
     console.error('[api/reported-judgments/pdf]', e);
     return NextResponse.json(
