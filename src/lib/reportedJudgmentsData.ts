@@ -1,3 +1,4 @@
+import { existsSync } from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
@@ -10,7 +11,7 @@ export type ReportedJudgmentRecord = {
   date: string;
   caseNumber: string;
   dictumLaw: string;
-  /** Optional: full heading block (citation, parties, headnotes) shown above the PDF on the website. */
+  /** Optional: portal-only internal notes (not rendered on the public site or in PDF output). */
   judgmentHeading?: string;
   subject: string;
   parties: {
@@ -129,5 +130,13 @@ export async function loadReportedJudgments(): Promise<ReportedJudgmentRecord[]>
   for (const [id, rec] of sbMap) {
     byId.set(id, rec);
   }
+
+  const stakeholderPdfDir = path.join(process.cwd(), 'public', 'reported-judgement-pdfs');
+  for (const rec of byId.values()) {
+    if (rec.id >= 1 && rec.id <= 69 && existsSync(path.join(stakeholderPdfDir, `${rec.id}.pdf`))) {
+      rec.pdfUrl = `/reported-judgement-pdfs/${rec.id}.pdf`;
+    }
+  }
+
   return [...byId.values()].sort((a, b) => a.id - b.id);
 }

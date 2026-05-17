@@ -1,8 +1,38 @@
+import { existsSync } from 'fs';
+import { promises as fs } from 'fs';
+import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { loadReportedJudgments, type ReportedJudgmentRecord } from '@/lib/reportedJudgmentsData';
 
 export const runtime = 'nodejs';
+
+type JudgmentFileKind = 'pdf' | 'docx' | 'doc' | 'unknown';
+
+function fileKindFromUrlOrPath(ref: string): JudgmentFileKind {
+  const base = ref.split('?')[0].toLowerCase();
+  if (base.endsWith('.docx')) return 'docx';
+  if (base.endsWith('.doc')) return 'doc';
+  if (base.endsWith('.pdf')) return 'pdf';
+  return 'unknown';
+}
+
+function mimeTypeForKind(kind: JudgmentFileKind, upstream?: string | null): string {
+  if (kind === 'docx') {
+    return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  }
+  if (kind === 'doc') return 'application/msword';
+  if (kind === 'pdf') return 'application/pdf';
+  const u = upstream?.split(';')[0]?.trim();
+  if (u && u !== 'application/octet-stream') return u;
+  return 'application/octet-stream';
+}
+
+function downloadFileName(id: number, kind: JudgmentFileKind): string {
+  if (kind === 'docx') return `judgment-${id}.docx`;
+  if (kind === 'doc') return `judgment-${id}.doc`;
+  return `judgment-${id}.pdf`;
+}
 
 /** Normalize text so PDF built-in fonts don’t throw on common Unicode punctuation. */
 function sanitizeForPdf(text: string): string {
@@ -78,9 +108,62 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Judgment not found.' }, { status: 404 });
     }
 
-    /** Stream storage PDF through this origin so the site can trigger download without cross-origin fetch/CORS issues. */
+    const safeName = `judgment-${found.id}.pdf`;
+    const publicRoot = path.resolve(process.cwd(), 'public');
+
+    /** Stakeholder PDFs synced from `Reported Judgements/` — always preferred for catalog ids 1–69. */
+    if (found.id >= 1 && found.id <= 69) {
+      const stakeholderPath = path.join(publicRoot, 'reported-judgement-pdfs', `${found.id}.pdf`);
+      if (existsSync(stakeholderPath)) {
+        try {
+          const buf = await fs.readFile(stakeholderPath);
+          return new NextResponse(new Uint8Array(buf), {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `attachment; filename="${safeName}"`,
+              'Cache-Control': 'public, max-age=300, s-maxage=300',
+            },
+          });
+        } catch (err) {
+          console.error('[api/reported-judgments/pdf] stakeholder file', stakeholderPath, err);
+        }
+      }
+    }
+
+    /** Same-origin PDF path (under /public), remote URL, or storage; stream without modifying file bytes. */
     if (typeof found.pdfUrl === 'string' && found.pdfUrl.trim().length > 0) {
       const pdfUrl = found.pdfUrl.trim();
+
+      if (pdfUrl.startsWith('/')) {
+        const rel = pdfUrl.replace(/^\/+/, '');
+        const filePath = path.resolve(publicRoot, rel);
+        const relToPublic = path.relative(publicRoot, filePath);
+        if (relToPublic.startsWith('..') || path.isAbsolute(relToPublic)) {
+          return NextResponse.json({ error: 'Invalid pdf path.' }, { status: 400 });
+        }
+        try {
+          const buf = await fs.readFile(filePath);
+          return new NextResponse(new Uint8Array(buf), {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `attachment; filename="${safeName}"`,
+              'Cache-Control': 'public, max-age=300, s-maxage=300',
+            },
+          });
+        } catch (err) {
+          console.error('[api/reported-judgments/pdf] local file', filePath, err);
+          return NextResponse.json(
+            {
+              error: 'Could not read PDF file.',
+              detail: err instanceof Error ? err.message : String(err),
+            },
+            { status: 502 },
+          );
+        }
+      }
+
       let upstream: Response;
       try {
         upstream = await fetch(pdfUrl, {
@@ -106,7 +189,6 @@ export async function GET(request: NextRequest) {
       const buf = Buffer.from(await upstream.arrayBuffer());
       const ct =
         upstream.headers.get('content-type')?.split(';')[0]?.trim() || 'application/pdf';
-      const safeName = `judgment-${found.id}.pdf`;
       return new NextResponse(buf, {
         status: 200,
         headers: {
@@ -118,7 +200,6 @@ export async function GET(request: NextRequest) {
     }
 
     const buffer = await judgmentToPdfBuffer(found);
-    const safeName = `judgment-${found.id}.pdf`;
 
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,

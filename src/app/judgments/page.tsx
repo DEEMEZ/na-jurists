@@ -229,20 +229,20 @@ export default function JudgmentsPage() {
                     {pagedJudgments.map((judgment, index) => (
                       <tr
                         key={judgment.id}
-                        className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${
+                        className={`border-b border-gray-200 hover:bg-gray-50 transition-colors align-middle ${
                           index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                         }`}
                       >
-                        <td className="px-6 py-4 text-sm font-medium text-[#2c415e]">
+                        <td className="px-6 py-4 align-middle text-sm font-medium text-[#2c415e]">
                           {judgment.displaySerial}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                        <td className="px-6 py-4 align-middle text-sm text-gray-900 font-medium">
                           {judgment.citation}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 max-h-48 max-w-xl overflow-y-auto whitespace-pre-wrap align-top">
+                        <td className="px-6 py-4 align-middle text-sm text-gray-700 max-w-xl max-h-48 overflow-y-auto whitespace-pre-wrap">
                           {judgment.law}
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 align-middle text-center">
                           <a
                             href={`/api/reported-judgments/pdf?id=${judgment.id}`}
                             download={`judgment-${judgment.id}.pdf`}

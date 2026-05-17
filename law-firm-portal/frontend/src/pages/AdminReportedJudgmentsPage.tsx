@@ -11,11 +11,42 @@ import {
 } from "@/lib/publicWebsiteOrigin";
 import { withPortalLoading } from "@/lib/portalLoadingBus";
 import { getSupabase } from "@/lib/supabaseClient";
+import { reportedJudgmentsList } from "../../../../src/data/reportedJudgmentsList";
+
+const CATALOG_BY_ID = new Map(
+  reportedJudgmentsList.map((item) => [
+    item.srNo,
+    { citation: item.citation, dictumLaw: item.dictumLaw },
+  ]),
+);
+
+/** Sr 1–69: list Citation/Law match the public site catalog (ignore bad DB overrides). */
+function applyCatalogListColumns(row: JudgmentListItem): JudgmentListItem {
+  const cat = CATALOG_BY_ID.get(row.id);
+  if (!cat || row.id < 1 || row.id > 69) return row;
+  return {
+    ...row,
+    citation: cat.citation.trim() || row.citation,
+    dictumLaw: cat.dictumLaw.trim() || row.dictumLaw,
+  };
+}
+
+function applyCatalogRecordFields(rec: JudgmentRecord): JudgmentRecord {
+  const cat = CATALOG_BY_ID.get(rec.id);
+  if (!cat || rec.id < 1 || rec.id > 69) return rec;
+  return {
+    ...rec,
+    citation: cat.citation.trim() || rec.citation,
+    dictumLaw: cat.dictumLaw.trim() || rec.dictumLaw,
+  };
+}
 
 type JudgmentListItem = {
   id: number;
   citation: string;
   title: string;
+  /** Law column (list view); aligns with public site wording. */
+  dictumLaw: string;
   updatedAt: string;
   displayOnWebsite: boolean;
   hasOverride: boolean;
@@ -31,7 +62,7 @@ type JudgmentRecord = {
   date: string;
   caseNumber: string;
   dictumLaw: string;
-  /** Shown above the PDF on the website (manual paste from the reported judgment). */
+  /** Stored in DB only — admin internal notes; not shown on the public site or appended to PDFs. */
   judgmentHeading?: string;
   subject: string;
   parties: { petitioner: string; respondent: string };
@@ -70,6 +101,25 @@ type ReportedJudgmentsApiPayload = {
 function formatApiBaseForMessage(base: ReportedJudgmentsWebsiteBase): string {
   if (base === null) return "same origin (current tab)";
   return base;
+}
+
+function currentPdfDisplayName(record: JudgmentRecord, pendingFile: File | null): string | null {
+  if (pendingFile?.name) return pendingFile.name;
+  const url = record.pdfUrl?.trim();
+  if (url) {
+    if (url.startsWith("/")) {
+      const base = url.split("/").filter(Boolean).pop();
+      if (base) return base;
+    }
+    try {
+      const base = new URL(url).pathname.split("/").filter(Boolean).pop();
+      if (base) return decodeURIComponent(base);
+    } catch {
+      /* ignore */
+    }
+  }
+  if (record.id >= 1 && record.id <= 69) return `${record.id}.pdf`;
+  return null;
 }
 
 /** Next `/api/reported-judgments` must return JSON; HTML (SPA/404/login) breaks `response.json()`. */
@@ -159,6 +209,11 @@ export function AdminReportedJudgmentsPage() {
     return Math.max(...rows.map((r) => r.id)) + 1;
   }, [rows]);
 
+  const displayedPdfName = useMemo(
+    () => (editing ? currentPdfDisplayName(editing, pdfFile) : null),
+    [editing, pdfFile],
+  );
+
   useEffect(() => {
     setEditing((prev) => {
       if (!prev || originalEditId !== null) return prev;
@@ -196,10 +251,9 @@ export function AdminReportedJudgmentsPage() {
 
       if (bases.length === 0) {
         const data = await adminPromise;
-        const dbRows = data.judgments.map((j) => ({
-          ...j,
-          hasOverride: true,
-        }));
+        const dbRows = data.judgments.map((j) =>
+          applyCatalogListColumns({ ...j, hasOverride: true }),
+        );
         setRows(dbRows);
         return;
       }
@@ -209,10 +263,9 @@ export function AdminReportedJudgmentsPage() {
         fetchWebsiteCatalogRowsForMerge(bases),
       ]);
 
-      const dbRows = data.judgments.map((j) => ({
-        ...j,
-        hasOverride: true,
-      }));
+      const dbRows = data.judgments.map((j) =>
+        applyCatalogListColumns({ ...j, hasOverride: true }),
+      );
       const dbById = new Map<number, (typeof dbRows)[number]>(dbRows.map((row) => [row.id, row]));
 
       if (!website.ok) {
@@ -230,21 +283,24 @@ export function AdminReportedJudgmentsPage() {
 
       const websiteById = new Map<number, JudgmentRecord>();
       for (const rec of allWebsiteRows) {
-        websiteById.set(rec.id, rec);
+        websiteById.set(rec.id, applyCatalogRecordFields(rec));
       }
       setWebsiteRecordsById(websiteById);
 
       const mergedRows: JudgmentListItem[] = [...dbRows];
       for (const rec of allWebsiteRows) {
         if (dbById.has(rec.id)) continue;
-        mergedRows.push({
-          id: rec.id,
-          citation: rec.citation ?? "",
-          title: rec.title ?? "",
-          updatedAt: "",
-          displayOnWebsite: true,
-          hasOverride: false,
-        });
+        mergedRows.push(
+          applyCatalogListColumns({
+            id: rec.id,
+            citation: rec.citation ?? "",
+            title: rec.title ?? "",
+            dictumLaw: rec.dictumLaw ?? "",
+            updatedAt: "",
+            displayOnWebsite: true,
+            hasOverride: false,
+          }),
+        );
       }
       mergedRows.sort((a, b) => a.id - b.id);
       setRows(mergedRows);
@@ -276,7 +332,7 @@ export function AdminReportedJudgmentsPage() {
       const data = await apiJson<{
         judgment: { record: JudgmentRecord; displayOnWebsite?: boolean };
       }>(`/api/v1/admin/reported-judgments/${id}`);
-      const rec = data.judgment.record as JudgmentRecord;
+      const rec = applyCatalogRecordFields(data.judgment.record as JudgmentRecord);
       setEditing({ ...rec, judgmentHeading: rec.judgmentHeading ?? "" });
       setOriginalEditId(id);
       return;
@@ -289,7 +345,7 @@ export function AdminReportedJudgmentsPage() {
         return;
       }
       setEditing({
-        ...websiteFallback,
+        ...applyCatalogRecordFields(websiteFallback),
         judgmentHeading: websiteFallback.judgmentHeading ?? "",
       });
       setOriginalEditId(id);
@@ -465,7 +521,7 @@ export function AdminReportedJudgmentsPage() {
                     <tr>
                       <th className="w-16 px-4 py-3">Sr.</th>
                       <th className="px-4 py-3">Citation</th>
-                      <th className="px-4 py-3">Title</th>
+                      <th className="px-4 py-3">Law</th>
                       <th className="w-[220px] px-4 py-3 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -474,7 +530,9 @@ export function AdminReportedJudgmentsPage() {
                       <tr key={r.id} className="border-b border-border-subtle last:border-0">
                         <td className="px-4 py-3 tabular-nums text-secondary-navy">{r.id}</td>
                         <td className="px-4 py-3 font-medium text-text-dark">{r.citation || "—"}</td>
-                        <td className="px-4 py-3 text-text-light">{r.title || "—"}</td>
+                        <td className="max-w-md px-4 py-3 align-middle text-text-light">
+                          <span className="line-clamp-2">{r.dictumLaw?.trim() || "—"}</span>
+                        </td>
                         <td className="px-4 py-3 text-right">
                           <div className="inline-flex flex-wrap justify-end gap-2">
                             <button
@@ -596,45 +654,37 @@ export function AdminReportedJudgmentsPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">Heading</span>
-              <p className="mt-0.5 text-xs text-text-light">
-                Optional. You may enter the full heading block (citation, court, parties, case number, and material
-                headnotes). On the public site, this text appears above the judgment PDF when a visitor opens the
-                document.
-              </p>
+              <span className="font-medium text-secondary-navy">Internal notes (portal only)</span>
               <textarea
                 value={editing.judgmentHeading ?? ""}
                 onChange={(e) => setEditing({ ...editing, judgmentHeading: e.target.value })}
-                rows={12}
-                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 font-mono text-xs leading-relaxed"
-                placeholder="Citation, court, parties, case number, and headnotes (multiple lines)."
+                rows={8}
+                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm leading-relaxed"
+                placeholder="Private notes for your team (not shown to website visitors)."
               />
             </label>
             <label className="block text-sm">
               <span className="font-medium text-secondary-navy">Upload PDF</span>
+              {displayedPdfName ? (
+                <p className="mt-1 text-sm text-secondary-navy">
+                  Current file: <span className="font-medium">{displayedPdfName}</span>
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-text-light">No PDF on file</p>
+              )}
               <input
                 type="file"
                 accept="application/pdf"
                 onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
-                className="mt-1 block w-full text-sm text-secondary-navy file:mr-3 file:rounded-md file:border file:border-secondary-navy/25 file:bg-background-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
+                className="mt-2 block w-full text-sm text-secondary-navy file:mr-3 file:rounded-md file:border file:border-secondary-navy/25 file:bg-background-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
               />
-              {editing.pdfUrl ? (
-                <a
-                  href={editing.pdfUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 inline-block text-xs text-secondary-navy underline"
-                >
-                  View current PDF
-                </a>
-              ) : null}
             </label>
             <button
               type="submit"
               disabled={saving}
               className="h-10 rounded-lg bg-primary-navy px-6 text-sm font-semibold text-white hover:bg-secondary-navy disabled:opacity-60"
             >
-              {saving ? "Saving…" : "Save to database"}
+              {saving ? "Saving…" : "Save"}
             </button>
           </form>
         </section>

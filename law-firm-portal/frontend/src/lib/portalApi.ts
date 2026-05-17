@@ -1634,6 +1634,7 @@ async function portalApiJsonInner(
         id: row.id as number,
         citation: coerceStr(rec?.citation),
         title: coerceStr(rec?.title),
+        dictumLaw: coerceStr(rec?.dictumLaw),
         updatedAt: row.updated_at as string,
         displayOnWebsite: row.display_on_website !== false,
       };
