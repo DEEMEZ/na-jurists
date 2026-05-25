@@ -1,10 +1,9 @@
 /**
- * Merge Civil Courts cases list.docx into public/data/cases.json with no duplicate matters on site.
+ * Import every row from Civil Courts cases list.docx into public/data/cases.json.
  *
- * Dedup key: normalized Case Title + Court + Subject (stable across minor punctuation differences).
- * After merge, runs a global dedupe: keeps the best row per key (prefers a real Case Number over "—").
- *
- * Usage: node scripts/import-civil-court-cases.mjs
+ * Default: replace prior civil-doc rows, keep duplicates, Case Number "N/A".
+ * Optional: node scripts/import-civil-court-cases.mjs --dedupe
+ *   (unique title+court+subject only; global dedupe; Case Number "—" for new rows)
  */
 import fs from "fs";
 import path from "path";
@@ -21,6 +20,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const docPath = path.join(root, "Civil Courts cases list.docx");
 const casesPath = path.join(root, "public", "data", "cases.json");
+const CIVIL_SOURCE = "Civil Courts cases list.docx";
+
+const dedupeMode = process.argv.includes("--dedupe");
 
 const { value: text } = await mammoth.extractRawText({ path: docPath });
 const { rows: imported, syncIssues } = parseCivilDocFromMammothText(text);
@@ -34,21 +36,29 @@ const raw = await fs.promises.readFile(casesPath, "utf8");
 let existing = JSON.parse(raw);
 if (!Array.isArray(existing)) throw new Error("cases.json must be an array");
 
+const beforeTotal = existing.length;
+const removedCivil = existing.filter((c) => c.sourceFile === CIVIL_SOURCE).length;
+existing = existing.filter((c) => c.sourceFile !== CIVIL_SOURCE);
+
 const keys = new Set(existing.map((c) => caseRowTripleKey(c)));
 let added = 0;
 let docRowCounter = 0;
+
 for (const row of imported) {
   const court = courtLabelFromDocLine(row.court) ?? row.court;
-  const k = dedupeTripleKey(row.title, court, row.subject);
-  if (!k || keys.has(k)) continue;
-  keys.add(k);
+  if (dedupeMode) {
+    const k = dedupeTripleKey(row.title, court, row.subject);
+    if (!k || keys.has(k)) continue;
+    keys.add(k);
+  }
+
   docRowCounter += 1;
   existing.push({
     id: randomUUID(),
-    sourceFile: "Civil Courts cases list.docx",
+    sourceFile: CIVIL_SOURCE,
     tableIndex: 0,
     rowIndex: docRowCounter,
-    "Case Number": "—",
+    "Case Number": dedupeMode ? "—" : "N/A",
     "Case Title": row.title,
     Court: court,
     "Subject/Applicable Law": row.subject,
@@ -57,11 +67,17 @@ for (const row of imported) {
   added++;
 }
 
-const before = existing.length;
-existing = dedupeCaseArray(existing);
-const removedDupes = before - existing.length;
+let removedDupes = 0;
+if (dedupeMode) {
+  const beforeDedupe = existing.length;
+  existing = dedupeCaseArray(existing);
+  removedDupes = beforeDedupe - existing.length;
+}
 
 await fs.promises.writeFile(casesPath, `${JSON.stringify(existing, null, 2)}\n`);
 console.log(
-  `[import] Parsed ${imported.length} rows from docx; appended ${added} new triples; global dedupe removed ${removedDupes} duplicate row(s); final JSON count ${existing.length}.`,
+  `[import] Mode: ${dedupeMode ? "dedupe" : "all rows (incl. duplicates)"}. ` +
+    `Parsed ${imported.length} doc rows; removed ${removedCivil} prior civil-doc row(s); ` +
+    `appended ${added}; ${dedupeMode ? `global dedupe removed ${removedDupes}; ` : ""}` +
+    `was ${beforeTotal} → now ${existing.length} in cases.json.`,
 );

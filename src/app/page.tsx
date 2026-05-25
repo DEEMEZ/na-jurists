@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Hero from '@/components/Website/HomePage/Hero';
-import CaseHighlightsCarousel from '@/components/Website/HomePage/CaseHighlightsCarousel';
 import Footer from '@/components/Website/Global/Footer/Footer';
 
 const AboutOverview = dynamic(() => import('@/components/Website/HomePage/AboutOverview'), {
@@ -23,7 +22,6 @@ export default function Home() {
       <Navbar />
       <div className="flex-grow">
         <Hero />
-        <CaseHighlightsCarousel />
         <AboutOverview />
         <PracticeAreas />
 
