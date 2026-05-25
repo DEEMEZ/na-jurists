@@ -3,6 +3,10 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { LegalCase } from '@/types/LegalCase';
 import { createClient } from '@supabase/supabase-js';
+import {
+  isLowerCourtsFilterValue,
+  matchesLowerCourtsAndTribunalsCase,
+} from '@/lib/caseCourtBucket';
 
 /** Portal-published cases change when admins toggle visibility; avoid long-lived CDN cache of empty merges. */
 export const dynamic = 'force-dynamic';
@@ -142,19 +146,11 @@ function filterCases(
 
   if (court) {
     const lowerCourt = court.toLowerCase();
-    /** Dropdown label was renamed; legacy stored value may still be "Civil Court & Tribunal". */
-    const isLowerCourtsBucket =
-      lowerCourt === 'lower courts & tribunals' ||
-      lowerCourt === 'civil court & tribunal';
     filtered = filtered.filter((item) => {
-      const caseCourt = item.Court?.toLowerCase() || '';
-      if (isLowerCourtsBucket) {
-        return (
-          caseCourt.includes('civil court') ||
-          caseCourt.includes('tribunal')
-        );
+      if (isLowerCourtsFilterValue(court)) {
+        return matchesLowerCourtsAndTribunalsCase(item);
       }
-      return caseCourt.includes(lowerCourt);
+      return (item.Court?.toLowerCase() || '').includes(lowerCourt);
     });
   }
 
