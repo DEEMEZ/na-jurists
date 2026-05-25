@@ -52,8 +52,13 @@ if (dedupeMode) {
   console.log(`Civil rows not using Case Number N/A: ${badCaseNo.length}`);
 
   if (civilRows.length !== docRows.length) {
-    console.error(`FAILED: expected ${docRows.length} civil-doc rows, got ${civilRows.length}`);
+    console.error(
+      `FAILED: expected ${docRows.length} civil-doc rows (one per Pending/Decided in Word), got ${civilRows.length}`,
+    );
     process.exit(1);
+  }
+  if (docRows.length < 628) {
+    console.warn(`[verify] Parsed ${docRows.length} rows; firm list target is 628.`);
   }
   if (badCaseNo.length > 0) {
     console.error("FAILED: some civil-doc rows lack Case Number N/A");

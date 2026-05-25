@@ -27,9 +27,9 @@ export function courtLabelFromDocLine(raw) {
 
   const lc = line.toLowerCase();
 
-  // Subject/status bleed — never treat as court
+  // Subject/status bleed — never treat as court (standalone tokens only)
   if (
-    /^(pending|decided|disposed|service|appeal|civil|criminal|family|tax|contract|banking|rent)$/i.test(
+    /^(pending|decided|disposed|service|appeal|criminal|family|tax|contract|banking|rent)$/i.test(
       lc,
     )
   ) {
@@ -48,6 +48,7 @@ export function courtLabelFromDocLine(raw) {
     ["sialkot", "Sialkot"],
     ["saq", "Saq"],
     ["fospah", "FOSPAH"],
+    ["president of pakistan", "President of Pakistan"],
   ]);
   if (exact.has(lc)) return exact.get(lc);
 
@@ -73,56 +74,72 @@ function isPlausibleStatus(raw) {
   return /\b(pending|decided|disposed|allowed|dismissed|closed)\b/i.test(s);
 }
 
+const STATUS_LINE_RE = /^(pending|decided|disposed|allowed|dismissed|closed)$/i;
+const DEFAULT_COURT = "Civil Court";
+
+/** One case block ending with Pending/Decided (628 blocks in the firm Word export). */
+function parseStatusTerminatedBlock(chunkLines) {
+  const nonEmpty = chunkLines.map((l) => l.trim()).filter((l) => l);
+  if (!nonEmpty.length) return null;
+
+  const statusRaw = nonEmpty[nonEmpty.length - 1];
+  if (!isPlausibleStatus(statusRaw)) return null;
+  const status = normalizeSpaces(statusRaw) || "Pending";
+
+  const body = nonEmpty.slice(0, -1);
+  if (!body.length) return null;
+
+  let courtIdx = -1;
+  for (let i = body.length - 1; i >= 0; i--) {
+    if (courtLabelFromDocLine(body[i])) {
+      courtIdx = i;
+      break;
+    }
+  }
+
+  if (courtIdx >= 0) {
+    const court = courtLabelFromDocLine(body[courtIdx]);
+    const subject = body.slice(courtIdx + 1).join(" ").trim() || "—";
+    const title = body.slice(0, courtIdx).join(" ").trim();
+    if (!title || !court) return null;
+    return { title, court, subject, status };
+  }
+
+  /** Rows with no court line in the doc (e.g. subject only) still import as separate matters. */
+  const subject = body[body.length - 1].trim() || "—";
+  const title = body.slice(0, -1).join(" ").trim();
+  if (!title) return null;
+  return { title, court: DEFAULT_COURT, subject, status };
+}
+
 export function parseCivilDocLines(lines) {
-  let i = 0;
-  while (i < lines.length && lines[i] !== "Status") i++;
-  i++;
-  while (i < lines.length && lines[i] === "") i++;
+  let start = 0;
+  while (start < lines.length && lines[start] !== "Status") start++;
+  start++;
+  while (start < lines.length && lines[start] === "") start++;
 
   const rows = [];
   const syncIssues = [];
+  let block = [];
 
-  const MAX_TITLE_LINES = 40;
-
-  while (i < lines.length) {
-    while (i < lines.length && lines[i] === "") i++;
-    if (i >= lines.length) break;
-
-    let titleParts = [];
-    let guard = 0;
-    while (i < lines.length && !isCourtLine(lines[i])) {
-      if (lines[i] !== "") titleParts.push(lines[i]);
-      i++;
-      guard++;
-      if (guard > MAX_TITLE_LINES) {
-        syncIssues.push({ kind: "title_overflow", at: i });
-        break;
+  for (let i = start; i < lines.length; i++) {
+    const line = lines[i];
+    if (STATUS_LINE_RE.test(line)) {
+      if (block.length) {
+        const row = parseStatusTerminatedBlock([...block, line]);
+        if (row) {
+          rows.push(row);
+        } else {
+          syncIssues.push({
+            kind: "unparsed_block",
+            preview: block.filter((l) => l.trim()).slice(0, 5),
+          });
+        }
       }
+      block = [];
+    } else {
+      block.push(line);
     }
-
-    const title = titleParts.join(" ").trim();
-    if (!title) continue;
-    if (i >= lines.length) break;
-
-    const courtRaw = lines[i++] ?? "";
-    const court = courtLabelFromDocLine(courtRaw);
-    if (!court) {
-      syncIssues.push({ kind: "expected_court_after_title", title: title.slice(0, 80), got: courtRaw });
-      continue;
-    }
-
-    while (i < lines.length && lines[i] === "") i++;
-    const subject = (lines[i++] ?? "").trim();
-    while (i < lines.length && lines[i] === "") i++;
-    const statusRaw = (lines[i++] ?? "").trim();
-
-    let status = statusRaw.replace(/\s+/g, " ").trim() || "Pending";
-    if (!isPlausibleStatus(status)) {
-      syncIssues.push({ kind: "weak_status", title: title.slice(0, 60), status });
-      // Still keep row — Word exports sometimes truncate odd trailing tokens
-    }
-
-    rows.push({ title, court, subject, status });
   }
 
   return { rows, syncIssues };
