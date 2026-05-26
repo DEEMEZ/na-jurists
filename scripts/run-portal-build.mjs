@@ -1,5 +1,5 @@
 /**
- * Loads root `.env.production` (+ optional `.env.production.local`) so `VITE_*`
+ * Loads root `.env.production.local` (and optional `.env.production`) so `VITE_*`
  * lives next to Next.js env, then builds the portal and copies to `public/portal`.
  */
 import { spawnSync } from "node:child_process";
@@ -15,6 +15,8 @@ config({ path: resolve(root, ".env.production") });
 const local = resolve(root, ".env.production.local");
 if (existsSync(local)) {
   config({ path: local, override: true });
+} else if (!process.env.VITE_SUPABASE_URL?.trim()) {
+  config({ path: resolve(root, ".env.local") });
 }
 
 const frontend = resolve(root, "law-firm-portal", "frontend");

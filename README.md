@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# N&A Jurists — website + law firm portal
 
-## Getting Started
+Public marketing site (Next.js) with an embedded client portal (Vite + Supabase).
 
-First, run the development server:
+## Clone (smaller download)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone --depth 1 -b basit https://github.com/DEEMEZ/na-jurists.git
+cd na-jurists
+npm install
+cd law-firm-portal/frontend && npm install && cd ../..
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Secrets are **not** in git. Copy templates and fill in your Supabase project:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp .env.example .env.local
+cp .env.example .env.production.local
+cp law-firm-portal/frontend/.env.example law-firm-portal/frontend/.env.local
+```
 
-## Learn More
+Set at minimum:
 
-To learn more about Next.js, take a look at the following resources:
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (website + `/api/cases` merge)
+- `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (portal frontend)
+- Optional server-only: `SUPABASE_SERVICE_ROLE_KEY` (PDF streaming, admin scripts)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+On Vercel, add the same variables in the project dashboard.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Apply SQL migrations from `law-firm-portal/supabase/migrations/` in order (Supabase SQL editor or CLI).
 
-## Deploy on Vercel
+## Development
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev:with-portal
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Website: http://localhost:3000  
+- Portal: http://localhost:5173 (or `/portal` after production build)
+
+## Reported judgments PDFs
+
+The site serves catalog PDFs from `public/reported-judgement-pdfs/` (committed).  
+Original Word/PDF sources in `Reported Judgements/` are local-only (not in git). To regenerate PDFs from sources:
+
+```bash
+node scripts/sync-reported-judgement-pdfs.mjs
+```
+
+## Civil cases import
+
+Place `Civil Courts cases list.docx` in the repo root (local), then:
+
+```bash
+npm run import:civil-cases
+```
+
+Data is written to `public/data/cases.json` (committed).
+
+## Production build
+
+```bash
+npm run build
+```
+
+Portal is built into `public/portal/` via `scripts/run-portal-build.mjs`.
