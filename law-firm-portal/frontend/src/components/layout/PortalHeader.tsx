@@ -72,6 +72,12 @@ export function PortalHeader() {
                 >
                   Client messages
                 </Link>
+                <Link
+                  to="/admin/news-alerts"
+                  className={linkClass(navActive("/admin/news-alerts"))}
+                >
+                  News &amp; alerts
+                </Link>
               </>
             )}
             {user?.role === "CLIENT" && (
@@ -170,6 +176,13 @@ export function PortalHeader() {
                   onClick={closeMobile}
                 >
                   Client messages
+                </Link>
+                <Link
+                  to="/admin/news-alerts"
+                  className={`${mobileRowClass} ${navActive("/admin/news-alerts") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
+                  onClick={closeMobile}
+                >
+                  News &amp; alerts
                 </Link>
               </>
             )}

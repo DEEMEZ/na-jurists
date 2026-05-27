@@ -3,6 +3,8 @@ import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import Hero from '@/components/Website/HomePage/Hero';
 import Footer from '@/components/Website/Global/Footer/Footer';
 
+import { NewsAlertsWidgetLoader } from '@/components/Website/HomePage/NewsAlertsWidgetLoader';
+
 const AboutOverview = dynamic(() => import('@/components/Website/HomePage/AboutOverview'), {
   loading: () => <div className="h-64 bg-gray-100 animate-pulse" />,
 });
@@ -30,6 +32,7 @@ export default function Home() {
         {/* <ManagingPartner /> */}
       </div>
       <Footer />
+      <NewsAlertsWidgetLoader />
     </main>
   );
 }

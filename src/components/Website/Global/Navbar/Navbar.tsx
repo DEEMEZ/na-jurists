@@ -95,6 +95,9 @@ const Navbar = () => {
           <Link href="/team" className={navLinkClass}>
             Our Team
           </Link>
+          <Link href="/news" className={navLinkClass}>
+            News
+          </Link>
 
           {/* Legal Resources Dropdown */}
           <div className="relative flex items-center">
@@ -196,14 +199,21 @@ const Navbar = () => {
             >
               About Us
             </Link>
-            <Link 
-              href="/team" 
+            <Link
+              href="/team"
               className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Our Team
             </Link>
-            
+            <Link
+              href="/news"
+              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              News
+            </Link>
+
             {/* Mobile Legal Resources Section */}
             <div className="border-l-2 border-[#2c415e] pl-4">
               <div className="text-[#2c415e] font-medium mb-2">Legal Resources</div>

@@ -1728,6 +1728,50 @@ async function portalApiJsonInner(
     return { ok: true };
   }
 
+  // ── News & Alerts ──────────────────────────────────────────────────────────
+
+  if (pathname === "/api/v1/admin/news-alerts" && m === "GET") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const { data, error } = await x.sb
+      .from("news_alerts")
+      .select("id, headline, organization, pdf_url, published_at, created_at")
+      .order("published_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return { newsAlerts: data ?? [] };
+  }
+
+  if (pathname === "/api/v1/admin/news-alerts" && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const b = body as { headline: string; organization: string; pdfUrl: string; publishedAt?: string };
+    if (!b.headline?.trim()) throw new Error("headline is required");
+    if (!b.organization?.trim()) throw new Error("organization is required");
+    if (!b.pdfUrl?.trim()) throw new Error("pdfUrl is required");
+    const { data, error } = await x.sb
+      .from("news_alerts")
+      .insert({
+        headline: b.headline.trim(),
+        organization: b.organization.trim(),
+        pdf_url: b.pdfUrl.trim(),
+        published_at: b.publishedAt ?? new Date().toISOString(),
+      })
+      .select("id, headline, organization, pdf_url, published_at, created_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return { newsAlert: data };
+  }
+
+  const adminNewsAlertById = pathname.match(/^\/api\/v1\/admin\/news-alerts\/([^/]+)$/);
+  if (adminNewsAlertById && m === "DELETE") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const id = adminNewsAlertById[1];
+    const { error } = await x.sb.from("news_alerts").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  }
+
   const caseMsgs = pathname.match(/^\/api\/v1\/cases\/([^/]+)\/messages$/);
   if (caseMsgs && m === "GET") {
     await requireProfile();

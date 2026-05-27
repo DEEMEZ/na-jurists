@@ -13,6 +13,7 @@ import { AdminAlertsPage } from "@/pages/AdminAlertsPage";
 import { AdminHearingsPage } from "@/pages/AdminHearingsPage";
 import { AdminClientMessagesPage } from "@/pages/AdminClientMessagesPage";
 import { AdminReportedJudgmentsPage } from "@/pages/AdminReportedJudgmentsPage";
+import { AdminNewsAlertsPage } from "@/pages/AdminNewsAlertsPage";
 import { AdminWebsiteTeamPage } from "@/pages/AdminWebsiteTeamPage";
 import { AdminUsersPage } from "@/pages/AdminUsersPage";
 import { ClientNotificationsPage } from "@/pages/ClientNotificationsPage";
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/admin/website-team" element={<AdminWebsiteTeamPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/admin/reported-judgments" element={<AdminReportedJudgmentsPage />} />
+        <Route path="/admin/news-alerts" element={<AdminNewsAlertsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
