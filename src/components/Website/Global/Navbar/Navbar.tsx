@@ -139,8 +139,16 @@ const Navbar = () => {
           <Link href="/contact" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Contact Us
           </Link>
+          <a
+            href={portalSignInHref()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-md bg-[#2c415e] px-4 py-1.5 text-sm font-medium text-white transition-colors duration-300 hover:bg-[#4a6789]"
+          >
+            Client Portal
+          </a>
         </div>
-        
+
         {/* Mobile Menu Button */}
         <div className="flex md:hidden">
           <button 
@@ -220,13 +228,22 @@ const Navbar = () => {
             >
               Our Services
             </Link>
-            <Link 
-              href="/contact" 
+            <Link
+              href="/contact"
               className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Contact Us
             </Link>
+            <a
+              href={portalSignInHref()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-md bg-[#2c415e] px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-[#4a6789]"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Client Portal
+            </a>
           </div>
         </div>
       )}
