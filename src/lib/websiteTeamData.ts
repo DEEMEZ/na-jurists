@@ -64,34 +64,6 @@ function dbMemberToPublic(r: DbRow, sb: SupabaseClient): WebsiteTeamPublicMember
   };
 }
 
-/**
- * Built-in roster is always the baseline on the public site. DB rows whose `sort_order` matches a
- * built-in member replace that card; any other DB rows are appended (portal additions).
- */
-function mergeMembersWithDefaults(
-  defaults: WebsiteTeamPublicMember[],
-  dbMembers: WebsiteTeamPublicMember[],
-): WebsiteTeamPublicMember[] {
-  const normalizeName = (name: string) => name.trim().toLowerCase();
-  const dbNames = new Set(dbMembers.map((m) => normalizeName(m.name)));
-
-  const merged = defaults
-    .filter((m) => !dbNames.has(normalizeName(m.name)))
-    .map((m) => ({ ...m }));
-  const combined = [...merged, ...dbMembers].sort((a, b) => a.sortOrder - b.sortOrder);
-
-  const deduped: WebsiteTeamPublicMember[] = [];
-  const seen = new Set<string>();
-  for (const member of combined) {
-    const key = normalizeName(member.name);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    deduped.push(member);
-  }
-
-  return deduped;
-}
-
 function mapRowsToPayload(rows: DbRow[], sb: SupabaseClient): WebsiteTeamPublicPayload {
   const founderRows = rows
     .filter((r) => r.section === "founder")
@@ -115,10 +87,8 @@ function mapRowsToPayload(rows: DbRow[], sb: SupabaseClient): WebsiteTeamPublicP
 
   const dbMembersPublic = memberRows.map((r) => dbMemberToPublic(r, sb));
 
-  const members =
-    dbMembersPublic.length === 0
-      ? DEFAULT_WEBSITE_TEAM.members
-      : mergeMembersWithDefaults(DEFAULT_WEBSITE_TEAM.members, dbMembersPublic);
+  /** Portal-managed roster: use DB members only (order by sort_order) so deletes and reorder apply. */
+  const members = [...dbMembersPublic].sort((a, b) => a.sortOrder - b.sortOrder);
 
   return {
     founder,
@@ -128,8 +98,7 @@ function mapRowsToPayload(rows: DbRow[], sb: SupabaseClient): WebsiteTeamPublicP
 }
 
 /**
- * When the table is empty, returns built-in defaults. Otherwise merges DB founder (or default) with
- * DB member rows into the built-in grid (overrides by matching sort_order; extra rows append).
+ * When the table is empty, returns built-in defaults. Otherwise founder + members come from DB only.
  */
 export async function loadWebsiteTeamPayload(): Promise<WebsiteTeamPublicPayload> {
   const sb = createWebsiteTeamSupabase();
