@@ -1762,6 +1762,17 @@ async function portalApiJsonInner(
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
     const id = adminLiquidationOrgById[1];
+    const { data: orgData, error: orgError } = await x.sb
+      .from("liquidation_organizations")
+      .select("name")
+      .eq("id", id)
+      .single();
+    if (orgError) throw new Error(orgError.message);
+    const { error: newsError } = await x.sb
+      .from("news_alerts")
+      .delete()
+      .eq("organization", orgData.name);
+    if (newsError) throw new Error(newsError.message);
     const { error } = await x.sb.from("liquidation_organizations").delete().eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
