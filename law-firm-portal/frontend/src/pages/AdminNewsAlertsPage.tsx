@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
@@ -14,7 +14,9 @@ type NewsAlertRow = {
   id: string;
   headline: string;
   organization: string;
-  pdf_url: string;
+  pdf_url: string | null;
+  body_text: string | null;
+  link_url: string | null;
   published_at: string;
   created_at: string;
 };
@@ -49,6 +51,8 @@ export function AdminNewsAlertsPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const [searchParams] = useSearchParams();
+  const orgFilter = searchParams.get("org") ?? "";
 
   const [rows, setRows] = useState<NewsAlertRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +60,9 @@ export function AdminNewsAlertsPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [headline, setHeadline] = useState("");
-  const [organization, setOrganization] = useState("");
+  const [organization, setOrganization] = useState(orgFilter);
+  const [bodyText, setBodyText] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -65,9 +71,10 @@ export function AdminNewsAlertsPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiJson<{ newsAlerts: NewsAlertRow[] }>(
-        "/api/v1/admin/news-alerts"
-      );
+      const path = orgFilter
+        ? `/api/v1/admin/news-alerts?organization=${encodeURIComponent(orgFilter)}`
+        : "/api/v1/admin/news-alerts";
+      const data = await apiJson<{ newsAlerts: NewsAlertRow[] }>(path);
       setRows(data.newsAlerts ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");
@@ -78,14 +85,16 @@ export function AdminNewsAlertsPage() {
 
   useEffect(() => {
     void load();
-  }, [user?.role]);
+  }, [user?.role, orgFilter]);
 
   if (!user) return null;
   if (user.role !== "ADMIN") return <Navigate to="/dashboard" replace />;
 
   function openForm() {
     setHeadline("");
-    setOrganization("");
+    setOrganization(orgFilter);
+    setBodyText("");
+    setLinkUrl("");
     setPdfFile(null);
     setShowForm(true);
     setError(null);
@@ -94,23 +103,30 @@ export function AdminNewsAlertsPage() {
   function closeForm() {
     setShowForm(false);
     setHeadline("");
-    setOrganization("");
+    setOrganization(orgFilter);
+    setBodyText("");
+    setLinkUrl("");
     setPdfFile(null);
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!pdfFile) {
-      showToast("Please select a PDF file.", "error");
-      return;
-    }
     setSaving(true);
     setError(null);
     try {
-      const pdfUrl = await uploadNewsPdf(pdfFile);
+      let pdfUrl: string | undefined;
+      if (pdfFile) {
+        pdfUrl = await uploadNewsPdf(pdfFile);
+      }
       await apiJson("/api/v1/admin/news-alerts", {
         method: "POST",
-        body: JSON.stringify({ headline, organization, pdfUrl }),
+        body: JSON.stringify({
+          headline,
+          organization,
+          pdfUrl,
+          bodyText: bodyText.trim() || undefined,
+          linkUrl: linkUrl.trim() || undefined,
+        }),
       });
       showToast("News alert published.");
       closeForm();
@@ -145,13 +161,26 @@ export function AdminNewsAlertsPage() {
     }
   }
 
+  const backHref = orgFilter ? "/admin/liquidation" : undefined;
+
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-8">
-      <BackToDashboard />
+      {backHref ? (
+        <a
+          href={backHref}
+          className="inline-flex items-center gap-1.5 text-sm text-secondary-navy hover:text-accent-blue"
+        >
+          ← Back to Liquidation
+        </a>
+      ) : (
+        <BackToDashboard />
+      )}
       <div>
-        <h1 className="text-2xl font-semibold text-primary-navy">News &amp; alerts</h1>
+        <h1 className="text-2xl font-semibold text-primary-navy">
+          {orgFilter ? `News & alerts — ${orgFilter}` : "News & alerts"}
+        </h1>
         <p className="mt-1 text-sm text-text-light">
-          Post a PDF news item. It will appear on the public website immediately.
+          Post a news item. It will appear on the public website immediately.
         </p>
       </div>
 
@@ -180,7 +209,7 @@ export function AdminNewsAlertsPage() {
                 required
                 value={headline}
                 onChange={(e) => setHeadline(e.target.value)}
-                placeholder="e.g. Supreme Court rules on property rights"
+                placeholder="e.g. Winding up order issued"
                 className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
               />
             </label>
@@ -190,12 +219,38 @@ export function AdminNewsAlertsPage() {
                 required
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
-                placeholder="e.g. Supreme Court of Pakistan"
+                placeholder="e.g. Seedcred Financial Services"
                 className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-secondary-navy">PDF file</span>
+              <span className="font-medium text-secondary-navy">
+                Body text <span className="font-normal text-text-light">(optional)</span>
+              </span>
+              <textarea
+                value={bodyText}
+                onChange={(e) => setBodyText(e.target.value)}
+                rows={4}
+                placeholder="Additional details or description…"
+                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm resize-y"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium text-secondary-navy">
+                Link URL <span className="font-normal text-text-light">(optional)</span>
+              </span>
+              <input
+                type="url"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="https://example.com/notice"
+                className="mt-1 w-full rounded-lg border border-secondary-navy/20 px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium text-secondary-navy">
+                PDF file <span className="font-normal text-text-light">(optional)</span>
+              </span>
               {pdfFile && (
                 <p className="mt-1 text-sm text-secondary-navy">
                   Selected: <span className="font-medium">{pdfFile.name}</span>
@@ -204,7 +259,6 @@ export function AdminNewsAlertsPage() {
               <input
                 type="file"
                 accept="application/pdf"
-                required
                 onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
                 className="mt-2 block w-full text-sm text-secondary-navy file:mr-3 file:rounded-md file:border file:border-secondary-navy/25 file:bg-background-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
               />
@@ -277,14 +331,18 @@ export function AdminNewsAlertsPage() {
                   {rows.map((r) => (
                     <tr key={r.id} className="border-b border-border-subtle last:border-0">
                       <td className="px-4 py-3 font-medium text-text-dark">
-                        <a
-                          href={r.pdf_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-accent-blue hover:underline"
-                        >
-                          {r.headline}
-                        </a>
+                        {r.pdf_url ? (
+                          <a
+                            href={r.pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-accent-blue hover:underline"
+                          >
+                            {r.headline}
+                          </a>
+                        ) : (
+                          <span>{r.headline}</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-text-light">{r.organization}</td>
                       <td className="px-4 py-3 tabular-nums text-text-light">

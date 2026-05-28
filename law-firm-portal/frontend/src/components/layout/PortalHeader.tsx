@@ -73,10 +73,10 @@ export function PortalHeader() {
                   Client messages
                 </Link>
                 <Link
-                  to="/admin/news-alerts"
-                  className={linkClass(navActive("/admin/news-alerts"))}
+                  to="/admin/liquidation"
+                  className={linkClass(navActive("/admin/liquidation") || navActive("/admin/news-alerts"))}
                 >
-                  News &amp; alerts
+                  Liquidation
                 </Link>
               </>
             )}
@@ -178,11 +178,11 @@ export function PortalHeader() {
                   Client messages
                 </Link>
                 <Link
-                  to="/admin/news-alerts"
-                  className={`${mobileRowClass} ${navActive("/admin/news-alerts") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
+                  to="/admin/liquidation"
+                  className={`${mobileRowClass} ${navActive("/admin/liquidation") || navActive("/admin/news-alerts") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
                   onClick={closeMobile}
                 >
-                  News &amp; alerts
+                  Liquidation
                 </Link>
               </>
             )}

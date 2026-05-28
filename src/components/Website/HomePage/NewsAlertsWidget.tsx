@@ -58,7 +58,7 @@ export function NewsAlertsWidget() {
             <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
           </span>
           <Newspaper className="h-4 w-4 text-white/80" />
-          <span className="text-sm font-semibold text-white">News &amp; Alerts</span>
+          <span className="text-sm font-semibold text-white">Liquidation News &amp; Alerts</span>
         </div>
         <button
           type="button"
@@ -81,7 +81,7 @@ export function NewsAlertsWidget() {
             {items.map((item) => (
               <li key={item.id}>
                 <Link
-                  href="/news"
+                  href={`/liquidation/${encodeURIComponent(item.organization)}/${item.id}`}
                   className="group flex flex-col gap-0.5 px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-xs font-medium text-[#2c415e] line-clamp-2 group-hover:text-[#4a6789] transition-colors leading-snug">
@@ -102,7 +102,7 @@ export function NewsAlertsWidget() {
 
           <div className="border-t border-gray-100 px-4 py-2.5">
             <Link
-              href="/news"
+              href="/liquidation"
               className="flex items-center justify-between text-xs font-semibold text-[#2c415e] hover:text-[#4a6789] transition-colors"
             >
               View all news

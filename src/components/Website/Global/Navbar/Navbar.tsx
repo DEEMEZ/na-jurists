@@ -85,8 +85,8 @@ const Navbar = () => {
           <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Team
           </Link>
-          <Link href="/news" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
-            News
+          <Link href="/liquidation" className="animate-nav-blink font-semibold transition-colors duration-300">
+            Liquidation
           </Link>
 
           {/* Legal Resources Dropdown */}
@@ -195,11 +195,11 @@ const Navbar = () => {
               Our Team
             </Link>
             <Link
-              href="/news"
-              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
+              href="/liquidation"
+              className="animate-nav-blink font-semibold transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              News
+              Liquidation
             </Link>
 
             {/* Mobile Legal Resources Section */}

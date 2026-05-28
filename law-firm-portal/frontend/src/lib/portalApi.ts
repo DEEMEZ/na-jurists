@@ -1730,13 +1730,55 @@ async function portalApiJsonInner(
 
   // ── News & Alerts ──────────────────────────────────────────────────────────
 
-  if (pathname === "/api/v1/admin/news-alerts" && m === "GET") {
+  // ── Liquidation Organizations ────────────────────────────────────────────
+
+  if (pathname === "/api/v1/admin/liquidation-orgs" && m === "GET") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
     const { data, error } = await x.sb
+      .from("liquidation_organizations")
+      .select("id, name, created_at")
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return { organizations: data ?? [] };
+  }
+
+  if (pathname === "/api/v1/admin/liquidation-orgs" && m === "POST") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const b = body as { name: string };
+    if (!b.name?.trim()) throw new Error("name is required");
+    const { data, error } = await x.sb
+      .from("liquidation_organizations")
+      .insert({ name: b.name.trim() })
+      .select("id, name, created_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return { organization: data };
+  }
+
+  const adminLiquidationOrgById = pathname.match(/^\/api\/v1\/admin\/liquidation-orgs\/([^/]+)$/);
+  if (adminLiquidationOrgById && m === "DELETE") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const id = adminLiquidationOrgById[1];
+    const { error } = await x.sb.from("liquidation_organizations").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  }
+
+  // ── News & Alerts ──────────────────────────────────────────────────────────
+
+  if (pathname === "/api/v1/admin/news-alerts" && m === "GET") {
+    const x = await requireProfile();
+    if (x.role !== "ADMIN") throw new Error("Forbidden");
+    const org = q.get("organization") ?? undefined;
+    let query = x.sb
       .from("news_alerts")
-      .select("id, headline, organization, pdf_url, published_at, created_at")
+      .select("id, headline, organization, pdf_url, body_text, link_url, published_at, created_at")
       .order("published_at", { ascending: false });
+    if (org) query = query.eq("organization", org);
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
     return { newsAlerts: data ?? [] };
   }
@@ -1744,19 +1786,20 @@ async function portalApiJsonInner(
   if (pathname === "/api/v1/admin/news-alerts" && m === "POST") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
-    const b = body as { headline: string; organization: string; pdfUrl: string; publishedAt?: string };
+    const b = body as { headline: string; organization: string; pdfUrl?: string; bodyText?: string; linkUrl?: string; publishedAt?: string };
     if (!b.headline?.trim()) throw new Error("headline is required");
     if (!b.organization?.trim()) throw new Error("organization is required");
-    if (!b.pdfUrl?.trim()) throw new Error("pdfUrl is required");
     const { data, error } = await x.sb
       .from("news_alerts")
       .insert({
         headline: b.headline.trim(),
         organization: b.organization.trim(),
-        pdf_url: b.pdfUrl.trim(),
+        pdf_url: b.pdfUrl?.trim() ?? null,
+        body_text: b.bodyText?.trim() ?? null,
+        link_url: b.linkUrl?.trim() ?? null,
         published_at: b.publishedAt ?? new Date().toISOString(),
       })
-      .select("id, headline, organization, pdf_url, published_at, created_at")
+      .select("id, headline, organization, pdf_url, body_text, link_url, published_at, created_at")
       .single();
     if (error) throw new Error(error.message);
     return { newsAlert: data };
