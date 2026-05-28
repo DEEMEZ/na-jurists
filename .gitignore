@@ -87,3 +87,4 @@ scripts/README.md
 law-firm-portal/frontend/README.md
 law-firm-portal/DEPLOYMENT.md
 law-firm-portal/SUPABASE.md
+.env*
