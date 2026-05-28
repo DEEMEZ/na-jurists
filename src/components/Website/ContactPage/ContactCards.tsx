@@ -15,20 +15,27 @@ const ContactCards = () => {
       icon: <FaPhoneAlt className="text-3xl text-[#2c415e]" />,
       title: "Call Us",
       description: "Speak with our team",
-      value: "+92 333 2354476",
-      link: "tel:+923332354476"
+      value: "051-8430814",
+      link: "tel:+92518430814"
     },
     {
       icon: <FaMapMarkerAlt className="text-3xl text-[#2c415e]" />,
-      title: "Visit Us",
-      description: "Our office location",
+      title: "Islamabad Office",
+      description: "Visit our Islamabad office",
       value: "House No. 6-A, Street No. 12, Sector F-8/3, Islamabad",
       link: "https://goo.gl/maps/..."
+    },
+    {
+      icon: <FaMapMarkerAlt className="text-3xl text-[#2c415e]" />,
+      title: "Karachi Office",
+      description: "Visit our Karachi office",
+      value: "Mezzanine 1, Plot# 12 - C, Zamzama Commercial Lane 4, DHA Phase 5, Karachi",
+      link: "https://www.google.com/maps/search/?api=1&query=Zamzama+Commercial+Lane+4+DHA+Phase+5+Karachi"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
       {contactInfo.map((item, index) => (
         <div 
           key={index}

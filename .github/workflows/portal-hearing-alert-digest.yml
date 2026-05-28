@@ -1,0 +1,29 @@
+# Daily email digest: matters with no upcoming hearing (portal cron).
+# Requires repo secrets: PORTAL_HEARING_DIGEST_URL, CRON_HEARING_DIGEST_SECRET
+# See law-firm-portal/SUPABASE.md → "Scheduled hearing-alert digest".
+
+name: Portal hearing alert digest
+
+on:
+  schedule:
+    # 06:15 UTC daily — adjust cron as needed
+    - cron: "15 6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke portal-hearing-alert-digest
+        env:
+          URL: ${{ secrets.PORTAL_HEARING_DIGEST_URL }}
+          SECRET: ${{ secrets.CRON_HEARING_DIGEST_SECRET }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$SECRET" ]; then
+            echo "Skip: set PORTAL_HEARING_DIGEST_URL and CRON_HEARING_DIGEST_SECRET in repo secrets."
+            exit 0
+          fi
+          curl -sS -f -X POST "$URL" \
+            -H "Authorization: Bearer $SECRET" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP %{http_code}\n"

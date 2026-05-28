@@ -1,12 +1,12 @@
 [
   {
     "id": 1,
-    "citation": "2012 P T D 44",
+    "citation": "2012 PTD 44",
     "title": "Case #1",
     "court": "Islamabad High Court",
     "date": "4 of 2011",
     "caseNumber": "Custom Reference No.4",
-    "dictumLaw": "Ss. 168, 179 & 196---Reference to High Court",
+    "dictumLaw": "The Custom Act, 1969",
     "subject": "Ss. 168, 179 & 196---Reference to High Court",
     "parties": {
       "petitioner": "Petitioner",
@@ -30,16 +30,17 @@
       "appeal",
       "confiscation",
       "jurisdiction"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/1.pdf"
   },
   {
     "id": 2,
-    "citation": "2014 C L C 510",
+    "citation": "2014 CLC 510",
     "title": "Petitioner vs ",
     "court": "High Court",
     "date": "98 of 2013",
     "caseNumber": "Writ Petition No.2498",
-    "dictumLaw": "Petitioner\n\n \n\nVersus\n\n \n\nGUARDIAN JUDGE, WEST ISLAMABAD and another",
+    "dictumLaw": "The West Pakistan Family Courts Rules, 1965",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -62,16 +63,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/2.pdf"
   },
   {
     "id": 3,
-    "citation": "2015 M L D 1347",
+    "citation": "2015 MLD 1347",
     "title": "Petitioner vs ",
     "court": "High Court",
     "date": "38 of 2011",
     "caseNumber": "Case-3",
-    "dictumLaw": "S.34---Specific Relief Act (I of 1877), S.42---Suit for declaration---Arbitration---Stay of proceedings---Earlier application for stay of proceedings was filed on behalf of defendant company but the same was dismissed being incompetently filed---On second application, Trial Court stayed proceedings of trial for matter to be decided through arbitration but Lower Appellate Court set aside the order passed by Trial Court and dismissed the application---Validity---Two fundamental factors were to be ",
+    "dictumLaw": "The Arbitration Act, 1940",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -93,16 +95,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/3.pdf"
   },
   {
     "id": 4,
-    "citation": "2016 C L D 581",
+    "citation": "2016 CLD 581",
     "title": "Khalid Mehmood vs Collector of",
     "court": "High Court",
     "date": "89 of 2013",
     "caseNumber": "W.P. No. 3689",
-    "dictumLaw": "Ss. 468 & 484---Securities and Exchange Commission of Pakistan Act (XLII of 1997), Ss. 2(1)(31), 33 & 34---Constitution of Pakistan, Art. 199---Constitutional petition---Alternate efficacious remedy---Removal from Directorship---Respondent was Chief Executive Officer and Director of petitioner company who was removed from his position through a resolution passed in Extraordinary General Meeting---Decision of the Meeting was set aside by Registrar Securities and Exchange Commission of Pakistan on",
+    "dictumLaw": "The Companies Ordinance, 1984",
     "subject": "General Law",
     "parties": {
       "petitioner": "Khalid Mehmood",
@@ -128,16 +131,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/4.pdf"
   },
   {
     "id": 5,
-    "citation": "2017\n\n\n\n2018",
+    "citation": "2018 P Cr. L J 1264",
     "title": "Case #5",
     "court": "PLD 1953 FC 223]. The said judgment was followed by a judgment rendered by a larger Bench of the august Federal Court in the case titled \"Anwar and another v. The Crown\" [PLD 1955 FC 185",
     "date": "25 of 2017",
     "caseNumber": "Criminal Appeal No. 25",
-    "dictumLaw": "----Ss. 419, 420, 468, 471---Electronic Transactions Ordinance (LI of 2002), Ss. 36 & 37---Anti-Money Laundering Act (VII of 2010), S.4---Criminal Procedure Code (V of 1898), S. 417---Cheating, forgery, violation of privacy of information, damage to information system and money laundering---Appeal against acquittal---Bias in the mind of judge---Illegal gratification---Proof---All accused facing trial were acquitted by Trial Court---Plea raised by prosecution was that Presiding Judge of Trial Cou",
+    "dictumLaw": "The Penal Code, 1860",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -158,16 +162,17 @@
     "keywords": [
       "appeal",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/5.pdf"
   },
   {
     "id": 6,
-    "citation": "2020 P T D 110",
+    "citation": "2020 PTD 110",
     "title": "Pushpanjali Silk Private Limited vs The Chief Commissioner of",
     "court": "Islamabad High Court",
     "date": "50 of 2015",
     "caseNumber": "Writ Petition No.42783",
-    "dictumLaw": "Art. 199--- Constitutional petition--- Maintainability--- Show-cause notice--- Exceptions--- General rule is that a Constitutional petition under Art.199 of the Constitution is not maintainable against show-cause notice---Certain exceptions existed against such general rule---Exceptions under which Constitutional petition against a show-cause notice is maintainable are where notice in question is without jurisdiction/lawful authority, is non-est in eyes of law, patently illegal, issued with prem",
+    "dictumLaw": "The Constitution of Pakistan, 1973",
     "subject": "General Law",
     "parties": {
       "petitioner": "Pushpanjali Silk Private Limited",
@@ -193,16 +198,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/6.pdf"
   },
   {
     "id": 7,
-    "citation": "2013 SCMR 85",
+    "citation": "TR No. 07/2007",
     "title": "Operatives vs Commissioner of Income Tax, Companies Zone",
     "court": "(2005) 2 SCC 638] Supreme Court of India observed that “It is law settled that when both statutes containing non obstante clauses are special statutes, an endeavor should be made to give effect to both of them. In case of conflict, the later shall prevail”. (ii) In Maharashtra Tubes Ltd. Vs. State Industrial and Investment Corporation of Maharashtra Ltd and another [1993(2) SCC 144",
     "date": "07 of 2007",
     "caseNumber": "Case-7",
-    "dictumLaw": "BABAR SATTAR,J.- Through this consolidated judgment, we will decide the instant Tax Reference and Tax Reference No. 08/2007 titled: ‘M/s Federal Bank for Cooperatives vs. Commissioner of Income Tax, Companies Zone’. ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Operatives",
@@ -227,16 +233,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/7.pdf"
   },
   {
     "id": 8,
-    "citation": "2021 P T D 1644",
+    "citation": "2021 PTD 1644",
     "title": "Before Babar Sattar, J\n\nPKP EXPLORATION LIMITED and others vs FEDERAL BOARD OF REVENUE through Chairman and others",
     "court": "Islamabad High Court",
     "date": "86 and 1077",
     "caseNumber": "Writ Petition No.886",
-    "dictumLaw": "S.132---Decision of Appellate Tribunal---Authority of Income Tax Appellate Tribunal---Scope---Decision of Tribunal is limited to the case that it decides and do not travel beyond four corners of subject matter before the Tribunal in appeal---Neither Constitution nor any statute envisages a law-declaring function of the Tribunal---Reasoning of Tribunal in one case can be treated by tax authorities as a persuasive precedent in a subsequent case where subject matter is same or similar---Persuasive ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Before Babar Sattar, J\n\nPKP EXPLORATION LIMITED and others",
@@ -262,16 +269,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/8.pdf"
   },
   {
     "id": 9,
-    "citation": "2016 SCMR 213",
+    "citation": "ICA 127/09",
     "title": ", Islamabad vs Muslim Commercial Bank Ltd. and another.",
     "court": "Karachi] (Reference by Judge Special Court-II), wherein it was held that: “Conflict between two special Acts---When there was conflict between two special Acts, each of which could be described as special in some particular sense, question would arise as to how far later Act should prevail over the earlier Act---Court should lean against repeal of earlier Act by implication and unless it was absolutely clear that the operation of first Act had to be curtailed by the later Act, the previous Act should be held to continue and in force, even though later Act Could be regarded as special in some other sense--- Sometimes one finds two or more enactments in the same field each containing non-obstante clause, stating that provisions would have effect notwithstanding anything inconsistent therewith contained in any other law for the time being in force---Conflict in such cases had to be resolved on consideration of purpose and policy of the Act--- Legislator had before him all the laws at the time of legislation and thus, amendment made in any statute should be given due weight as the same spoke not only about the intention of law-maker, but also that legislator felt it necessary to make necessary amendment in law either to fill lacuna in the statue or to provide additional remedy.” AIR 1991 SC 855 (Ashoka Marketing Ltd. and others v. Punjab National Bank), wherein it was held that:- “In the case of inconsistency between the provisions of two enactments, both of which can be regarded as special in nature, the conflict to be resolved by reference to the purpose and policy underlining the two enactments and the clear intendment conveyed by the language of the relevant provisions therein.” PLD 1956 FC 157 (The Punjab Province v. (1) Sita Ram and others (2) Custodian of Evacuee Property, Punjab), wherein it was held that:- “Subsequent statue in general terms does not repeal previous particular statue and where two statutes covered common field then in case of conflict with each other the later will have to be prevailed”. But in the instant case it is very difficult to say that A.T.C., Narcotic Courts and Juvenile Courts covered the same field.” PLD 2010 [Lahore",
     "date": "16.11.2016",
     "caseNumber": "Case-9",
-    "dictumLaw": "MOHSIN AKHTAR KAYANI, J:- Through instant Intra Court Appeal, the appellant has assailed order dated 24.06.2009 passed in C.M No.165/2009 by learned Single Judge in Chambers, whereby appellant’s application U/O VII Rule 11, CPC was dismissed.",
+    "dictumLaw": "The Companies Ordinance, 1984",
     "subject": "General Law",
     "parties": {
       "petitioner": ", Islamabad",
@@ -296,16 +304,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/9.pdf"
   },
   {
     "id": 10,
-    "citation": "2023 P T D 455",
+    "citation": "2023 PTD 455",
     "title": "Before Athar Minallah, CJ and Babar Sattar, J\n\nThe ATTOCK OIL COMPANY LIMITED vs CENTRAL BOARD OF REVENUE, ISLAMABAD and others",
     "court": "Islamabad High Court",
     "date": "80 of 2007",
     "caseNumber": "Case-10",
-    "dictumLaw": "---S.133---Income Tax Ordinance (XXXI of 1979), S.26(b), Fifth Schedule, Part-I, Rr.3 & 6(10)---Pakistan Petroleum (Exploration and Production) Rules, 1986, Rr. 2(k) & 38---Reference---Wellhead value---Depletion allowance, calculation of---Deduction of royalty amount---Issue was with regard to calculating depletion allowance and deduction of amount of royalty---Validity---Wellhead value under R.2(k) of Pakistan Petroleum (Exploration and Production) Rules, 1986, meant market value of petroleum a",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Before Athar Minallah, CJ and Babar Sattar, J\n\nThe ATTOCK OIL COMPANY LIMITED",
@@ -327,16 +336,17 @@
       "customs",
       "tax",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/10.pdf"
   },
   {
     "id": 11,
-    "citation": "2013 CLD 1953",
+    "citation": "SECP Appeal No. 05/2015",
     "title": "Limited vs Executive Director, SECP and another",
     "court": "2013 CLD 1953]; the AGM held in July, 2014 was challenged by the respondent Company through C.O. No. 07/2015 and the same was dismissed by this Court vide order dated 15-03-2016; the impugned order dated 30-04-2015 is a void order and the instant appeal is competent; an appeal under section 34 ibid is competent against 'an order' and is not restricted to a final order; when the law intends to bar the appeals against interim orders, clear stipulations are made to this effect and reference in this regard has been made to section 33(i)(d) and 485(1) of the Ordinance of 1984; the constitutional petitions filed by the share holders are maintainable for the reason that the latter are seeking determination of their civil rights and liabilities flowing out of the Articles of Association; the Commission, while invoking powers under section 78 A of the Ordinance of 1984, is not competent to exercise judicial powers so as to determine civil rights and liabilities; reliance in this regard has been placed on the cases of \"United Liner Agencies of Pakistan (Pvt.) Ltd. Karachi and 4 others vs. Miss Mahenau Agha and 8 others\" [2003 SCMR 132",
     "date": "05 of 2015",
     "caseNumber": "W.P. No. 484",
-    "dictumLaw": "RESPONDENTS BY: M/s Syed Ishfaq Hussain Naqvi and Shahzad Ali Rana Advocates, for the SECР. Syed Ahmad Hassan Shah Advocate, for the respondent Company.",
+    "dictumLaw": "The Companies Ordinance, 1984",
     "subject": "General Law",
     "parties": {
       "petitioner": "Limited",
@@ -363,16 +373,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/11.pdf"
   },
   {
     "id": 12,
-    "citation": "2017\n\n\n\n2023",
+    "citation": "2023 PTD 505",
     "title": "Case #12",
     "court": "Islamabad High Court",
     "date": "51 of 2017",
     "caseNumber": "Writ Petition No.1951",
-    "dictumLaw": "S.122(5A) & (9)---Constitution of Pakistan, Art.199---Constitutional petition--- Amendment of assessment---Pre-conditions---Petitioner / assessee was aggrieved of show-cause notice issued by authorities to amend its assessment---Authorities objected to maintainability of petition against show cause notice---Validity---Petition under Art. 199 of the Constitution against a show-cause notice was maintainable in limited circumstances---Notice under S.122(9) of Income Tax Ordinance, 2001 did not lie ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -396,16 +407,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/12.pdf"
   },
   {
     "id": 13,
-    "citation": "1999 PTD 1892",
+    "citation": "WP No. 2169/2015",
     "title": "Employees Gratuity Fund vs Federation of Pakistan through Chairman, Federal Board of Revenue, Islamabad and others",
     "court": "High Court",
     "date": "69 of 2015",
     "caseNumber": "W.P. No. 2169",
-    "dictumLaw": "Petitioners By : M/s Naveed A. Andrabi, Ayyaz Shaukat, Hassan Kamran Bashir, Ehtisham Mahmud, Hyder Ali Khan and Ch. Naeem Ul Haq, Advocates in respective petitions. ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Employees Gratuity Fund",
@@ -426,16 +438,17 @@
       "tax",
       "writ",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/13.pdf"
   },
   {
     "id": 14,
-    "citation": "RJ-14",
+    "citation": "WP No. 2498/2013",
     "title": "Syed Shabi Hassan vs The Guardian Judge West Isb Etc",
     "court": "High Court",
     "date": "98 of 2013",
     "caseNumber": "W.P. No.2498",
-    "dictumLaw": "ORDER MUHAMMAD ANWAR KHAN KASI, CI:- The petitioner [respondent in main petition under Guardian & Wards Actl, assails the order dated 04.6.2013, passed by learned Guardian ]udge Islamabad, whereby his application seeking dismissal of the guardian petition filed by the respondent No.2 on the ground of jurisdiction was rejected by observing that where the plaintiff wife resides, that court has jurisdiction for all the matters including the custody of minor. ",
+    "dictumLaw": "The Family Court Act, 1964",
     "subject": "General Law",
     "parties": {
       "petitioner": "Syed Shabi Hassan",
@@ -457,16 +470,17 @@
       "constitutional",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/14.pdf"
   },
   {
     "id": 15,
-    "citation": "2016 PTD 1484",
+    "citation": "WP No. 3899/2017",
     "title": "s Shifa International Hospitals Limited vs Commissioner Inland Revenue, Islamabad, etc",
     "court": "High Court",
     "date": "26.10.2017",
     "caseNumber": "Writ Petition No.3899/2017",
-    "dictumLaw": "The instant petition calls in question the audit notice received by the petitioner from the Commissioner Inland Revenue on 26.10.2017 with respect to the period: 01.07.2014 to 30.06.2015. The writ petition came for hearing before this Court on 16.11.2017 and was disposed of by this Court vide order dated 09.10.2019. The department filed appeal before the Supreme Court of Pakistan and by way of consent order, order dated 09.10.2019 was set-aside in Civil Petition No.4464/19 on 03.03.2020. ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "s Shifa International Hospitals Limited",
@@ -489,16 +503,17 @@
       "appeal",
       "writ",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/15.pdf"
   },
   {
     "id": 16,
-    "citation": "1997 SC 582",
+    "citation": "WP No. 213/2023",
     "title": "Waheed Ashraf vs Federation of Pakistan, etc.",
     "court": "High Court",
     "date": "15.01.2024",
     "caseNumber": "Writ Petition No.213/2023",
-    "dictumLaw": "Form No: HCJD/C-121\nJUDGMENT SHEET.\nIN THE ISLAMABAD HIGH COURT,\nISLAMABAD.\nWrit Petition No.213/2023\nWaheed Ashraf\nVersus\nFederation of Pakistan, etc.\nPetitioner(s) By : Hafiz Muhammad Idris, Syed Farid Ahmed\nBukhari, Mr. Usman Kiyani, Mian Haseeb\nAli Bhatti, Mr. Muhammad Aslam Hayat,\nMr. Muhammad Naeem Siddique Bhatti,\nMr. Asif Farid, Mr. Sajid Naseem, Mr.\nUsman Ahmed Ranjha, Ms. Sabila Daraz\nKhan, Syed Ali Murtaza Abbas, Mirza\nSaqib Siddique, Mr. Waqar Javed, Ms.\nFatima, Ms. Aiema Asrar, Mali",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Waheed Ashraf",
@@ -526,16 +541,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/16.pdf"
   },
   {
     "id": 17,
-    "citation": "2019 P T D 2082",
+    "citation": "2019 PTD 2082",
     "title": "Jahanzab Nadeem vs FBR, etc.",
     "court": "Islamabad High Court",
     "date": "95 of 2018",
     "caseNumber": "Writ Petition No. 3195",
-    "dictumLaw": "Ss. 131(5) second proviso [as inserted by Finance Act (XXX of 2018)] & S.132(2A) [as inserted by Finance Act (VII of 2005)]---Constitution of Pakistan, Art. 199---Constitutional petition---Statutory right of appeal, decision of---Time-frame---Mandatory or Directory nature of statute---Intention of Legislature---Taxpayers were proceeded against by authorities who challenged same before Appellate Tribunal Inland Revenue seeking extension of injunctive orders under S. 131(5) of Income Tax Ordinance",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Jahanzab Nadeem",
@@ -561,16 +577,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/17.pdf"
   },
   {
     "id": 18,
-    "citation": "2023 P T D 803",
+    "citation": "2023 PTD 803",
     "title": "WATSON CHEMIST AND SUPER STORE and others vs FEDERATION OF PAKISTAN and others",
     "court": "Islamabad High Court",
     "date": "13 of 2020",
     "caseNumber": "Writ Petition No.608",
-    "dictumLaw": "Harmonious interpretation---Court, duty of---Statute cannot be read in isolation and Courts have to protect Constitutionality of statutes on the principle of interpretation of statues.\n\n(b) Sales Tax Act (VII of 1990)---",
+    "dictumLaw": "The Sales Tax Act, 1990",
     "subject": "General Law",
     "parties": {
       "petitioner": "WATSON CHEMIST AND SUPER STORE and others",
@@ -595,16 +612,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/18.pdf"
   },
   {
     "id": 19,
-    "citation": "2016 SCMR 1965",
+    "citation": "WP No. 1545/2019",
     "title": "Case #19",
     "court": "High Court",
     "date": "16 SCMR 1965",
     "caseNumber": "Writ Petitions No.1545",
-    "dictumLaw": "2016 SCMR 1965\n(Imran Mohsin vs. The State), wherein it was held that:-\n\"یہبں یہ تجویش کزًب بھی ضزوری ہو گیبہے کہ چوًکہ ادتظبة\nکے قبًوى کی هختلف شقوں کی بٌبء پز اص ًوع کے جزائن هیں\nببرِثبوت بببت ِ بے گ ٌبہی هلشهبى پہ ػبئذ کی گئی ہے۔ لٰہذا\nخصوصی ػذالتیں اور اپیل کی ػذالتیں هلک کے هخصوص\nکے پیش ِ ًظز اى قب ًو ًی شقوں کب ببریک بی ٌی طےجبئش ٍ لے کز\nهلک، اداروں اور هؼبشزے کو بذػٌواًی کے ًبطور طے پبک\nکزًے کے لئے اًتہبئی هتذزک اور فؼبل کزدار ادا کزے۔\nکیوًکہ بذػٌواًی ہز ططخ پز جض تیشی طے هلک اور\nهؼبشزے ه",
+    "dictumLaw": "The Anti-Money Laundering Act, 2010",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -619,16 +637,17 @@
     "fullText": "2016 SCMR 1965\n(Imran Mohsin vs. The State), wherein it was held that:-\n\"یہبں یہ تجویش کزًب بھی ضزوری ہو گیبہے کہ چوًکہ ادتظبة\nکے قبًوى کی هختلف شقوں کی بٌبء پز اص ًوع کے جزائن هیں\nببرِثبوت بببت ِ بے گ ٌبہی هلشهبى پہ ػبئذ کی گئی ہے۔ لٰہذا\nخصوصی ػذالتیں اور اپیل کی ػذالتیں هلک کے هخصوص\nکے پیش ِ ًظز اى قب ًو ًی شقوں کب ببریک بی ٌی طےجبئش ٍ لے کز\nهلک، اداروں اور هؼبشزے کو بذػٌواًی کے ًبطور طے پبک\nکزًے کے لئے اًتہبئی هتذزک اور فؼبل کزدار ادا کزے۔\nکیوًکہ بذػٌواًی ہز ططخ پز جض تیشی طے هلک اور\nهؼبشزے هیں پھیل رہی ہے اگز اص کب فوری طذِببة ًہ کیب گیب\nتو یہ دیوک کی طزح هلک اور اداروں کی اقتصبدی، هبلی اور\nهؼبشی بٌیبدوں کو کھوکھال کزکے ریبطت کو اًجبم طے دو چبر\nکز گی جض کب بؼذ هیں طذِببة کز ًب ًہ صزف هشکل بلکہ ًب\nهوکي ہوگب۔ چو ًکہ ارض ِ پبک خود هختبر ریبطت کی صورت\nهیں ہویں کظی ًےتذفہ هیں ًہیں دیب بلکہ اص کے لئے الکھوں\nجبًوں کی قزببًیں دی گئیں۔ اگزچہهظلوہ قبًوى اور اًصبف کے\nاصولوں کی یکظز ًظز اًذاس ًہیں کیب جب طکتب لیکي دبالت کیض\nطٌگیٌی اور هتوقغ طٌگیي ًتبئج طے بچٌے کے لئے یہ ہوبرا\nفزض ب ٌتب ہے کہ اػلٰی ػذلیہ اور خصوصی ػذالتیں اص طلظلے\nهیں هذتبط، هتذزک اور فؼبل کزدار ادا کزے تبکہ اص ًوع کے\nجزائن کی هکول بیخ ک ٌُی کی جب طکے۔ یہبں پز اص ببت کو بھی\nًظز اًذاس ًہیں کیب جب طکتب کہ هؼبشزے کے ہز طبقے کے افزاد\nبذ ػ ٌوا ًی کے خالف سوردار طزیقے طے آواس اٹھب ًے هیں\n\n7\nWrit Petitions No.1545 & 1546/2019.\nپیش پیش ہوتے ہیں لیکي بذقظوتی طے اى هیں طے اکژیت خود\nادتظببی کے اصول پہ ػول درآهذ کز ًے کزا ًے طے گزیشاں\nًظز آتے ہیں جوکہ قوهی الویے طے کن ًہیں ہے۔ \"\n11. There is no denial to the proposition that corruption is\nspoiling economy of the country at a large scale in a every\norganized manner and it has become free for all, then it has\nbecome the primary and foremost obligation of the Court to curb\nthis evil monster which would ultimately be a threat not to latter\nalone but to the very survival of the State. Due to massive\ncorruption the poor among poorer are not getting even safe\ndrinking water and other facilities to live a honourable life as\nenvisaged in the provisions of the Constitution of Islamic\nRepublic of Pakistan, 1973. Reliance is placed upon",
     "keywords": [
       "writ"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/19.pdf"
   },
   {
     "id": 20,
-    "citation": "2017 SCMR\n669",
+    "citation": "WP No. 1546/2019",
     "title": "Case #20",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-20",
-    "dictumLaw": "2017 SCMR\n669 (Sohrab Khan Marri Khuda Bakhsh vs. The State). The\nApex Court also laid down criteria for decision of each bail in\nthe judgment reported as ",
+    "dictumLaw": "The Anti-Money Laundering Act, 2010",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -641,16 +660,17 @@
       "s. The State"
     ],
     "fullText": "2017 SCMR\n669 (Sohrab Khan Marri Khuda Bakhsh vs. The State). The\nApex Court also laid down criteria for decision of each bail in\nthe judgment reported as",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/20.pdf"
   },
   {
     "id": 21,
-    "citation": "RJ-21",
+    "citation": "Crl. Appeal No. 151/2018",
     "title": "Case #21",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-21",
-    "dictumLaw": "Legal principle to be determined from full text.",
+    "dictumLaw": "The Anti-Money Laundering Act, 2010",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -661,16 +681,17 @@
     ],
     "sections": [],
     "fullText": "",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/21.pdf"
   },
   {
     "id": 22,
-    "citation": "RJ-22",
+    "citation": "Crl. Appeal No. 150/2018",
     "title": "Case #22",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-22",
-    "dictumLaw": "Legal principle to be determined from full text.",
+    "dictumLaw": "The Anti-Money Laundering Act, 2010",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -681,16 +702,17 @@
     ],
     "sections": [],
     "fullText": "",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/22.pdf"
   },
   {
     "id": 23,
-    "citation": "RJ-23",
+    "citation": "Crl. Appeal No. 157/2018",
     "title": "Case #23",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-23",
-    "dictumLaw": "Legal principle to be determined from full text.",
+    "dictumLaw": "The Anti-Money Laundering Act, 2010",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -701,16 +723,17 @@
     ],
     "sections": [],
     "fullText": "",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/23.pdf"
   },
   {
     "id": 24,
-    "citation": "RJ-24",
+    "citation": "ICA No. 292/2022",
     "title": "Case #24",
     "court": "High Court",
     "date": "15.02.2023",
     "caseNumber": "Case-24",
-    "dictumLaw": "MOHSIN AKHTAR KAYANI, J. Through the instant appeal, the appellant has assailed the order dated 20.06.2022, passed by learned Judge in Chambers in W.P No.2758/2021, whereby the writ petition filed was dismissed.",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -733,16 +756,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/24.pdf"
   },
   {
     "id": 25,
-    "citation": "RJ-25",
+    "citation": "WP No. 171/2021",
     "title": "Case #25",
     "court": "High Court",
     "date": "17.02.2022",
     "caseNumber": "Writ Petition No.171/2021",
-    "dictumLaw": " Federation of Pakistan through the Secretary Ministry of Finance, Revenue and Economic Affairs & others. ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -766,16 +790,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/25.pdf"
   },
   {
     "id": 26,
-    "citation": "2017 SCMR 1006",
+    "citation": "ITR No. 48/2021",
     "title": "Case #26",
     "court": "High Court",
     "date": "48 OF 2021",
     "caseNumber": "Case-26",
-    "dictumLaw": "BABAR SATTAR, J.- This is a reference application under section 133 of the Income Tax Ordinance 2001 (“Ordinance”) against the order of the learned Appellate Tribunal Inland Revenue (“Tribunal”) dated 23.10.2020. The impugned order states the following:",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -801,16 +826,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/26.pdf"
   },
   {
     "id": 27,
-    "citation": "RJ-27",
+    "citation": "WP No. 773/2022",
     "title": "Orient Petroleum Pty Limited vs Commissioner Inland Revenue, Islamabad, etc.",
     "court": "High Court",
     "date": "11.04.2022",
     "caseNumber": "W.P. No.773/2022",
-    "dictumLaw": " At the very outset, learned counsel for the parties apprised the Court that the matter is pending before the Appellate Tribunal Inland Revenue wherein petitioner has filed an appeal. On behalf of the petitioner it was contended that since the appeal is pending before competent forum, direction be issued to it for expeditious disposal of the matter and meanwhile department be ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Orient Petroleum Pty Limited",
@@ -828,16 +854,17 @@
       "tax",
       "appeal",
       "jurisdiction"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/27.pdf"
   },
   {
     "id": 28,
-    "citation": "2016 SC 808",
+    "citation": "WP No. 608/2020",
     "title": "Case #28",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-28",
-    "dictumLaw": "2016 SC 808 (Messrs Mustafa Impex, Karachi and others  Vs. The Government of Pakistan through Secretary Finance, Islamabad and others Mustafa Impex) and the actions initiated by the respondent FBR for mandatory installation of PoS (Point of Sale) as well as rules made for real time of declaration of sales are against the law and facts.   ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -861,16 +888,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/28.pdf"
   },
   {
     "id": 29,
-    "citation": "2020 PTD 752",
+    "citation": "WP No. 2583/2021",
     "title": "Case #29",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-29",
-    "dictumLaw": "Legal principle to be determined from full text.",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -883,16 +911,17 @@
       "s. Federation of Pakistan and others"
     ],
     "fullText": "2020 PTD 752 (Lahore High Court (Rawalpindi] (Jameel \n\nSweets Vs. Federation of Pakistan and others),",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/29.pdf"
   },
   {
     "id": 30,
-    "citation": "2020 PTD 2095",
+    "citation": "WP No. 646/2021",
     "title": "Case #30",
     "court": "Lahore High Court (Rawalpindi Bench)",
     "date": "20 PTD 2095",
     "caseNumber": "Case-30",
-    "dictumLaw": "[Lahore High Court (Rawalpindi Bench)] (D. Watson Chemist Vs. Federation of Pakistan and others) and all these questions have been adjudicated by the learned Single Bench as well as by Hon’ble Division Bench of the Lahore High Court, Rawalpindi Bench, even same learned counsel have appeared in the Lahore jurisdiction and argued all these grounds, which have been answered, as such instant writ petitions have been filed simultaneously in Rawalpindi Bench as well as before this Court in order to ge",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -918,16 +947,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/30.pdf"
   },
   {
     "id": 31,
-    "citation": "2020 PTD 752",
+    "citation": "WP No. 3124/2020",
     "title": "Case #31",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-31",
-    "dictumLaw": "(Lahore High Court (Rawalpindi] (Jameel Sweets Vs. Federation of Pakistan and others), in which the proposition has been answered in the following manner:  ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -940,16 +970,17 @@
       "s. Federation of Pakistan and others"
     ],
     "fullText": "2020 PTD 752 \n\n(Lahore High Court (Rawalpindi] (Jameel Sweets Vs. Federation of Pakistan and others), in which the proposition has been answered in the following manner:  \n\ni) \t8. \tThe Courts have spelt out a number of grounds for laying a challenge to delegated or subordinate legislation. The following tests have been laid down by the Courts for making a vires determination of the delegated legislation.  \n\nWhether the Rules framed are beyond the power granted by the enabling legislation (ultra vires);  \n\nWhether the process for formulating the Rules prescribed by the parent statute was followed \n\n(procedural ultra vires); and  \n\nAre the impugned Rules consistent with the objective of the parent statute.  \n\n These tests are also propounded in judgments reported as Muhammad Amin and others v. Government of Pakistan",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/31.pdf"
   },
   {
     "id": 32,
-    "citation": "2015 SCMR 630",
+    "citation": "WP No. 699/2020",
     "title": "Case #32",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-32",
-    "dictumLaw": "Legal principle to be determined from full text.",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -960,16 +991,17 @@
     ],
     "sections": [],
     "fullText": "2015 SCMR 630, Khawaja Ahmad Hassan v. Province of Punjab",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/32.pdf"
   },
   {
     "id": 33,
-    "citation": "2015 SCMR 186",
+    "citation": "WP No. 650/2020",
     "title": "Case #33",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-33",
-    "dictumLaw": "10. A survey of the judgment would show that the following principles for interpretation of delegated legislation have been laid down. There is a presumption of validity attached to the delegated legislation. The Rules made under a statutory mandate ought to be read and interpreted in a broad manner which makes them consistent to the parent statute. The Court holding the inquiry does not indulge in assessing the policy merits of the Rules or makes assessment as to whether the Rules would meet th",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -989,16 +1021,17 @@
     "keywords": [
       "tax",
       "constitutional"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/33.pdf"
   },
   {
     "id": 34,
-    "citation": "2016 SC 808",
+    "citation": "WP No. 610/2020",
     "title": "Case #34",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-34",
-    "dictumLaw": "2016 SC 808 (Mustafa Impex). Even otherwise, in the case of Mustafa Impex supra certain classification, withdrawing the exemptions or modifications in the tax rates of goods were called in question, whereby apex Court has held that the Federal Government has been defined under Article 90 of the Constitution of the Islamic Republic of Pakistan, 1973, as the sole repository of the Executive Authority of the Federation, which alone can exercise it, in the name of President to the exclusion of every",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1015,16 +1048,17 @@
     "keywords": [
       "tax",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/34.pdf"
   },
   {
     "id": 35,
-    "citation": "2005 SCMR 186",
+    "citation": "WP No. 609/2020",
     "title": "Case #35",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-35",
-    "dictumLaw": "Ahmad Hassan Vs. Government of Punjab and others), in which it has been held that a Court is required to determine whether a piece of delegated legislation, is bad on the ground of arbitrary and excessive delegation, the Court must bear in mind the following principles:- ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1038,16 +1072,17 @@
       "s. In some cases guidance in broad general terms may be enough, in other cases more detailed guidance may be necessary"
     ],
     "fullText": "2005 SCMR 186 (Khawaja \n\nAhmad Hassan Vs. Government of Punjab and others), in which it has been held that a Court is required to determine whether a piece of delegated legislation, is bad on the ground of arbitrary and excessive delegation, the Court must bear in mind the following principles:- \n\nThe essential legislative function consists of the determination of the legislative policy and its formulation as a binding rule of conduct and this cannot be delegated by the Legislature.  \n\nThe legislature must retain in its own hands the essential legislative functions and what can be delegated is the task of subordinate legislation necessary for implementing the purposes and objects of the Act.  \n\nWhere the legislative policy is enunciated with sufficient clearness or a standard is laid down, the Courts should not interfere.  \n\nWhat guidance should be given and to what extent and whether guidance has been given in a particular case at all depends on a consideration of the provisions of a particular Act with which the Court has to deal, including its Preamble.  \n\nThe nature of the body to which delegation is made is also a guidance in the matter of delegation.  \n\nWhat form the guidance should take, will depend upon the circumstances of each statute under consideration, and cannot be stated in general terms. In some cases guidance in broad general terms may be enough, in other cases more detailed guidance may be necessary. \n\n \n\nBy considering the above principle of delegated legislation, justifications for the same have been highlighted in the manner that firstly, there is pressure on parliamentary time. Second, the technicality of subject matter necessitates prior consultation and expert advice on interests concerned. Third, the need for flexibility is established because it is not possible to foresee every administrative difficulty that may arise to make adjustment that may be called for after the statute has begun to operate. Delegated legislation fills those needs as held in",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/35.pdf"
   },
   {
     "id": 36,
-    "citation": "2013 SCMR 642",
+    "citation": "WP No. 576/2020",
     "title": "Case #36",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-36",
-    "dictumLaw": "v. Said Rehman, etc.). The concept of delegated legislation has gained momentum with mushroom population growth, the dire need for good governance and the ultimate aim to cater for the essential basic needs of every segment of society to bolster and fulfill the attribute of Islamic Welfare State as held in PLD 2011 Peshawar ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1065,16 +1100,17 @@
       "tax",
       "constitutional",
       "fundamental rights"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/36.pdf"
   },
   {
     "id": 37,
-    "citation": "2007 PTD 1005",
+    "citation": "WP No. 446/2020",
     "title": "Case #37",
     "court": "High Court",
     "date": "07 PTD 1005",
     "caseNumber": "Case-37",
-    "dictumLaw": "2007 PTD 1005 Karachi (Molasses Trading and Export Co. (Pvt.) Limited Vs. Government of Pakistan and others). ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1087,16 +1123,17 @@
       "s. Government of Pakistan and others"
     ],
     "fullText": "2007 PTD 1005 Karachi (Molasses Trading and Export Co. (Pvt.) Limited Vs. Government of Pakistan and others). \n\nThe primary concerns of the classification in Tier-1 has been objected by the petitioners, whereas legislative intent could not be suppressed on the interpretation made by the petitioners as the legislature has adopted a concept of modern progressive public revenues and to generate revenues, which may be used for running of the state and welfare of the people as held in PLD",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/37.pdf"
   },
   {
     "id": 38,
-    "citation": "1997 SC 582",
+    "citation": "WP No. 321/2020",
     "title": "Case #38",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-38",
-    "dictumLaw": "(Messrs Elahi Cotton Mills Ltd and others Vs. Federation of Pakistan through Secretary M/o Finance, Islamabad and 6 others). It was further held in the said case that reasonable classification does not imply that every person should be taxed equally. Reasonable classification is permissible provided same is based on an intelligible differentia, which distinct persons or things that are grouped together from those who have been left out and that differentia must have rational nexus to the object ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1113,16 +1150,17 @@
     "keywords": [
       "tax",
       "constitutional"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/38.pdf"
   },
   {
     "id": 39,
-    "citation": "2018 SCMR 211",
+    "citation": "WP No. 313/2020",
     "title": "Case #39",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-39",
-    "dictumLaw": "2018 SCMR 211 (National Engineering Service Pakistan NESPAK (Pvt.) Ltd. v. Kamil Khan Mumtaz, etc.), whereby it was held by the apex Court that it was even otherwise beyond the jurisdictional domain of the High Court in exercise of its powers under Article 199 of the Constitution of the Islamic Republic of Pakistan, 1973, to delve into highly technical and purely policy issues, which were better left to be dealt with by the experts having relevant knowledge, training and expertise in their respe",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1135,16 +1173,17 @@
     "fullText": "2018 SCMR 211 (National Engineering Service Pakistan NESPAK (Pvt.) Ltd. v. Kamil Khan Mumtaz, etc.), whereby it was held by the apex Court that it was even otherwise beyond the jurisdictional domain of the High Court in exercise of its powers under Article 199 of the Constitution of the Islamic Republic of Pakistan, 1973, to delve into highly technical and purely policy issues, which were better left to be dealt with by the experts having relevant knowledge, training and expertise in their respective fields and the competent authorities authorized and empowered by law to do so. Reference to aforesaid view of the apex Court was made to \n\nDossani Travels (Pvt.) Ltd. v. Travels Shop (Pvt.) Ltd. (PLD",
     "keywords": [
       "jurisdiction"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/39.pdf"
   },
   {
     "id": 40,
-    "citation": "RJ-40",
+    "citation": "WP No. 622/2021",
     "title": "Case #40",
     "court": "High Court",
     "date": "12.12.2022",
     "caseNumber": "W.P. No.622",
-    "dictumLaw": "for the petitioner contended that instant petition has become infructuous inasmuch as income tax return for the relevant year has been furnished therefore the respondents, if find that the estimation made by the petitioner is erroneous, can also seek to proceed under the relevant provisions of law. ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1163,16 +1202,17 @@
     "keywords": [
       "tax",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/40.pdf"
   },
   {
     "id": 41,
-    "citation": "2014 SC 47",
+    "citation": "WP No. 858/2021",
     "title": "Limited vs Federation of Pakistan and others",
     "court": "High Court",
     "date": "58 of 2021",
     "caseNumber": "W.P. No.858",
-    "dictumLaw": "M/s Salman Akram Raja, Asad Ladha and Malik Ghulam Sabir, Advocates for the petitioner in W.P. No.858/2021. ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Limited",
@@ -1198,16 +1238,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/41.pdf"
   },
   {
     "id": 42,
-    "citation": "RJ-42",
+    "citation": "WP No. 1090/2022",
     "title": "Haj Pakistan Exploration Limited vs Pakistan through Secretary Revenue, Islamabad, etc.",
     "court": "High Court",
     "date": "11.04.2022",
     "caseNumber": "W.P. No.1090/2022",
-    "dictumLaw": " At the very outset, learned counsel for the parties apprised the Court that the matter is pending before the Appellate Tribunal Inland Revenue wherein petitioner has filed an appeal. On behalf of the petitioner it was contended that since the appeal is pending before competent forum, direction be issued to it for expeditious disposal of the matter and meanwhile department be ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Haj Pakistan Exploration Limited",
@@ -1225,16 +1266,17 @@
       "tax",
       "appeal",
       "jurisdiction"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/42.pdf"
   },
   {
     "id": 43,
-    "citation": "RJ-43",
+    "citation": "WP No. 1587/2020",
     "title": "S Islamabad Electric Supply Company Ltd vs Additional Commissioner Inland Revenue, etc",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-43",
-    "dictumLaw": "The grievance of the petitioner company is regarding delay in deciding the application filed for seeking an interim injunction.",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "S Islamabad Electric Supply Company Ltd",
@@ -1250,16 +1292,17 @@
     "fullText": "Form No: HCJD/C-121.\n\nORDER SHEET\n\nIN THE ISLAMABAD HIGH COURT, ISLAMABAD JUDICIAL DEPARTMENT\n\nw.p No. 1587/2020\n\nM/S Islamabad Electric Supply Company Ltd\n\nvs\n\nAdditional Commissioner Inland Revenue, etc\n\nS. No. of order/ roceedin s \n\nDate of order/\n\nProceedin s\n\nOrder with signature of Judge and that of parties or counsel where necessary.\n\n02).\t16-07-2020 Mr Muhammad Asif Khan, Advocate for the petitioner.\n\nSyed Ishfaq Hussain Naqvi, Advocate for the respondents.\n\nThe grievance of the petitioner company is regarding delay in deciding the application filed for seeking an interim injunction.\n\nThe learned counsel for the respondents was asked whether the application has been decided. He has answered in the negative.\n\nIn view of the above and in the interest of justice, the instant pe!ition is disposed of by directing respondent no.2 to afford an opportunity of hearing to the parties and, thereafter, decide the application seeking an interim injunction.\n\nThis Court expects that the application will be decided at the earliest. Till such time the application is decided no coercive measures shall be resorted to by the respondents to recover the disputed amount of tax.\n\nThe petition is disposed of accordingly.\n\n(CHIEF JUSTICE)\n\nAslf Mughal/*\n\nUploaded by It Department of IHC",
     "keywords": [
       "tax"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/43.pdf"
   },
   {
     "id": 44,
-    "citation": "2020 PTD 110",
+    "citation": "WP No. 1462/2020",
     "title": "s Pakistan Telecommunication Authority vs Federation of Pakistan and others",
     "court": "High Court",
     "date": "62 of 2020",
     "caseNumber": "W.P. No.1462",
-    "dictumLaw": "Mr. Muhammad Mohsin Nazir, Advocate for the petitioner in writ petition No.1462 of 2020 and Mr. Muhammad Umar Khan Vardag, Advocate for the petitioner in writ petition Nos.2218/2018, 2219/2018, 2220/2018 and 2221/2018. ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "s Pakistan Telecommunication Authority",
@@ -1284,16 +1327,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/44.pdf"
   },
   {
     "id": 45,
-    "citation": "RJ-45",
+    "citation": "WP No. 1588/2020",
     "title": "S Islamabad Electric Supply Company Ltd vs Additional Commissioner Inland Revenue, etc",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-45",
-    "dictumLaw": "The grievance of the petitioner company is regarding delay in deciding the application filed for seeking an interim injunction.",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "S Islamabad Electric Supply Company Ltd",
@@ -1309,16 +1353,17 @@
     "fullText": "Form No: HCJD/C-121.\n\nORDER SHEET\n\nIN THE ISLAMABAD HIGH COURT. ISLAMABAD JUDICIAL DEPARTMENT\n\nw.p No. 1588/2020\n\nM/S Islamabad Electric Supply Company Ltd\n\nvs\n\nAdditional Commissioner Inland Revenue, etc\n\nS. No. of order/ roceedin s \n\nDate of order/\n\nProceedin s\n\nOrder with signature of Judge and that of parties or counsel. where necessary.\n\n02).\t16-07-2020 Mr Muhammad Asif Khan, Advocate for the petitioner.\n\nSyed Ishfaq Hussain Naqvi, Advocate for the respondents.\n\nThe grievance of the petitioner company is regarding delay in deciding the application filed for seeking an interim injunction.\n\nThe learned counsel for the respondents was asked whether the application has been decided. He has answered in the negative.\n\nIn view of the above and in the interest of justice, the instant petition is disposed of by directing respondent no.2 to afford an opportunity of hearing to the parties and, thereafter, decide the application seeking an interim injunction.\n\nThis Court expects that the application will be decided at the earliest. Till such time the application is decided no coercive measures shall be resorted to by the\n\nrespondents to recover the disputed amount of tax.\n\nThe petition is disposed of Accordingly.\n\n(CHIEF JUSTICE)\n\nÆlf Mughal/*\n\nUploaded by It Department of IHC",
     "keywords": [
       "tax"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/45.pdf"
   },
   {
     "id": 46,
-    "citation": "2017 PTD 1852",
+    "citation": "WP No. 1768/2021",
     "title": "LTD. vs ",
     "court": "High Court",
     "date": "68 of 2021",
     "caseNumber": "Writ Petition No.1768",
-    "dictumLaw": " ATHAR MINALLAH, CJ.---- Messrs Telenor Pakistan (Pvt.) Limited, (hereinafter referred to as the 'petitioner Company'), has invoked the jurisdiction of this Court under Article 199 of the Constitution of the Islamic Republic of Pakistan, 1973 (hereinafter referred to as the 'Constitution') assailing recovery notice, dated 07-05-2021 issued under section 138 of the Income Tax Ordinance, 2001 (hereinafter referred to as the 'Ordinance of 2001'). ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "LTD.",
@@ -1345,16 +1390,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/46.pdf"
   },
   {
     "id": 47,
-    "citation": "RJ-47",
+    "citation": "WP No. 1891/2022",
     "title": "s Pakistan Mobile Communications Ltd. vs Federation of Pakistan and others",
     "court": "High Court",
     "date": "91 of 2022",
     "caseNumber": "W.P. No.1891",
-    "dictumLaw": "Learned counsel for the petitioner submitted that in W.P. No.1891/2022 the petitioner had been asked to show cause as to why Federal Excise Duty is not to be recovered from January 2016 to December 2016 which period fell beyond the period of limitation prescribed under section 14(1) of the Excise Act. He submitted that in view of section 4(2) of the Excise Act tax returns were to be filed on monthly basis and were due by or before 15th day of following the month in relation to which tax ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "s Pakistan Mobile Communications Ltd.",
@@ -1375,16 +1421,17 @@
       "tax",
       "writ",
       "jurisdiction"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/47.pdf"
   },
   {
     "id": 48,
-    "citation": "RJ-48",
+    "citation": "WP No. 2054/2022",
     "title": "s Pakistan Mobile Communications Ltd. vs Federation of Pakistan and others",
     "court": "High Court",
     "date": "91 of 2022",
     "caseNumber": "W.P. No.1891",
-    "dictumLaw": "Learned counsel for the petitioner submitted that in W.P. No.1891/2022 the petitioner had been asked to show cause as to why Federal Excise Duty is not to be recovered from January 2016 to December 2016 which period fell beyond the period of limitation prescribed under section 14(1) of the Excise Act. He submitted that in view of section 4(2) of the Excise Act tax returns were to be filed on monthly basis and were due by or before 15th day of following the month in relation to which tax ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "s Pakistan Mobile Communications Ltd.",
@@ -1405,16 +1452,17 @@
       "tax",
       "writ",
       "jurisdiction"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/48.pdf"
   },
   {
     "id": 49,
-    "citation": "2666 OF 2021",
+    "citation": "WP No. 2666/2021",
     "title": "Ltd. vs Federation of Pakistan through Chairman, Federal Board of Revenue, etc.",
     "court": "High Court",
     "date": "66 OF 2021",
     "caseNumber": "WRIT PETITION NO. 2666",
-    "dictumLaw": " \t \tBABAR SATTAR, J.- The petitioner has impugned order dated 14.07.2020 passed by Federal Board of Revenue ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Ltd.",
@@ -1437,16 +1485,17 @@
       "constitutional",
       "writ",
       "jurisdiction"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/49.pdf"
   },
   {
     "id": 50,
-    "citation": "2014 SCMR 1630",
+    "citation": "WP No. 2911/2022",
     "title": "Case #50",
     "court": "], the Supreme Court observed that in order to determine the nature of a Bill and whether it falls within the scope of „Money Bill‟, it is to be considered where levies/contributions in question under various laws are in the nature of „tax‟ which would render the amendment thereto through Finance Act valid and lawful. The Supreme Court went on to explain that while a fee is not a „tax‟ hence to try and squeeze the contribution/payments into the definition of a fee in order to take it out of the ambit of a tax would be wrong. It was observed that under Article 73(3)(a) of the Constitution, a Bill is not to be regarded as a „Money Bill‟ if it provides for the imposition or alteration of a fee or charge but that does not amount to that fee or any levy that does not fall within Article 73(2); it must necessarily fall within Article 73(3), as two Articles are mutually not exclusive, as there may well be certain levies which do not fall within the purview of Article 73(3) but also do not fall under Article 73(2). In another matter as footnoted [",
     "date": "19.01.2023",
     "caseNumber": "W.P. NO.2911",
-    "dictumLaw": "Mr. Munawwar Iqbal Duggal, Additional Attorney General, Mr. Fazal Ur Rehman Khan Niazi, Deputy Attorney General and Mr. Azmat Bashir Tarar, Assistant Attorney General.  ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1472,16 +1521,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/50.pdf"
   },
   {
     "id": 51,
-    "citation": "2014 SCMR 1630",
+    "citation": "Crl. Org No. 195/2022",
     "title": "Case #51",
     "court": "], the Supreme Court observed that in order to determine the nature of a Bill and whether it falls within the scope of „Money Bill‟, it is to be considered where levies/contributions in question under various laws are in the nature of „tax‟ which would render the amendment thereto through Finance Act valid and lawful. The Supreme Court went on to explain that while a fee is not a „tax‟ hence to try and squeeze the contribution/payments into the definition of a fee in order to take it out of the ambit of a tax would be wrong. It was observed that under Article 73(3)(a) of the Constitution, a Bill is not to be regarded as a „Money Bill‟ if it provides for the imposition or alteration of a fee or charge but that does not amount to that fee or any levy that does not fall within Article 73(2); it must necessarily fall within Article 73(3), as two Articles are mutually not exclusive, as there may well be certain levies which do not fall within the purview of Article 73(3) but also do not fall under Article 73(2). In another matter as footnoted [",
     "date": "19.01.2023",
     "caseNumber": "W.P. NO.2911",
-    "dictumLaw": "Mr. Munawwar Iqbal Duggal, Additional Attorney General, Mr. Fazal Ur Rehman Khan Niazi, Deputy Attorney General and Mr. Azmat Bashir Tarar, Assistant Attorney General.  ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1507,16 +1557,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/51.pdf"
   },
   {
     "id": 52,
-    "citation": "2014 SCMR 1630",
+    "citation": "WP No. 3001/2022",
     "title": "Case #52",
     "court": "], the Supreme Court observed that in order to determine the nature of a Bill and whether it falls within the scope of „Money Bill‟, it is to be considered where levies/contributions in question under various laws are in the nature of „tax‟ which would render the amendment thereto through Finance Act valid and lawful. The Supreme Court went on to explain that while a fee is not a „tax‟ hence to try and squeeze the contribution/payments into the definition of a fee in order to take it out of the ambit of a tax would be wrong. It was observed that under Article 73(3)(a) of the Constitution, a Bill is not to be regarded as a „Money Bill‟ if it provides for the imposition or alteration of a fee or charge but that does not amount to that fee or any levy that does not fall within Article 73(2); it must necessarily fall within Article 73(3), as two Articles are mutually not exclusive, as there may well be certain levies which do not fall within the purview of Article 73(3) but also do not fall under Article 73(2). In another matter as footnoted [",
     "date": "19.01.2023",
     "caseNumber": "W.P. NO.2911",
-    "dictumLaw": "Mr. Munawwar Iqbal Duggal, Additional Attorney General, Mr. Fazal Ur Rehman Khan Niazi, Deputy Attorney General and Mr. Azmat Bashir Tarar, Assistant Attorney General.  ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1542,16 +1593,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/52.pdf"
   },
   {
     "id": 53,
-    "citation": "2014 SCMR 1630",
+    "citation": "WP No. 3043/2022",
     "title": "Case #53",
     "court": "], the Supreme Court observed that in order to determine the nature of a Bill and whether it falls within the scope of „Money Bill‟, it is to be considered where levies/contributions in question under various laws are in the nature of „tax‟ which would render the amendment thereto through Finance Act valid and lawful. The Supreme Court went on to explain that while a fee is not a „tax‟ hence to try and squeeze the contribution/payments into the definition of a fee in order to take it out of the ambit of a tax would be wrong. It was observed that under Article 73(3)(a) of the Constitution, a Bill is not to be regarded as a „Money Bill‟ if it provides for the imposition or alteration of a fee or charge but that does not amount to that fee or any levy that does not fall within Article 73(2); it must necessarily fall within Article 73(3), as two Articles are mutually not exclusive, as there may well be certain levies which do not fall within the purview of Article 73(3) but also do not fall under Article 73(2). In another matter as footnoted [",
     "date": "19.01.2023",
     "caseNumber": "W.P. NO.2911",
-    "dictumLaw": "Mr. Munawwar Iqbal Duggal, Additional Attorney General, Mr. Fazal Ur Rehman Khan Niazi, Deputy Attorney General and Mr. Azmat Bashir Tarar, Assistant Attorney General.  ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1577,16 +1629,17 @@
       "writ",
       "jurisdiction",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/53.pdf"
   },
   {
     "id": 54,
-    "citation": "1999 PTD 1892",
+    "citation": "WP No. 3876/2021",
     "title": "Limited vs ",
     "court": "High Court",
     "date": "76 of 2021",
     "caseNumber": "Writ Petition No.3876",
-    "dictumLaw": "Pakistan through the Secretary Revenue & Ex Officio Chairman Federal Board of Revenue FBR, Islamabad, etc.   ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Limited",
@@ -1609,16 +1662,17 @@
       "appeal",
       "constitutional",
       "writ"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/54.pdf"
   },
   {
     "id": 55,
-    "citation": "RJ-55",
+    "citation": "WP No. 660/2022",
     "title": "Case #55",
     "court": "High Court",
     "date": "21.04.2022",
     "caseNumber": "W.P. No.660",
-    "dictumLaw": "ORDER SHEET\nIN THE ISLAMABAD HIGH COURT, ISLAMABAD.\nJUDICIAL DEPARTMENT.\nW.P. No.660-2022\nPakistan Telecommunication Employees Trust through its Trustees\nVs.\nFederation of Pakistan etc.\nS. No. of\norder/\nproceedings\nDate of\norder/\nProceedings\nOrder with signature of Judge and that of\nparties or counsel where necessary.\n21.04.2022 Mr. Rashid Anwar and Mr. M. Latif Saeedi,\nAdvocates and Mr. Matee Ur Rehman, Manager\n(Legal), PTET for petitioner.\nCh. Imtiaz Ahmed, Syed Ishfaq Hussain Naqvi,\nMr. Abdul",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1641,16 +1695,17 @@
       "constitutional",
       "writ",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/55.pdf"
   },
   {
     "id": 56,
-    "citation": "2019 SCMR 1081",
+    "citation": "WP No. 597/2022",
     "title": "through Khawaja Muhammad Asif,\nM.N.A. and others vs Federation of Pakistan through",
     "court": "High Court",
     "date": "97 of 2022",
     "caseNumber": "Writ Petition No. 597",
-    "dictumLaw": "HCJD/C-121\nJUDGMENT SHEET\nIN THE SLAMABAD HIGH COURT, ISLAMABAD\nWrit Petition No. 597 of 2022\nPort Qasim Power Company Limited through its duly\nAuthorized Officer\nVersus\nPakistan through the Secretary Revenue & Ex. Officio\nChairman, Federal Board of Revenue, FBR House,\nConstitution Avenue, Islamabad and others\nPetitioners by : Mr. Hyder Ali Khan, AHC.\nMr. Saad M. Hashmi, AHC.\nKhuwaja Aizaz Ahsan,\nAHC.\nRespondents by : Syed Ishfaq Hussain Naqvi,\nAdvocate for FBR.\nMr. Babar Bilal, Advocate.\nMr. At",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "through Khawaja Muhammad Asif,\nM.N.A. and others",
@@ -1673,16 +1728,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/56.pdf"
   },
   {
     "id": 57,
-    "citation": "RJ-57",
+    "citation": "WP No. 684/2019",
     "title": "Case #57",
     "court": "High Court",
     "date": "08.09.2022",
     "caseNumber": "Writ Petition No.2735",
-    "dictumLaw": "2 The petitioners were issued notices by Inland Revenue in connection with the\nassessment and payment of Income Support Levy under the Income Support Levy Act,\n20 I 3. The Income Support Levy was also challenged before the Sindh High Court,\nwhich set it aside, finding that the Income Support Levy Act, 2013, could not have\nbeen passed embedded in the Finance Act, 2013, for it was not a money bill and did\nSardar Ejaz lshag Khan, J: By this common judgment, the captioned 5 writ\npetitions are decide",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1703,16 +1759,17 @@
       "appeal",
       "constitutional",
       "writ"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/57.pdf"
   },
   {
     "id": 58,
-    "citation": "RJ-58",
+    "citation": "WP No. 2384/2019",
     "title": "Case #58",
     "court": "High Court",
     "date": "08.09.2022",
     "caseNumber": "Writ Petition No.2735",
-    "dictumLaw": "2 The petitioners were issued notices by Inland Revenue in connection with the\nassessment and payment of Income Support Levy under the Income Support Levy Act,\n20 I 3. The Income Support Levy was also challenged before the Sindh High Court,\nwhich set it aside, finding that the Income Support Levy Act, 2013, could not have\nbeen passed embedded in the Finance Act, 2013, for it was not a money bill and did\nSardar Ejaz lshag Khan, J: By this common judgment, the captioned 5 writ\npetitions are decide",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1733,16 +1790,17 @@
       "appeal",
       "constitutional",
       "writ"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/58.pdf"
   },
   {
     "id": 59,
-    "citation": "RJ-59",
+    "citation": "WP No. 2385/2019",
     "title": "Case #59",
     "court": "High Court",
     "date": "08.09.2022",
     "caseNumber": "Writ Petition No.2735",
-    "dictumLaw": "2 The petitioners were issued notices by Inland Revenue in connection with the\nassessment and payment of Income Support Levy under the Income Support Levy Act,\n20 I 3. The Income Support Levy was also challenged before the Sindh High Court,\nwhich set it aside, finding that the Income Support Levy Act, 2013, could not have\nbeen passed embedded in the Finance Act, 2013, for it was not a money bill and did\nSardar Ejaz lshag Khan, J: By this common judgment, the captioned 5 writ\npetitions are decide",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1763,16 +1821,17 @@
       "appeal",
       "constitutional",
       "writ"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/59.pdf"
   },
   {
     "id": 60,
-    "citation": "RJ-60",
+    "citation": "WP No. 2398/2019",
     "title": "Case #60",
     "court": "High Court",
     "date": "08.09.2022",
     "caseNumber": "Writ Petition No.2735",
-    "dictumLaw": "2 The petitioners were issued notices by Inland Revenue in connection with the\nassessment and payment of Income Support Levy under the Income Support Levy Act,\n20 I 3. The Income Support Levy was also challenged before the Sindh High Court,\nwhich set it aside, finding that the Income Support Levy Act, 2013, could not have\nbeen passed embedded in the Finance Act, 2013, for it was not a money bill and did\nSardar Ejaz lshag Khan, J: By this common judgment, the captioned 5 writ\npetitions are decide",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1793,16 +1852,17 @@
       "appeal",
       "constitutional",
       "writ"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/60.pdf"
   },
   {
     "id": 61,
-    "citation": "RJ-61",
+    "citation": "WP No. 2735/2019",
     "title": "Case #61",
     "court": "High Court",
     "date": "08.09.2022",
     "caseNumber": "Writ Petition No.2735",
-    "dictumLaw": "2 The petitioners were issued notices by Inland Revenue in connection with the\nassessment and payment of Income Support Levy under the Income Support Levy Act,\n20 I 3. The Income Support Levy was also challenged before the Sindh High Court,\nwhich set it aside, finding that the Income Support Levy Act, 2013, could not have\nbeen passed embedded in the Finance Act, 2013, for it was not a money bill and did\nSardar Ejaz lshag Khan, J: By this common judgment, the captioned 5 writ\npetitions are decide",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1823,16 +1883,17 @@
       "appeal",
       "constitutional",
       "writ"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/61.pdf"
   },
   {
     "id": 62,
-    "citation": "RJ-62",
+    "citation": "WP No. 3794/2019",
     "title": "Ltd. vs Federation of Pakistan and others",
     "court": "High Court",
     "date": "94 of 2019",
     "caseNumber": "W.P.No.3794",
-    "dictumLaw": "JUDGMENT SHEET\nIN THE ISLAMABAD HIGH COURT, ISLAMABAD\nJUDICIAL DEPARTMENT\nW.P.No.3794 of 2019\nReliance IT Solutions (Pvt.) Ltd.\nVersus\nFederation of Pakistan and others\nDates of Hearing: 06.02.2020, 13.02.2020, 14.02.2020,\n18.02.2020, 19.02.2020, 20.02.2020,\n24.02.2020 and 06.03.2020.\nPetitioners by: M/s Salman Akram Raja, Asad Ladha and\nMalik Ghulam Sabir, Advocates.\nRespondents by: Mr. Arshid Mehmood Kiani, learned Deputy\nAttorney-General.\nMr. Muhammad Nadeem Khan Khakwani,\nlearned Assistant A",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Ltd.",
@@ -1853,16 +1914,17 @@
       "tax",
       "writ",
       "amendment"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/62.pdf"
   },
   {
     "id": 63,
-    "citation": "2020 PTD 110",
+    "citation": "WP No. 1462/2020",
     "title": "s Pakistan Telecommunication Authority vs Federation of Pakistan and others",
     "court": "High Court",
     "date": "62 of 2020",
     "caseNumber": "W.P. No.1462",
-    "dictumLaw": "JUDGMENT SHEET\nIN THE ISLAMABAD HIGH COURT, ISLAMABAD\nJUDICIAL DEPARTMENT\nW.P. No.1462 of 2020\nM/s Pakistan Telecommunication Authority\nVersus\nFederation of Pakistan and others\nDate of Hearing: 09.07.2020\nPetitioner by: Mr. Muhammad Mohsin Nazir, Advocate\nfor the petitioner in writ petition\nNo.1462 of 2020 and Mr. Muhammad\nUmar Khan Vardag, Advocate for the\npetitioner in writ petition\nNos.2218/2018, 2219/2018, 2220/2018\nand 2221/2018.\nRespondents by: Syed Ishfaq Hussain Naqvi, Advocate,\nMr. Naee",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "s Pakistan Telecommunication Authority",
@@ -1887,16 +1949,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/63.pdf"
   },
   {
     "id": 64,
-    "citation": "2007 CLD 1234",
+    "citation": "WP No. 4414/2019",
     "title": "Chaudhari Khadim Hussain and another vs Securities and Exchange Commission of Pakistan and another",
     "court": "High Court",
     "date": "14 of 2019",
     "caseNumber": "W.P.No.4414",
-    "dictumLaw": "JUDGMENT SHEET\nIN THE ISLAMABAD HIGH COURT, ISLAMABAD\nJUDICIAL DEPARTMENT\nW.P.No.4414 of 2019\nChaudhari Khadim Hussain and another\nVersus\nSecurities and Exchange Commission of Pakistan and another\nDate of Hearing: 29.01.2021\nPetitioners by: Syed Hamid Ali Shah, Zeeshan Ali Syed\nand Arooj Zaib Abbasi, Advocates\nRespondents by: Barrister Minaal Tariq for S.E.C.P.\n_____________________________________________________________________\nMIANGUL HASSAN AURANGZEB, J :- Through the instant writ\npetition, ",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "Chaudhari Khadim Hussain and another",
@@ -1917,16 +1980,17 @@
       "writ",
       "jurisdiction",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/64.pdf"
   },
   {
     "id": 65,
-    "citation": "1044 OF 2018",
+    "citation": "WP No. 1044/2018",
     "title": "yet on the same date the Impugned Recovery Notice was\nissued. The learned counsel for the Petitioner relied on Messrs Pakistan LNG\nLimited through Authorized Representative vs Federation of Pakistan, through",
     "court": "High Court",
     "date": "44 OF 2018",
     "caseNumber": "WRIT PETITION NO. 1044",
-    "dictumLaw": "JUDGMENT SHEET\nIN THE ISLAMABAD HIGH COURT,\nISLAMABAD\nWRIT PETITION NO. 1044 OF 2018.\nORACLE SYSTEMS PAKISTAN (PRIVATE) LIMITED.\nVERSUS\nPAKISTAN THROUGH THE SECRETARY REVENUE & EXOFFICIO\nCHAIRMAN FEDERAL BOARD OF REVENUE, ISLAMABAD, ETC.\nPetitioner by : Mr. Shaheer Roshan Shaikh, Advocate.\nRespondents by : Mr. Muhammad Imtiaz Abbasi, Advocate.\n(Proxy counsel)\nDate of Hearing : 07.06.2023.\nSAMAN RAFAT IMTIAZ, J.\n1. Through the instant Writ Petition, the Petitioner [Oracle Systems Pakistan\n(Privat",
+    "dictumLaw": "The Income Tax Ordinance, 2001",
     "subject": "General Law",
     "parties": {
       "petitioner": "yet on the same date the Impugned Recovery Notice was\nissued. The learned counsel for the Petitioner relied on Messrs Pakistan LNG\nLimited through Authorized Representative",
@@ -1952,16 +2016,17 @@
       "jurisdiction",
       "amendment",
       "ordinance"
-    ]
+    ],
+    "pdfUrl": "/reported-judgement-pdfs/65.pdf"
   },
   {
     "id": 66,
-    "citation": "2019 MLD 112",
+    "citation": "WP No. 4233/2021",
     "title": "Case #66",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-66",
-    "dictumLaw": "2019 MLD 112 Lahore), it was concluded that the entries\nare to be read disjunctively, whereas, in the case of Syed Nadeem\nRaza through Attorney General v. Mst. Amna-Tuz-Zahra (",
+    "dictumLaw": "The West Pakistan Family Courts Rules, 1965",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1972,16 +2037,17 @@
     ],
     "sections": [],
     "fullText": "2019 MLD 112 Lahore), it was concluded that the entries\nare to be read disjunctively, whereas, in the case of Syed Nadeem\nRaza through Attorney General v. Mst. Amna-Tuz-Zahra (",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/66.pdf"
   },
   {
     "id": 67,
-    "citation": "2011 CLC\n726",
+    "citation": "WP No. 672/2023",
     "title": "Case #67",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-67",
-    "dictumLaw": "2011 CLC\n726 Lahore) it was held that the same shall be read conjunctively.\nThis anomaly was ultimately addressed by a Larger Bench of the\nlearned Lahore High Court in the case of Wasif Ali and another v.\nMrs Fakhra Jabeen and others (",
+    "dictumLaw": "The West Pakistan Family Courts Rules, 1965",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -1992,16 +2058,17 @@
     ],
     "sections": [],
     "fullText": "2011 CLC\n726 Lahore) it was held that the same shall be read conjunctively.\nThis anomaly was ultimately addressed by a Larger Bench of the\nlearned Lahore High Court in the case of Wasif Ali and another v.\nMrs Fakhra Jabeen and others (",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/67.pdf"
   },
   {
     "id": 68,
-    "citation": "2023 CLC 1021",
+    "citation": "WP No. 322/2022",
     "title": "Case #68",
     "court": "High Court",
     "date": "23 CLC 1021",
     "caseNumber": "Case-68",
-    "dictumLaw": "2023 CLC 1021 Lahore) in the\nfollowing manner.-\n“14. We are mindful of the fact that by virtue of entries in\nthe Nikahnama, it is always bridegroom, who is on the\nreceiving end and he has to be burdened with the\nliabilities under the entries in the Nikahnama. In view of\nwell settled principles of law, such interpretation to the\nentries of Nikahnama would be given, which favour the\nbridegroom. Even otherwise, while interpreting the\ndocument, one has to infer plenary meaning therefrom\nand nothing ",
+    "dictumLaw": "The West Pakistan Family Courts Rules, 1965",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -2014,16 +2081,17 @@
       "s. No"
     ],
     "fullText": "2023 CLC 1021 Lahore) in the\nfollowing manner.-\n“14. We are mindful of the fact that by virtue of entries in\nthe Nikahnama, it is always bridegroom, who is on the\nreceiving end and he has to be burdened with the\nliabilities under the entries in the Nikahnama. In view of\nwell settled principles of law, such interpretation to the\nentries of Nikahnama would be given, which favour the\nbridegroom. Even otherwise, while interpreting the\ndocument, one has to infer plenary meaning therefrom\nand nothing can be imported beyond the contents of the\ndocument. We thus are inclined to concur with the view\n\nPage-7\nW.Ps. No.4233/2021, 322/2022, 1906/2023 & 672/2023\ntaken by the learned Single Judge in the case of Syed\nNadeem Raza through Attorney General v. Mst. Amna-\nTuz-Zahra and 2 others (",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/68.pdf"
   },
   {
     "id": 69,
-    "citation": "2011 CLC 726",
+    "citation": "WP No. 1903/2023",
     "title": "Case #69",
     "court": "High Court",
     "date": "N/A",
     "caseNumber": "Case-69",
-    "dictumLaw": "Legal principle to be determined from full text.",
+    "dictumLaw": "The West Pakistan Family Courts Rules, 1965",
     "subject": "General Law",
     "parties": {
       "petitioner": "Petitioner",
@@ -2034,6 +2102,7 @@
     ],
     "sections": [],
     "fullText": "2011 CLC 726 Lahore) instead of\nMst. Iram Shahzadi v. Muhammad Imran-ul-Haq and\nothers (",
-    "keywords": []
+    "keywords": [],
+    "pdfUrl": "/reported-judgement-pdfs/69.pdf"
   }
 ]

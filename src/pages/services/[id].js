@@ -21,6 +21,8 @@ const listItem = {
   visible: { x: 0, opacity: 1 }
 };
 
+const SHARED_SERVICE_IMAGE = "/assets/images/hero.jpg";
+
 export default function ServiceDetail() {
   const router = useRouter();
   const { id } = router.query;
@@ -87,7 +89,7 @@ export default function ServiceDetail() {
                       className="rounded-xl overflow-hidden shadow-lg border border-[#e5eaf4]"
                     >
                       <img
-                        src={header.image}
+                        src={header.image || SHARED_SERVICE_IMAGE}
                         alt={header.title}
                         width={600}
                         height={400}

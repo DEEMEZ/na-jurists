@@ -26,42 +26,19 @@ const TeamIntro = () => {
             <div className="h-1 w-24 bg-[#2c415e] mx-auto"></div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="text-[#666b6f] text-center lg:text-left">
-              <p className="mb-4">
-                At N&A Jurists, our strength lies in our team of dedicated legal professionals who bring diverse expertise, 
-                unwavering commitment, and a client-first approach to every case.
-              </p>
-              <p className="mb-4">
-                Each member of our team is carefully selected for their specialized knowledge, track record of success, 
-                and dedication to upholding the highest ethical standards in legal practice.
-              </p>
-              <p>
-                Together, we combine decades of experience with innovative legal strategies to deliver exceptional results 
-                for our clients across Pakistan.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { value: 300, label: "Happy Clients" },
-                { value: 1000, label: "Cases Handled" },
-                { value: 50, label: "Supreme Court Cases" },
-                { value: 12, label: "Practice Areas" }
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-[#2c415e] text-white p-4 rounded-lg text-center"
-                >
-                  <div className="text-2xl font-bold mb-1">{stat.value}+</div>
-                  <div className="text-sm">{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
+          <div className="max-w-3xl mx-auto text-[#666b6f] text-center">
+            <p className="mb-4">
+              At N&A Jurists, our strength lies in our team of dedicated legal professionals who bring diverse expertise,
+              unwavering commitment, and a client-first approach to every case.
+            </p>
+            <p className="mb-4">
+              Each member of our team is carefully selected for their specialized knowledge, track record of success,
+              and dedication to upholding the highest ethical standards in legal practice.
+            </p>
+            <p>
+              Together, we combine decades of experience with innovative legal strategies to deliver exceptional results
+              for our clients across Pakistan.
+            </p>
           </div>
         </motion.div>
       </div>

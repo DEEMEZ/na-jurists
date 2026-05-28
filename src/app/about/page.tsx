@@ -3,6 +3,7 @@ import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
 import { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About Us - N&A Jurists',
@@ -39,7 +40,7 @@ export default function AboutPage() {
                 About N&A Jurists
               </h1>
               <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
-                Excellence in legal services since 1995
+                Excellence in legal services
               </p>
             </div>
           </div>
@@ -68,11 +69,11 @@ export default function AboutPage() {
                 <h3 className="text-2xl font-semibold text-[#2c415e] mb-4">Our History</h3>
                 <div className="prose text-[#666b6f]">
                   <p>
-                    Founded in 1995 by Syed Ishfaq Hussain Naqvi, N&A Jurists has grown from a small practice to one of the most respected law firms in Pakistan. 
+                    Founded by Syed Ishfaq Hussain Naqvi, N&A Jurists has grown from a small practice to one of the most respected law firms in Pakistan. 
                     Our journey reflects our commitment to excellence and our ability to adapt to the evolving legal landscape.
                   </p>
                   <p className="mt-4">
-                    Over the past 20+ years, we've successfully represented clients in landmark cases before the Supreme Court, High Courts, and District Courts across Pakistan.
+                    Throughout our practice, we have successfully represented clients in landmark cases before the Supreme Court, High Courts, and District Courts across Pakistan.
                   </p>
                 </div>
               </div>
@@ -131,23 +132,25 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             {[
-              'Corporate Law',
-              'Taxation',
-              'Commercial Litigation',
-              'Banking & Finance',
-              'Mergers & Acquisitions',
-              'Intellectual Property',
-              'Energy Law',
-              'Dispute Resolution'
-            ].map((area, index) => (
-              <div 
-                key={index}
-                className="bg-white/10 hover:bg-white/20 rounded-lg p-4 text-center transition-colors duration-300"
+              { label: 'Corporate and Commercial', href: '/services/1' },
+              { label: 'Taxation', href: '/services/2' },
+              { label: 'Banking and Project Finance', href: '/services/3' },
+              { label: 'Dispute Resolution', href: '/services/4' },
+              { label: 'Alternative Dispute Resolution', href: '/services/5' },
+              { label: 'Employment and Labour Laws', href: '/services/6' },
+              { label: 'Intellectual Property', href: '/services/7' },
+              { label: 'Corporate Crime and Anti-Money Laundering', href: '/services/8' },
+              { label: 'Criminal Law', href: '/services/9' }
+            ].map((area) => (
+              <Link
+                key={area.href}
+                href={area.href}
+                className="flex w-[min(100%,280px)] shrink-0 items-center justify-center rounded-lg bg-white/10 p-4 text-center transition-colors duration-300 hover:bg-white/20"
               >
-                <div className="text-lg font-medium">{area}</div>
-              </div>
+                <span className="w-full text-center text-lg font-medium leading-snug">{area.label}</span>
+              </Link>
             ))}
           </div>
         </div>

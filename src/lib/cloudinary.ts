@@ -8,10 +8,10 @@ cloudinary.config({
   secure: true
 });
 
-// Generate URL for judgment PDF
+// Generate URL for judgment PDF (folder matches scripts/upload-to-cloudinary.js)
 export function getJudgmentPdfUrl(fileName: string): string {
-  // Remove .pdf extension if present
-  const publicId = `na-juristsjudgements/${fileName.replace('.pdf', '')}`;
+  const base = fileName.replace(/\.pdf$/i, '');
+  const publicId = `na-jurists/judgments/${base}`;
 
   const url = cloudinary.url(publicId, {
     resource_type: 'raw',

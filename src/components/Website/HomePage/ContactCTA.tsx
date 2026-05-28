@@ -36,8 +36,8 @@ const ContactCTA = () => {
       icon: <Phone className="w-8 h-8" />,
       title: "Call Us",
       description: "Speak with our legal experts",
-      contact: "+92 51 123 4567",
-      action: "tel:+925112345678"
+      contact: "051-8430814",
+      action: "tel:+92518430814"
     },
     {
       icon: <Mail className="w-8 h-8" />,
@@ -55,20 +55,23 @@ const ContactCTA = () => {
     },
     {
       icon: <Clock className="w-8 h-8" />,
-      title: "24/7 Support",
-      description: "Emergency legal assistance",
-      contact: "Always Available",
-      action: "tel:+925112345678"
+      title: "Office Hours",
+      description: "Monday – Saturday consultations",
+      contact: "9:00 AM – 5:00 PM",
+      action: "/contact"
     }
   ];
 
   const services = [
-    "Corporate Formation",
-    "Legal Consultation",
-    "Contract Drafting",
-    "Litigation Support",
-    "Tax Advisory",
-    "Regulatory Compliance"
+    "Corporate and Commercial",
+    "Taxation",
+    "Banking and Project Finance",
+    "Dispute Resolution",
+    "Alternative Dispute Resolution",
+    "Employment and Labour Laws",
+    "Intellectual Property",
+    "Corporate Crime and Anti-Money Laundering",
+    "Criminal Law",
   ];
 
   return (
@@ -207,46 +210,21 @@ const ContactCTA = () => {
                     Schedule Free Consultation
                   </Link>
                   <Link
-                    href="tel:+925112345678"
+                    href="tel:+92518430814"
                     className="w-full border-2 border-[#4a6789] text-[#4a6789] px-8 py-4 rounded-lg hover:bg-[#4a6789] hover:text-white transition-all duration-300 font-semibold inline-block text-center"
                   >
-                    Call Now: +92 51 123 4567
+                    Call Now: 051-8430814
                   </Link>
                 </div>
 
                 <p className="text-xs text-[#718096]">
-                  Available Monday - Saturday, 9:00 AM - 6:00 PM
+                  Available Monday - Saturday, 9:00 AM - 5:00 PM
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Trust Indicators */}
-        <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-        }`}>
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">250+</div>
-                <div className="text-blue-200 text-sm">Happy Clients</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">500+</div>
-                <div className="text-blue-200 text-sm">Cases Won</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">100+</div>
-                <div className="text-blue-200 text-sm">Happy Clients</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">24/7</div>
-                <div className="text-blue-200 text-sm">Support</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

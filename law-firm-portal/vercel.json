@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci --prefix frontend",
+  "buildCommand": "npm run build --prefix frontend",
+  "outputDirectory": "frontend/dist",
+  "framework": null,
+  "redirects": [
+    { "source": "/portal", "destination": "/", "permanent": false },
+    { "source": "/portal/", "destination": "/", "permanent": false },
+    { "source": "/portal/(.*)", "destination": "/$1", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

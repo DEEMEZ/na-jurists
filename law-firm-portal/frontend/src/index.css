@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+/*
+  Same tokens as na-jurists/src/app/globals.css (law firm marketing site).
+  Primary headings / logo: --primary-navy. Nav links: --secondary-navy. Hover: --accent-blue.
+  Page bg: --background-light. Gold highlights: --gold-accent (see SectionTransition on main site).
+*/
+:root {
+  --primary-navy: #1a2b3d;
+  --secondary-navy: #2c415e;
+  --accent-blue: #4a6789;
+  --text-dark: #2d3748;
+  --text-light: #718096;
+  --background-light: #f7fafc;
+  --background-white: #ffffff;
+  --gold-accent: #d4af37;
+  --foreground: #2d3748;
+  /* Common card/header rules (Tailwind slate-200) — matches main site card borders */
+  --border-subtle: #e2e8f0;
+}
+
+@theme inline {
+  --color-primary-navy: var(--primary-navy);
+  --color-secondary-navy: var(--secondary-navy);
+  --color-accent-blue: var(--accent-blue);
+  --color-text-dark: var(--text-dark);
+  --color-text-light: var(--text-light);
+  --color-background-light: var(--background-light);
+  --color-background-white: var(--background-white);
+  --color-gold-accent: var(--gold-accent);
+  --color-border-subtle: var(--border-subtle);
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@keyframes portal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes portal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes portal-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(8px, -6px) scale(1.02);
+  }
+}
+
+@keyframes portal-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes portal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--background-light);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle texture — keeps long pages from feeling flat */
+.portal-shell {
+  background-color: var(--background-light);
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(44, 65, 94, 0.07) 1px,
+    transparent 0
+  );
+  background-size: 28px 28px;
+}
+
+.portal-header-auth {
+  animation: portal-fade-in 0.35s ease-out both;
+}
+
+.portal-auth-card {
+  animation: portal-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Route content: remount on path change via key */
+.portal-page-enter {
+  animation: portal-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.portal-stagger-item {
+  animation: portal-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.portal-nav-link {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.portal-nav-link:hover {
+  transform: translateY(-1px);
+}
+
+.portal-dashboard-hero {
+  animation: portal-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.portal-stat-tile {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.portal-stat-tile:hover {
+  transform: translateY(-2px);
+}
+
+.portal-link-chip {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.portal-link-chip:hover {
+  transform: translateY(-1px);
+}
+
+.portal-toast {
+  animation: portal-toast-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes portal-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.portal-spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--secondary-navy);
+  border-radius: 9999px;
+  animation: portal-spin 0.7s linear infinite;
+}
+
+.portal-skeleton {
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    90deg,
+    var(--background-light) 0%,
+    #eef2f7 50%,
+    var(--background-light) 100%
+  );
+  background-size: 200% 100%;
+  animation: portal-shimmer 1.2s ease-in-out infinite;
+}

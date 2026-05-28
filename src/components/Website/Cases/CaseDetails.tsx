@@ -4,23 +4,41 @@ import { CaseDetailsProps, LegalCase } from '@/types/LegalCase';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const CaseDetails = ({ id }: CaseDetailsProps) => {
+function sameCaseId(a: string, b: string): boolean {
+  const x = decodeURIComponent(String(a ?? '')).trim();
+  const y = decodeURIComponent(String(b ?? '')).trim();
+  const uuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuid.test(x) && uuid.test(y)) return x.toLowerCase() === y.toLowerCase();
+  return x === y;
+}
+
+const CaseDetails = ({ id, prefetchedCase }: CaseDetailsProps) => {
   const router = useRouter();
   const [caseData, setCaseData] = useState<LegalCase | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (prefetchedCase && sameCaseId(prefetchedCase.id, id)) {
+      setCaseData(prefetchedCase);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchCaseDetails = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetch(`/api/cases?id=${encodeURIComponent(id)}`);
+        const response = await fetch(`/api/cases?id=${encodeURIComponent(id)}`, {
+          cache: 'no-store',
+        });
         if (!response.ok) throw new Error('Failed to fetch case');
-        
+
         const data = await response.json();
         const foundCase = data.data as LegalCase | undefined;
-        
+
         if (!foundCase) throw new Error('Case not found');
         setCaseData(foundCase);
       } catch (err) {
@@ -30,8 +48,8 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
       }
     };
 
-    fetchCaseDetails();
-  }, [id]);
+    void fetchCaseDetails();
+  }, [id, prefetchedCase]);
 
   if (isLoading) {
     return (
@@ -59,11 +77,11 @@ const CaseDetails = ({ id }: CaseDetailsProps) => {
     );
   }
 
-  // Check if case is ongoing (Pending or Judgment Reserved)
-  const isOngoing = caseData.Status?.toLowerCase().includes('pending') ||
-                    caseData.Status?.toLowerCase().includes('judgment reserved');
+  // Ongoing matters (pending or judgment reserved): public detail restricted for all sources, including portal-published.
+  const isOngoing =
+    caseData.Status?.toLowerCase().includes('pending') ||
+    caseData.Status?.toLowerCase().includes('judgment reserved');
 
-  // If case is ongoing, show restricted message
   if (isOngoing) {
     return (
       <section className="relative py-8 sm:py-12 bg-[#f0f3f6] min-h-screen">

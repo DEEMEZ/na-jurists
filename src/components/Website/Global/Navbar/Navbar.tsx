@@ -5,6 +5,38 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+/**
+ * Portal sign-in URL. "Client portal" opens in a new tab (target="_blank").
+ * - Production split deploy: set NEXT_PUBLIC_PORTAL_URL to portal origin only, e.g. https://your-portal.vercel.app
+ * - Production same-origin: leave unset; link is /portal/login on the marketing host.
+ * - Local dev: defaults to http://localhost:5173/login (run `npm run dev:with-portal` from repo root).
+ */
+function portalSignInHref(): string {
+  const raw = process.env.NEXT_PUBLIC_PORTAL_URL?.trim();
+  if (raw) {
+    let base = raw.replace(/\/$/, "");
+    // Common mistake: portal host is already the app root; /portal is only for local mono under the main site.
+    if (
+      process.env.NODE_ENV === "production" &&
+      !/localhost|127\.0\.0\.1/i.test(base) &&
+      /\/portal$/i.test(base)
+    ) {
+      base = base.replace(/\/portal$/i, "");
+    }
+    return `${base}/login`;
+  }
+
+  // Production + unset env: same-origin /portal (marketing site serves /portal).
+  if (process.env.NODE_ENV === "production") {
+    return "/portal/login";
+  }
+
+  // Local dev: standalone Vite portal (law-firm-portal/frontend, port 5173).
+  // Use `npm run dev:with-portal` from repo root, or set NEXT_PUBLIC_PORTAL_URL (see .env.example).
+  // For legacy mono proxy + /portal, set NEXT_PUBLIC_PORTAL_URL=http://localhost:3000/portal (see dev:mono).
+  return "http://localhost:5173/login";
+}
+
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -53,7 +85,10 @@ const Navbar = () => {
           <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Team
           </Link>
-          
+          <Link href="/news" className={navLinkClass}>
+            News
+          </Link>
+
           {/* Legal Resources Dropdown */}
           <div className="relative group">
             <button
@@ -144,14 +179,21 @@ const Navbar = () => {
             >
               About Us
             </Link>
-            <Link 
-              href="/team" 
+            <Link
+              href="/team"
               className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Our Team
             </Link>
-            
+            <Link
+              href="/news"
+              className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              News
+            </Link>
+
             {/* Mobile Legal Resources Section */}
             <div className="border-l-2 border-[#2c415e] pl-4">
               <div className="text-[#2c415e] font-medium mb-2">Legal Resources</div>

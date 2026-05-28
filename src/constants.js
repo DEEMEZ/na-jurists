@@ -165,5 +165,85 @@ export const services = [
         image: "/assets/images/hero.jpg"
       }
     ]
+  },
+  {
+    id: 8,
+    name: "Corporate Crime and Anti-Money Laundering",
+    headers: [
+      {
+        title: "1. Corporate Crime Advisory & Litigation",
+        points: [
+          "Advisory and representation in corporate and white-collar criminal matters",
+          "Defence in cases involving fraud, embezzlement, and financial misconduct",
+          "Representation before FIA, NAB, and other investigative authorities",
+          "Prosecution and defence relating to offences by management and corporate officers"
+        ],
+        image: "/assets/images/hero.jpg"
+      },
+      {
+        title: "2. Anti-Money Laundering (AML) & Regulatory Compliance",
+        points: [
+          "Advising on AML and Counter Financing of Terrorism (CFT) laws and frameworks",
+          "Development and implementation of AML compliance policies and procedures",
+          "Advisory on regulatory obligations for financial institutions and corporate entities",
+          "Assistance in responding to regulatory notices, inquiries, and enforcement actions"
+        ],
+        image: "/assets/images/hero.jpg"
+      },
+      {
+        title: "3. Investigations, Due Diligence & Risk Management",
+        points: [
+          "Conducting internal investigations into corporate fraud and misconduct",
+          "Risk identification, analysis, and mitigation in corporate transactions",
+          "Due diligence and compliance checks for local and cross-border structures",
+          "Advisory on high-risk transactions and financial regulatory exposure"
+        ],
+        image: "/assets/images/hero.jpg"
+      }
+    ]
+  },
+  {
+    id: 9,
+    name: "Criminal Law",
+    headers: [
+      {
+        title: "1. Criminal Trials & Offences",
+        points: [
+          "Representation in cases involving murder, attempted murder, hurt, and other offences under PPC",
+          "Handling of narcotics cases under CNSA, including recovery, trial, and defence strategy",
+          "Defence in financial crimes, fraud, criminal breach of trust, and misappropriation matters",
+          "Conduct of full trials, including evidence, cross-examination, and final arguments"
+        ],
+        image: "/assets/images/hero.jpg"
+      },
+      {
+        title: "2. Bail & Pre-Arrest Matters",
+        points: [
+          "Filing and contesting pre-arrest and post-arrest bail applications",
+          "Handling of bail in serious and non-bailable offences, including narcotics cases",
+          "Protective bail and interim relief before High Courts and Supreme Court",
+          "Cancellation of bail and related proceedings"
+        ],
+        image: "/assets/images/hero.jpg"
+      },
+      {
+        title: "3. White-Collar & Statutory Offences",
+        points: [
+          "Representation in matters involving cheque dishonour, corporate fraud, and financial misconduct",
+          "Cases before FIA, NAB, Anti-Corruption Establishment, and banking courts",
+          "Criminal proceedings arising out of banking, commercial, and contractual disputes"
+        ],
+        image: "/assets/images/hero.jpg"
+      },
+      {
+        title: "4. Appeals & Higher Court Practice",
+        points: [
+          "Criminal appeals against conviction and sentence",
+          "Revision petitions, quashment of FIRs, and constitutional remedies",
+          "Representation before High Courts and Supreme Court of Pakistan in criminal jurisdiction"
+        ],
+        image: "/assets/images/hero.jpg"
+      }
+    ]
   }
 ];

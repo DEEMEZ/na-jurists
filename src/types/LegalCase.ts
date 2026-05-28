@@ -9,6 +9,8 @@ export interface LegalCase {
   "Subject/Applicable Law"?: string;
   Court?: string;
   Status?: string | null;
+  /** Set when row comes from the law firm portal (display on website). */
+  portalPublished?: boolean;
   [key: string]: any;
 }
 
@@ -19,6 +21,12 @@ export interface CasesFilterProps {
     subject: string;
   }) => void;
   totalCases: number;
+  /** Active filters from parent/URL so dropdowns stay in sync after pagination or remount */
+  filterValues: {
+    searchQuery: string;
+    court: string;
+    subject: string;
+  };
 }
 
 export interface CasesListProps {
@@ -30,6 +38,8 @@ export interface CasesListProps {
 
 export interface CaseDetailsProps {
   id: string;
+  /** Parent already fetched this case — avoids a second /api/cases request and stale cache. */
+  prefetchedCase?: LegalCase | null;
 }
 
 // Reported Judgments Types

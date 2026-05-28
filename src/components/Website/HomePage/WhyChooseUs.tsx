@@ -12,12 +12,6 @@ import {
 
 const WhyChooseUs = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [counters, setCounters] = useState({
-    years: 0,
-    cases: 0,
-    clients: 0,
-    satisfaction: 0
-  });
   const sectionRef = useRef<HTMLDivElement | null>(null);
 
   const features = [
@@ -59,19 +53,11 @@ const WhyChooseUs = () => {
     }
   ];
 
-  const stats = [
-    { end: 250, label: "Happy Clients", suffix: "+" },
-    { end: 500, label: "Cases Won", suffix: "+" },
-    { end: 100, label: "Corporate Clients", suffix: "+" },
-    { end: 99, label: "Client Satisfaction", suffix: "%" }
-  ];
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          animateCounters();
         }
       },
       { threshold: 0.1 }
@@ -84,30 +70,6 @@ const WhyChooseUs = () => {
     return () => observer.disconnect();
   }, []);
 
-  const animateCounters = () => {
-    const duration = 2000;
-    const steps = 60;
-    const stepDuration = duration / steps;
-
-    stats.forEach((stat, index) => {
-      let currentValue = 0;
-      const increment = stat.end / steps;
-
-      const timer = setInterval(() => {
-        currentValue += increment;
-        if (currentValue >= stat.end) {
-          currentValue = stat.end;
-          clearInterval(timer);
-        }
-
-        setCounters(prev => ({
-          ...prev,
-          [index === 0 ? 'years' : index === 1 ? 'cases' : index === 2 ? 'clients' : 'satisfaction']: Math.floor(currentValue)
-        }));
-      }, stepDuration);
-    });
-  };
-
   return (
     <section ref={sectionRef} className="py-20 bg-white relative overflow-hidden">
       {/* Background Elements */}
@@ -115,46 +77,13 @@ const WhyChooseUs = () => {
       <div className="absolute bottom-0 right-0 w-1/4 h-1/2 bg-gradient-to-t from-[#edf2f7] to-transparent opacity-30"></div>
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Header */}
-        <div className={`text-center mb-16 transition-all duration-1000 ${
+        <div className={`text-center mb-12 transition-all duration-1000 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
         }`}>
           <div className="inline-block mb-4">
             <span className="bg-[#4a6789]/10 text-[#4a6789] px-4 py-2 rounded-full text-sm font-semibold">
               Why Choose N&A Jurists
             </span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-6">
-            Your Trusted
-            <span className="block text-[#4a6789]">Legal Partners</span>
-          </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
-          <p className="text-[#718096] text-lg leading-relaxed max-w-3xl mx-auto">
-            With decades of legal experience and a commitment to excellence, we provide comprehensive legal solutions
-            tailored to meet your unique needs and objectives.
-          </p>
-        </div>
-
-        {/* Statistics Section */}
-        <div className={`mb-16 transition-all duration-1000 delay-300 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-        }`}>
-          <div className="bg-gradient-to-r from-[#1a2b3d] to-[#2c415e] rounded-2xl p-8 text-white shadow-2xl">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-2">
-                    {index === 0 ? counters.years :
-                     index === 1 ? counters.cases :
-                     index === 2 ? counters.clients :
-                     counters.satisfaction}{stat.suffix}
-                  </div>
-                  <div className="text-sm md:text-base text-blue-200">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 

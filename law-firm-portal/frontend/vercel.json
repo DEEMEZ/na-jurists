@@ -1,0 +1,26 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/portal",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/portal/",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/portal/(.*)",
+      "destination": "/$1",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

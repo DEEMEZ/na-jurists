@@ -1,7 +1,6 @@
 import TeamHero from '@/components/Website/TeamPage/Hero';
 import TeamIntro from '@/components/Website/TeamPage/Intro';
-import TeamLeadership from '@/components/Website/TeamPage/Leadership';
-import OurTeam from '@/components/Website/OurTeam/ourteam';
+import TeamWebsiteSections from '@/components/Website/TeamPage/TeamWebsiteSections';
 import TeamValues from '@/components/Website/TeamPage/TeamValues';
 import Footer from '@/components/Website/Global/Footer/Footer';
 import Navbar from '@/components/Website/Global/Navbar/Navbar';
@@ -19,8 +18,7 @@ export default function TeamPage() {
       <Navbar />
       <TeamHero />
       <TeamIntro />
-      <TeamLeadership />
-      <OurTeam />
+      <TeamWebsiteSections />
       <TeamValues />
       <Footer />
     </main>

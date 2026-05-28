@@ -24,8 +24,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <head>
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="/emblem-icon.png" type="image/png" />
+        <link rel="shortcut icon" href="/emblem-icon.png" type="image/png" />
       </head>
       <body className={`${inter.className} antialiased bg-[#f7fafc]`}>
         <Suspense fallback={null}> {/* Wrap LoadingSpinner in Suspense */}

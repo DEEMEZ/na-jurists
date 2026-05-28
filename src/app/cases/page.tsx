@@ -72,6 +72,7 @@ function CasesContentWithParams() {
         const query = buildQueryString(page, nextFilters);
         const response = await fetch(`/api/cases?${query}`, {
           signal: controller.signal,
+          cache: 'no-store',
         });
 
         if (!response.ok) {
@@ -185,6 +186,7 @@ function CasesContentWithParams() {
                 <CasesFilter
                   onFilter={handleFilter}
                   totalCases={totalCases}
+                  filterValues={filters}
                 />
               </Suspense>
             </div>

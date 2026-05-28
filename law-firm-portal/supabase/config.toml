@@ -1,0 +1,20 @@
+# https://supabase.com/docs/guides/cli/config
+project_id = "local-or-dashboard-id"
+
+# Local `supabase start` only: skip “confirm your email” — users can sign in immediately after sign-up.
+# Hosted projects: Dashboard → Authentication → Providers → Email → disable “Confirm email”.
+[auth.email]
+enable_confirmations = false
+
+# Gateway JWT check can 401 "Invalid JWT" with ES256 / new signing keys while Auth + REST work.
+# This function still enforces auth: createClient + auth.getUser() + profiles.role === ADMIN.
+[functions.portal-admin-users]
+verify_jwt = false
+
+# Same as portal-admin-users: gateway JWT check can 401 with some key setups; auth is enforced in the function.
+[functions.portal-notify-email]
+verify_jwt = false
+
+# Cron invokes with CRON_HEARING_DIGEST_SECRET; no end-user JWT.
+[functions.portal-hearing-alert-digest]
+verify_jwt = false

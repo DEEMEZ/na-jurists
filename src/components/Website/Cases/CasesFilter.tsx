@@ -1,41 +1,21 @@
 // CasesFilter.tsx
+import { WEBSITE_CASE_COURTS, WEBSITE_CASE_SUBJECTS } from '@/constants/caseTaxonomy';
 import { CasesFilterProps } from '@/types/LegalCase';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const CasesFilter = ({ onFilter, totalCases }: CasesFilterProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [court, setCourt] = useState('');
-  const [subject, setSubject] = useState('');
+const CasesFilter = ({ onFilter, totalCases, filterValues }: CasesFilterProps) => {
+  const [searchQuery, setSearchQuery] = useState(filterValues.searchQuery);
+  const [court, setCourt] = useState(filterValues.court);
+  const [subject, setSubject] = useState(filterValues.subject);
 
-  const courts = [
-    'Supreme Court',
-    'High Court',
-    'Civil Court & Tribunal', 
-  ];
+  useEffect(() => {
+    setSearchQuery(filterValues.searchQuery);
+    setCourt(filterValues.court);
+    setSubject(filterValues.subject);
+  }, [filterValues.searchQuery, filterValues.court, filterValues.subject]);
 
-  const subjects = [
-    'Election',
-    'Constitution',
-    'Tax',
-    'Access to Information',
-    'Corporate Crime',
-    'Banking',
-    'PMDC',
-    'Power',
-    'Policy Decision of Government',
-    'Company',
-    'Liquidation',
-    'Criminal',
-    'Anti Money Laundering',
-    'Family',
-    'Defamation',
-    'Contempt',
-    'Insurance',
-    'Service',
-    'Rent',
-    'Civil',
-    'Contract'
-  ];
+  const courts = WEBSITE_CASE_COURTS;
+  const subjects = WEBSITE_CASE_SUBJECTS;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

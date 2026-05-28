@@ -47,13 +47,13 @@ const LEGAL_KNOWLEDGE_BASE: Record<string, string> = {
   "contact": `📌 N&A Jurists Contact Information:
 
 📧 Email: ishfaqnaqvi@hotmail.com
-📞 Phone: +92 333 2354476
-📍 Address: House No. 6-A, Street No. 12, Sector F-8/3, Islamabad
+📞 Phone: 051-8430814
+📍 Islamabad: House No. 6-A, Street No. 12, Sector F-8/3, Islamabad
+📍 Karachi: Mezzanine 1, Plot# 12 - C, Zamzama Commercial Lane 4, DHA Phase 5, Karachi
 🗺️ View on Map: https://goo.gl/maps/...
 
 🕒 Office Hours:
-Monday - Friday: 9:00 AM - 6:00 PM
-Saturday - Sunday: Closed
+Monday - Saturday: 9:00 AM - 5:00 PM
 
 💡 You can also use the contact form on our website to send us a message directly.`,
 
@@ -65,39 +65,34 @@ Saturday - Sunday: Closed
 We typically respond within 24 hours during business days.`,
 
   "phone": `You can reach our office at:
-📞 +92 333 2354476
+📞 051-8430814
 
-📞 For urgent matters outside office hours, please call:
-+92 300 1234567 (Emergency Legal Assistance)
+For urgent matters outside office hours, please email ishfaqnaqvi@hotmail.com and we will respond as soon as possible.
 
-🕒 Call Center Hours:
-Monday - Friday: 9:00 AM - 6:00 PM`,
+🕒 Phone hours:
+Monday - Saturday: 9:00 AM - 5:00 PM`,
 
-  "address": `Our main office location:
-📍 House No. 6-A, Street No. 12, Sector F-8/3, Islamabad
+  "address": `Our offices:
 
-🗺️ View on Google Maps:
-https://goo.gl/maps/...
+📍 Islamabad: House No. 6-A, Street No. 12, Sector F-8/3, Islamabad
+📍 Karachi: Mezzanine 1, Plot# 12 - C, Zamzama Commercial Lane 4, DHA Phase 5, Karachi
 
-🚗 Parking available in front of the building
-🚉 Nearest Metro Station: F-8 Markaz (5 min walk)`,
+🗺️ Maps: search the address in Google Maps for directions.`,
 
   "hours": `🕒 N&A Jurists Office Hours:
 
-Monday - Friday: 9:00 AM - 6:00 PM
-Saturday - Sunday: Closed
-Public Holidays: Closed
+Monday - Saturday: 9:00 AM - 5:00 PM
 
-📞 Emergency Legal Assistance:
-Available 24/7 at +92 300 1234567`,
+📞 After hours:
+Please email ishfaqnaqvi@hotmail.com for urgent inquiries.`,
 
   "appointment": `To schedule a consultation:
-1. Call us at +92 333 2354476 during office hours
+1. Call us at 051-8430814 during office hours
 2. Email ishfaqnaqvi@hotmail.com with your preferred time
 3. Use our online contact form
 
 We offer:
-- In-person consultations at our Islamabad office
+- In-person consultations at our Islamabad or Karachi offices
 - Virtual meetings via Zoom/Teams
 - Emergency appointments for urgent matters`,
 
@@ -106,7 +101,7 @@ We offer:
 
 📌 Contact Us:
 📧 ishfaqnaqvi@hotmail.com
-📞 +92 333 2354476
+📞 051-8430814
 
 Important Disclaimer: 
 This information is general and does not constitute legal advice. 
@@ -149,7 +144,7 @@ export async function POST(req: Request) {
     }
 
     // Add legal disclaimer to all responses
-    responseText += `\n\nℹ️ For personalized legal advice, please contact us directly at ishfaqnaqvi@hotmail.com or call +92 333 2354476.`;
+    responseText += `\n\nℹ️ For personalized legal advice, please contact us directly at ishfaqnaqvi@hotmail.com or call 051-8430814.`;
 
     return NextResponse.json({ message: responseText });
 
@@ -158,7 +153,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { 
         message: "⚠️ We're currently unable to process your request. " + 
-                "Please contact us directly:\n📧 ishfaqnaqvi@hotmail.com\n📞 +92 333 2354476" 
+                "Please contact us directly:\n📧 ishfaqnaqvi@hotmail.com\n📞 051-8430814" 
       },
       { status: 200 }
     );
