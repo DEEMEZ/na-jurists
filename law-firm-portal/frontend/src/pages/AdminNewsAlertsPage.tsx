@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
@@ -161,17 +161,17 @@ export function AdminNewsAlertsPage() {
     }
   }
 
-  const backHref = orgFilter ? "/admin/liquidation" : undefined;
+  const backHref = orgFilter ? "/portal/admin/liquidation" : undefined;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-8">
       {backHref ? (
-        <Link
-          to={backHref}
+        <a
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-sm text-secondary-navy hover:text-accent-blue"
         >
           ← Back to Liquidation
-        </Link>
+        </a>
       ) : (
         <BackToDashboard />
       )}
