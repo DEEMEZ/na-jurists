@@ -43,6 +43,10 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "law-firm-portal/backend",
+    "law-firm-portal/frontend",
+    "law-firm-portal/supabase",
+    "scripts"
   ]
 }

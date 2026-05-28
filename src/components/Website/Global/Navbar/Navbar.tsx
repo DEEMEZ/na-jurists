@@ -85,7 +85,7 @@ const Navbar = () => {
           <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Team
           </Link>
-          <Link href="/news" className={navLinkClass}>
+          <Link href="/news" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             News
           </Link>
 
