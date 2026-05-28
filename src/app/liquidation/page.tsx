@@ -48,7 +48,6 @@ export default function LiquidationPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[#2c415e] mb-2">Liquidation</h1>
             <p className="text-[#666b6f]">
-              Organizations currently undergoing the liquidation process managed by N&amp;A Jurists.
               Click on an organization to view the latest news and updates.
             </p>
           </div>

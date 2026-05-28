@@ -36,7 +36,7 @@ export function NewsAlertsWidget() {
     fetch("/api/news-alerts", { signal: controller.signal, cache: "no-store" })
       .then((r) => r.json())
       .then((payload: { data: NewsAlertItem[] }) => {
-        const rows = payload.data?.slice(0, 5) ?? [];
+        const rows = payload.data?.slice(0, 3) ?? [];
         if (rows.length > 0) {
           setItems(rows);
           setVisible(true);
