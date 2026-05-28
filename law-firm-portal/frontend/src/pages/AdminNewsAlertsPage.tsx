@@ -161,7 +161,7 @@ export function AdminNewsAlertsPage() {
     }
   }
 
-  const backHref = orgFilter ? "portl/admin/liquidation" : undefined;
+  const backHref = orgFilter ? "/admin/liquidation" : undefined;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-8">
