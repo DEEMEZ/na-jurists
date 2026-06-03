@@ -98,6 +98,46 @@ async function requireProfile(): Promise<Ctx> {
   return ctx;
 }
 
+const HEARING_CASE_EMBED_CLIENT =
+  "id, scheduled_at, venue, notes, case_id, cases!hearings_case_id_fkey(title, reference)";
+const HEARING_CASE_EMBED_ADMIN =
+  "id, scheduled_at, venue, notes, case_id, cases!hearings_case_id_fkey(title, reference, archived)";
+
+function embeddedHearingCaseMeta(h: Record<string, unknown>): {
+  title: string;
+  reference: string | null;
+  archived: boolean;
+} | null {
+  const raw = h.cases;
+  const c = (Array.isArray(raw) ? raw[0] : raw) as Record<string, unknown> | null;
+  if (!c || typeof c !== "object") return null;
+  return {
+    title: String(c.title ?? ""),
+    reference: (c.reference as string | null) ?? null,
+    archived: Boolean(c.archived),
+  };
+}
+
+function mapHearingListRow(
+  h: Record<string, unknown>,
+  opts?: { includeArchived?: boolean },
+) {
+  const meta = embeddedHearingCaseMeta(h);
+  const row = {
+    id: h.id as string,
+    caseId: String(h.case_id ?? ""),
+    scheduledAt: h.scheduled_at as string,
+    venue: (h.venue as string | null) ?? null,
+    notes: (h.notes as string | null) ?? null,
+    caseTitle: meta?.title || "Matter",
+    caseReference: meta?.reference ?? null,
+  };
+  if (opts?.includeArchived) {
+    return { ...row, caseArchived: meta?.archived ?? false };
+  }
+  return row;
+}
+
 const WEBSITE_TEAM_BUCKET = "website-team";
 
 function normalizeTeamPhotoFields(
@@ -787,66 +827,21 @@ async function portalApiJsonInner(
   }
 
   if (pathname === "/api/v1/me/hearings" && m === "GET") {
-    const { sb, uid, role } = await requireProfile();
+    const { sb, role } = await requireProfile();
     if (role !== "CLIENT") {
       throw new Error("Forbidden");
     }
-    const { data: assigns, error: e1 } = await sb
-      .from("case_assignments")
-      .select("case_id")
-      .eq("user_id", uid);
-    if (e1) throw new Error(e1.message);
-    const caseIds = [
-      ...new Set(
-        (assigns ?? [])
-          .map((a) => assignmentRowCaseId(a as Record<string, unknown>))
-          .filter((id) => id.length > 0),
-      ),
-    ];
-    if (caseIds.length === 0) {
-      return { hearings: [] };
-    }
     const { data: hearRows, error: e2 } = await sb
       .from("hearings")
-      .select("id, scheduled_at, venue, notes, case_id")
-      .in("case_id", caseIds)
+      .select(HEARING_CASE_EMBED_CLIENT)
       .order("scheduled_at", { ascending: true })
       .limit(200);
     if (e2) throw new Error(e2.message);
-    const hCaseIds = [
-      ...new Set(
-        (hearRows ?? [])
-          .map((h: Record<string, unknown>) => String(h.case_id ?? ""))
-          .filter((id) => id.length > 0),
+    return {
+      hearings: (hearRows ?? []).map((h) =>
+        mapHearingListRow(h as Record<string, unknown>),
       ),
-    ];
-    const { data: caseRows } =
-      hCaseIds.length === 0
-        ? { data: [] as Record<string, unknown>[] }
-        : await sb.from("cases").select("id, title, reference").in("id", hCaseIds);
-    const caseById = new Map(
-      (caseRows ?? []).map((c: Record<string, unknown>) => [
-        String(c.id),
-        {
-          title: String(c.title ?? ""),
-          reference: (c.reference as string | null) ?? null,
-        },
-      ]),
-    );
-    const hearings = (hearRows ?? []).map((h: Record<string, unknown>) => {
-      const caseId = String(h.case_id ?? "");
-      const meta = caseById.get(caseId);
-      return {
-        id: h.id as string,
-        caseId,
-        scheduledAt: h.scheduled_at as string,
-        venue: (h.venue as string | null) ?? null,
-        notes: (h.notes as string | null) ?? null,
-        caseTitle: meta?.title ?? "Matter",
-        caseReference: meta?.reference ?? null,
-      };
-    });
-    return { hearings };
+    };
   }
 
   const meCase = pathname.match(/^\/api\/v1\/me\/cases\/([^/]+)$/);
@@ -1021,48 +1016,17 @@ async function portalApiJsonInner(
     const in30Iso = in30.toISOString();
     const { data: hearRows, error: e2 } = await sb
       .from("hearings")
-      .select("id, scheduled_at, venue, notes, case_id")
+      .select(HEARING_CASE_EMBED_ADMIN)
       .gte("scheduled_at", nowIso)
       .lte("scheduled_at", in30Iso)
       .order("scheduled_at", { ascending: true })
       .limit(500);
     if (e2) throw new Error(e2.message);
-    const hCaseIds = [
-      ...new Set(
-        (hearRows ?? [])
-          .map((h: Record<string, unknown>) => String(h.case_id ?? ""))
-          .filter((id) => id.length > 0),
+    return {
+      hearings: (hearRows ?? []).map((h) =>
+        mapHearingListRow(h as Record<string, unknown>, { includeArchived: true }),
       ),
-    ];
-    const { data: caseRows } =
-      hCaseIds.length === 0
-        ? { data: [] as Record<string, unknown>[] }
-        : await sb.from("cases").select("id, title, reference, archived").in("id", hCaseIds);
-    const caseById = new Map(
-      (caseRows ?? []).map((c: Record<string, unknown>) => [
-        String(c.id),
-        {
-          title: String(c.title ?? ""),
-          reference: (c.reference as string | null) ?? null,
-          archived: Boolean(c.archived),
-        },
-      ]),
-    );
-    const hearings = (hearRows ?? []).map((h: Record<string, unknown>) => {
-      const caseId = String(h.case_id ?? "");
-      const meta = caseById.get(caseId);
-      return {
-        id: h.id as string,
-        caseId,
-        scheduledAt: h.scheduled_at as string,
-        venue: (h.venue as string | null) ?? null,
-        notes: (h.notes as string | null) ?? null,
-        caseTitle: meta?.title ?? "Matter",
-        caseReference: meta?.reference ?? null,
-        caseArchived: meta?.archived ?? false,
-      };
-    });
-    return { hearings };
+    };
   }
 
   /** Client-authored case messages in the last 7 days — matches dashboard `recentClientMessages`. */

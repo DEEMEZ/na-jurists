@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
@@ -14,28 +14,39 @@ type HearingRow = {
   caseReference: string | null;
 };
 
+function HearingsListSkeleton() {
+  return (
+    <ul
+      className="divide-y divide-border-subtle rounded-xl border border-border-subtle bg-background-white shadow-sm"
+      aria-busy
+      aria-label="Loading hearings"
+    >
+      {[0, 1, 2, 3].map((i) => (
+        <li key={i} className="space-y-2 px-4 py-4" style={{ animationDelay: `${i * 40}ms` }}>
+          <div className="portal-skeleton h-4 w-56 max-w-full" />
+          <div className="portal-skeleton h-4 w-full max-w-md" />
+          <div className="portal-skeleton h-9 w-36" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function ClientHearingsPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<HearingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  useEffect(() => {
+    if (!user || user.role !== "CLIENT") return;
     setLoading(true);
     setErr(null);
-    try {
-      const d = await apiJson<{ hearings: HearingRow[] }>("/api/v1/me/hearings");
-      setItems(d.hearings);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Failed to load");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+    apiJson<{ hearings: HearingRow[] }>("/api/v1/me/hearings")
+      .then((d) => setItems(d.hearings))
+      .catch((e: Error) => setErr(e.message))
+      .finally(() => setLoading(false));
+  }, [user?.id, user?.role]);
 
   if (!user) return null;
   if (user.role !== "CLIENT") {
@@ -57,7 +68,7 @@ export function ClientHearingsPage() {
         </div>
       )}
       {loading ? (
-        <p className="text-text-light">Loading…</p>
+        <HearingsListSkeleton />
       ) : items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border-subtle bg-background-white p-8 text-center text-text-light">
           No hearings scheduled for your matters yet.
