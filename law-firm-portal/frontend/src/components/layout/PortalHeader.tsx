@@ -5,6 +5,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { PortalLogo } from "@/components/brand/PortalLogo";
 import { ClientNotificationDropdown } from "@/components/layout/ClientNotificationDropdown";
 import { useToast } from "@/components/ui/ToastProvider";
+import { prefetchAdminHearings, prefetchClientHearings } from "@/lib/hearingsListCache";
 
 const navLinkClass =
   "portal-nav-link text-secondary-navy hover:text-accent-blue";
@@ -63,6 +64,8 @@ export function PortalHeader() {
                 <Link
                   to="/admin/hearings"
                   className={linkClass(navActive("/admin/hearings"))}
+                  onMouseEnter={prefetchAdminHearings}
+                  onFocus={prefetchAdminHearings}
                 >
                   Upcoming hearings
                 </Link>
@@ -94,6 +97,8 @@ export function PortalHeader() {
                 <Link
                   to="/hearings"
                   className={linkClass(navActive("/hearings"))}
+                  onMouseEnter={prefetchClientHearings}
+                  onFocus={prefetchClientHearings}
                 >
                   Hearings
                 </Link>
@@ -167,6 +172,7 @@ export function PortalHeader() {
                   to="/admin/hearings"
                   className={`${mobileRowClass} ${navActive("/admin/hearings") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
                   onClick={closeMobile}
+                  onTouchStart={prefetchAdminHearings}
                 >
                   Upcoming hearings
                 </Link>
@@ -206,6 +212,7 @@ export function PortalHeader() {
                   to="/hearings"
                   className={`${mobileRowClass} ${navActive("/hearings") ? "bg-primary-navy/8 text-primary-navy ring-1 ring-secondary-navy/15" : ""}`}
                   onClick={closeMobile}
+                  onTouchStart={prefetchClientHearings}
                 >
                   Hearings
                 </Link>

@@ -2,17 +2,11 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
-import { apiJson } from "@/lib/api";
-
-type HearingRow = {
-  id: string;
-  caseId: string;
-  scheduledAt: string;
-  venue: string | null;
-  notes: string | null;
-  caseTitle: string;
-  caseReference: string | null;
-};
+import {
+  getCachedClientHearings,
+  loadClientHearings,
+  type ClientHearingRow,
+} from "@/lib/hearingsListCache";
 
 function HearingsListSkeleton() {
   return (
@@ -34,18 +28,29 @@ function HearingsListSkeleton() {
 
 export function ClientHearingsPage() {
   const { user } = useAuth();
-  const [items, setItems] = useState<HearingRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<ClientHearingRow[]>(() => getCachedClientHearings() ?? []);
+  const [loading, setLoading] = useState(() => getCachedClientHearings() === null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || user.role !== "CLIENT") return;
-    setLoading(true);
+    let cancelled = false;
+    const hadCache = getCachedClientHearings() !== null;
+    if (!hadCache) setLoading(true);
     setErr(null);
-    apiJson<{ hearings: HearingRow[] }>("/api/v1/me/hearings")
-      .then((d) => setItems(d.hearings))
-      .catch((e: Error) => setErr(e.message))
-      .finally(() => setLoading(false));
+    loadClientHearings({ force: !hadCache })
+      .then((hearings) => {
+        if (!cancelled) setItems(hearings);
+      })
+      .catch((e: Error) => {
+        if (!cancelled) setErr(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id, user?.role]);
 
   if (!user) return null;
@@ -67,7 +72,7 @@ export function ClientHearingsPage() {
           {err}
         </div>
       )}
-      {loading ? (
+      {loading && items.length === 0 ? (
         <HearingsListSkeleton />
       ) : items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border-subtle bg-background-white p-8 text-center text-text-light">

@@ -1555,33 +1555,53 @@ async function portalApiJsonInner(
   if (pathname === "/api/v1/admin/alerts/missing-upcoming-hearings" && m === "GET") {
     const x = await requireProfile();
     if (x.role !== "ADMIN") throw new Error("Forbidden");
-    const now = new Date();
-    const { data: cases } = await x.sb.from("cases").select("id, title, reference, status").eq("archived", false);
-    const list = [];
-    for (const c of cases ?? []) {
-      const { data: fh } = await x.sb
-        .from("hearings")
-        .select("id")
-        .eq("case_id", (c as { id: string }).id)
-        .gte("scheduled_at", now.toISOString())
-        .limit(1);
-      if (fh?.length) continue;
-      const { data: asg } = await x.sb
-        .from("case_assignments")
-        .select("profiles!case_assignments_user_id_fkey(email)")
-        .eq("case_id", (c as { id: string }).id);
-      const clients = (asg ?? []).map(
-        (r: Record<string, unknown>) => (r.profiles as { email: string }).email,
-      );
-      list.push({
-        id: (c as { id: string }).id,
-        title: (c as { title: string }).title,
-        reference: (c as { reference: string | null }).reference,
-        status: (c as { status: string }).status,
-        clients,
-      });
+    const nowIso = new Date().toISOString();
+    const [{ data: openCases, error: casesErr }, { data: futureHearings, error: hearErr }] =
+      await Promise.all([
+        x.sb.from("cases").select("id, title, reference, status").eq("archived", false),
+        x.sb.from("hearings").select("case_id").gte("scheduled_at", nowIso),
+      ]);
+    if (casesErr) throw new Error(casesErr.message);
+    if (hearErr) throw new Error(hearErr.message);
+    const withFuture = new Set(
+      (futureHearings ?? []).map((h: { case_id: string }) => h.case_id),
+    );
+    const missing = (openCases ?? []).filter(
+      (c: { id: string }) => !withFuture.has(c.id),
+    ) as Array<{
+      id: string;
+      title: string;
+      reference: string | null;
+      status: string;
+    }>;
+    if (missing.length === 0) {
+      return { count: 0, cases: [] };
     }
-    return { count: list.length, cases: list };
+    const missingIds = missing.map((c) => c.id);
+    const { data: asgRows, error: asgErr } = await x.sb
+      .from("case_assignments")
+      .select("case_id, profiles!case_assignments_user_id_fkey(email)")
+      .in("case_id", missingIds);
+    if (asgErr) throw new Error(asgErr.message);
+    const clientsByCase = new Map<string, string[]>();
+    for (const row of asgRows ?? []) {
+      const r = row as Record<string, unknown>;
+      const caseId = String(r.case_id ?? "");
+      const profile = r.profiles as { email?: string } | null;
+      const email = profile?.email;
+      if (!caseId || !email) continue;
+      const list = clientsByCase.get(caseId) ?? [];
+      list.push(email);
+      clientsByCase.set(caseId, list);
+    }
+    const cases = missing.map((c) => ({
+      id: c.id,
+      title: c.title,
+      reference: c.reference,
+      status: c.status,
+      clients: clientsByCase.get(c.id) ?? [],
+    }));
+    return { count: cases.length, cases };
   }
 
   if (pathname === "/api/v1/admin/reported-judgments" && m === "GET") {
@@ -2136,11 +2156,29 @@ async function portalApiJsonInner(
   throw new Error(`Unsupported API: ${m} ${pathname}`);
 }
 
+/** Read-only GET — no full-screen loading overlay (inline skeleton on the page instead). */
+export async function portalApiJsonSilent(
+  method: string,
+  pathWithQuery: string,
+  body?: unknown,
+): Promise<unknown> {
+  return portalApiJsonInner(method, pathWithQuery, body);
+}
+
 export async function portalApiJson(
   method: string,
   pathWithQuery: string,
   body?: unknown,
 ): Promise<unknown> {
+  const pathOnly = pathWithQuery.split("?")[0] ?? pathWithQuery;
+  const silentGet =
+    method === "GET" &&
+    (pathOnly === "/api/v1/me/hearings" ||
+      pathOnly === "/api/v1/admin/hearings/upcoming-30d" ||
+      pathOnly === "/api/v1/admin/alerts/missing-upcoming-hearings");
+  if (silentGet) {
+    return portalApiJsonSilent(method, pathWithQuery, body);
+  }
   return withPortalLoading(() => portalApiJsonInner(method, pathWithQuery, body));
 }
 

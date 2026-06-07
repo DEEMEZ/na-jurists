@@ -4,6 +4,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useToast } from "@/components/ui/ToastProvider";
 import { apiBlob, apiFetch, apiJson } from "@/lib/api";
+import { invalidateHearingsCache } from "@/lib/hearingsListCache";
 import { formatCaseStatus } from "@/lib/formatCaseStatus";
 import {
   WEBSITE_CASE_COURTS,
@@ -233,6 +234,7 @@ export function CaseDetailPage() {
       });
       setHearingWhen("");
       setHearingVenue("");
+      invalidateHearingsCache();
       await loadCase();
       showToast("Hearing added.");
     } catch (err) {
@@ -300,6 +302,7 @@ export function CaseDetailPage() {
       showToast(t || "Could not delete hearing", "error");
       return;
     }
+    invalidateHearingsCache();
     await loadCase();
     showToast("Hearing removed.");
   }

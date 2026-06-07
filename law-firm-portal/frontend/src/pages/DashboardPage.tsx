@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { apiJson } from "@/lib/api";
+import { prefetchAdminHearings, prefetchClientHearings } from "@/lib/hearingsListCache";
 
 type ClientDash = {
   /** All matters assigned to you (open + archived). */
@@ -62,6 +63,8 @@ export function DashboardPage() {
         else setClientStats(data as ClientDash);
       })
       .catch((e: Error) => setLoadErr(e.message));
+    if (user.role === "ADMIN") prefetchAdminHearings();
+    else prefetchClientHearings();
   }, [user?.id, user?.role]);
 
   const statItems = useMemo(() => {
