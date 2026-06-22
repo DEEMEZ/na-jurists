@@ -1,6 +1,7 @@
 "use client";
 
 import homehero from '@/assets/images/homehero.png';
+import { FIRM_TAGLINE } from '@/constants/branding';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -130,7 +131,7 @@ const Hero = () => {
                         N&A JURISTS
                       </h2>
                       <p className="text-xs sm:text-sm md:text-base text-white/80 font-medium tracking-wider">
-                        Advocates, Corporate & Legal Consultants
+                        {FIRM_TAGLINE}
                       </p>
                     </div>
                   </div>

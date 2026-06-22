@@ -62,5 +62,34 @@ export function resolvePublicWebsiteOrigin(): string | null {
     if (t) return t.replace(/\/$/, "");
   }
   if (import.meta.env.DEV) return "http://localhost:3000";
+  if (typeof globalThis !== "undefined" && "location" in globalThis) {
+    const origin = (globalThis as { location?: { origin?: string } }).location?.origin?.replace(
+      /\/$/,
+      "",
+    );
+    if (origin) return origin;
+  }
   return null;
+}
+
+/** Portal sign-in URL for client notification emails. */
+export function resolvePortalSignInUrl(): string | null {
+  if (typeof globalThis !== "undefined" && "location" in globalThis) {
+    const origin = (globalThis as { location?: { origin?: string } }).location?.origin?.replace(
+      /\/$/,
+      "",
+    );
+    if (origin) return `${origin}/login`;
+  }
+  return null;
+}
+
+/** Website + portal links appended to client notification emails. */
+export function clientNotifyEmailLinks(): string {
+  const lines: string[] = [];
+  const website = resolvePublicWebsiteOrigin();
+  const portal = resolvePortalSignInUrl();
+  if (website) lines.push(`Website: ${website}`);
+  if (portal) lines.push(`Client portal: ${portal}`);
+  return lines.length ? `\n\n${lines.join("\n")}` : "";
 }

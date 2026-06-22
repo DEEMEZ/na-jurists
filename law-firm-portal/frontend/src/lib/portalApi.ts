@@ -1,5 +1,6 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { getDefaultWebsiteTeamSeedRows } from "@site/lib/websiteTeamDefaults";
+import { clientNotifyEmailLinks } from "./publicWebsiteOrigin";
 import { withPortalLoading } from "./portalLoadingBus";
 import { getSupabase } from "./supabaseClient";
 
@@ -1341,7 +1342,7 @@ async function portalApiJsonInner(
     void notifyClientByEmail({
       recipientUserId: assignUserId,
       subject: `[N&A Jurists] ${assignTitle} — ${matterLabel}`,
-      text: `${assignBody}\n\nSign in to the client portal to view your matter.`,
+      text: `${assignBody}\n\nSign in to the client portal to view your matter.${clientNotifyEmailLinks()}`,
     });
     const clientEmail = String(prof?.email ?? "").trim();
     void notifyPortalAdmins(
@@ -1412,7 +1413,7 @@ async function portalApiJsonInner(
         void notifyClientByEmail({
           recipientUserId: assignUserId,
           subject: `[N&A Jurists] ${title}`,
-          text: `Update for ${matterLabel}:\n\n${bodyText}\n\nSign in to the client portal to view your matter.`,
+          text: `Update for ${matterLabel}:\n\n${bodyText}\n\nSign in to the client portal to view your matter.${clientNotifyEmailLinks()}`,
         });
       }
     }
@@ -1494,7 +1495,7 @@ async function portalApiJsonInner(
       void notifyClientByEmail({
         recipientUserId: assignUserId,
         subject: `[N&A Jurists] Hearing scheduled — ${matterLabel}`,
-        text: `A hearing was scheduled for ${matterLabel}.\n\nDate & time: ${whenStr}${venueStr}\n\nSign in to the client portal for full details.`,
+        text: `A hearing was scheduled for ${matterLabel}.\n\nDate & time: ${whenStr}${venueStr}\n\nSign in to the client portal for full details.${clientNotifyEmailLinks()}`,
       });
     }
     void notifyPortalAdmins(
@@ -1862,7 +1863,7 @@ async function portalApiJsonInner(
         void notifyClientByEmail({
           recipientUserId: assignUserId,
           subject: `[N&A Jurists] New message — ${matterLabel}`,
-          text: `Your legal team sent a message regarding ${matterLabel}:\n\n${preview}\n\nSign in to the client portal to read and reply.`,
+          text: `Your legal team sent a message regarding ${matterLabel}:\n\n${preview}\n\nSign in to the client portal to read and reply.${clientNotifyEmailLinks()}`,
         });
       }
     }

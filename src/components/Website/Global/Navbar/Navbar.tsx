@@ -1,7 +1,6 @@
 "use client";
 
-// Logo now served from public directory
-import Image from 'next/image';
+import { BrandLogo } from '@/components/Website/Global/BrandLogo';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -63,14 +62,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between px-4">
         <div className="flex items-center">
           <Link href="/">
-            <Image
-              src="/text-logo.png"
-              alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
-              width={160}
-              height={55}
-              className={`transition-all duration-300 ${scrolled ? 'w-[140px]' : 'w-[160px]'} h-auto`}
-              priority
-            />
+            <BrandLogo />
           </Link>
         </div>
         
@@ -85,8 +77,8 @@ const Navbar = () => {
           <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Team
           </Link>
-          <Link href="/liquidation" className="animate-nav-blink font-semibold transition-colors duration-300">
-            Liquidation
+          <Link href="/liquidation" className="font-semibold text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
+            Liquidation/Barwaqt
           </Link>
 
           {/* Legal Resources Dropdown */}
@@ -196,10 +188,10 @@ const Navbar = () => {
             </Link>
             <Link
               href="/liquidation"
-              className="animate-nav-blink font-semibold transition-colors duration-300"
+              className="font-semibold text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Liquidation
+              Liquidation/Barwaqt
             </Link>
 
             {/* Mobile Legal Resources Section */}

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { FIRM_TAGLINE } from '@/constants/branding';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import LoadingSpinner from '@/components/Website/Global/LoadingSpinner/LoadingSpinner';
@@ -11,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'N&A Jurists - Legal Consultants',
-  description: 'Advocates, Corporate & Legal Consultants specializing in providing exceptional legal services with integrity and excellence.',
-  keywords: 'law firm, legal consultants, corporate law, litigation, legal services',
+  title: 'N&A Jurists - Tax Consultants',
+  description: `${FIRM_TAGLINE} specializing in providing exceptional legal services with integrity and excellence.`,
+  keywords: 'law firm, tax consultants, corporate law, litigation, legal services',
 };
 
 export default function RootLayout({

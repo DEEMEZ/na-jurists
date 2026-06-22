@@ -1,6 +1,7 @@
 "use client";
 
-import Image from 'next/image';
+import { BrandLogo } from '@/components/Website/Global/BrandLogo';
+import { FIRM_TAGLINE } from '@/constants/branding';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Award, Scale, Building2, Clock, Shield, Zap, Users } from 'lucide-react';
@@ -131,19 +132,13 @@ const AboutOverview = () => {
               <div className="bg-gradient-to-br from-[#1a2b3d] to-[#2c415e] rounded-2xl p-8 text-white shadow-2xl">
                 <div className="space-y-6">
                   <div className="text-center">
-                    <Image
-                      src="/text-logo.png"
-                      alt="N&A Jurists"
-                      width={200}
-                      height={80}
-                      className="mx-auto brightness-0 invert opacity-90"
-                    />
+                    <BrandLogo inverted className="mx-auto justify-center" />
                   </div>
 
                   <div className="text-center">
                     <h3 className="text-2xl font-bold mb-2">Trusted Legal Partners</h3>
                     <p className="text-blue-200 text-sm">
-                      Advocates, Corporate & Legal Consultants
+                      {FIRM_TAGLINE}
                     </p>
                   </div>
 

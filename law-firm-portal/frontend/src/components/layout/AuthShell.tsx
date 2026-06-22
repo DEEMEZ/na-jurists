@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { PortalLogo } from "@/components/brand/PortalLogo";
+import { FIRM_TAGLINE } from "@site/constants/branding";
 
 type AuthShellProps = {
   children: ReactNode;
@@ -47,7 +48,7 @@ export function AuthShell({ children, headerRight }: AuthShellProps) {
               Your matters, hearings, and documents — in one place.
             </h2>
             <p className="text-sm leading-relaxed text-white/75">
-              N&amp;A Jurists — Advocates, Corporate &amp; Legal Consultants.
+              N&amp;A Jurists — {FIRM_TAGLINE}.
             </p>
           </div>
         </div>

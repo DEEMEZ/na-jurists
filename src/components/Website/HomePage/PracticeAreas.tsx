@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Building2,
@@ -15,7 +14,6 @@ import {
   Gavel
 } from 'lucide-react';
 
-// Professional Lucide icon component (high contrast on white cards)
 const Icon = ({ name }: { name: string }) => {
   const className = "text-[#1a2b3d]";
   const icons = {
@@ -39,53 +37,10 @@ const Icon = ({ name }: { name: string }) => {
 };
 
 const PracticeAreas = () => {
-  const practiceAreaRef = useRef<HTMLDivElement | null>(null);
-  const marqueeRef = useRef<HTMLDivElement | null>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [windowWidth, setWindowWidth] = useState(0);
-
-  useEffect(() => {
-    // Set initial window width
-    setWindowWidth(window.innerWidth);
-
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    const handleScroll = () => {
-      if (practiceAreaRef.current) {
-        const rect = practiceAreaRef.current.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const sectionHeight = practiceAreaRef.current.offsetHeight;
-
-        // Check if section is in view and calculate progress
-        if (rect.top <= 0 && rect.bottom >= 0) {
-          const scrolledDistance = Math.abs(rect.top);
-          const totalScrollDistance = sectionHeight - windowHeight;
-          const progress = Math.min(Math.max(scrolledDistance / totalScrollDistance, 0), 1);
-          setScrollProgress(progress);
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleResize);
-
-    // Initial calculation
-    handleScroll();
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  /** Nine core practice areas — `serviceId` matches `src/constants.js` and `/services/[id]`. */
   const practiceAreas: {
     icon: string;
     title: string;
     description: string;
-    delay: number;
     serviceId: number;
   }[] = [
     {
@@ -93,7 +48,6 @@ const PracticeAreas = () => {
       title: 'Corporate and Commercial',
       description:
         'Incorporation, governance, M&A support, commercial contracts, procurement, and corporate dispute resolution.',
-      delay: 100,
       serviceId: 1,
     },
     {
@@ -101,7 +55,6 @@ const PracticeAreas = () => {
       title: 'Taxation',
       description:
         'From tax advisory and planning to litigation before tribunals and superior courts, including AML and Benami compliance.',
-      delay: 150,
       serviceId: 2,
     },
     {
@@ -109,7 +62,6 @@ const PracticeAreas = () => {
       title: 'Banking and Project Finance',
       description:
         'Financing documentation, inter-creditor arrangements, security due diligence, and charge registration for banks and developers.',
-      delay: 200,
       serviceId: 3,
     },
     {
@@ -117,7 +69,6 @@ const PracticeAreas = () => {
       title: 'Dispute Resolution',
       description:
         'Civil and regulatory litigation, company jurisdiction, tax appeals, and international arbitration representation.',
-      delay: 250,
       serviceId: 4,
     },
     {
@@ -125,7 +76,6 @@ const PracticeAreas = () => {
       title: 'Alternative Dispute Resolution',
       description:
         'Domestic and international arbitration under the Arbitration Act, 1940, and ADR under tax, company, and insurance laws.',
-      delay: 300,
       serviceId: 5,
     },
     {
@@ -133,7 +83,6 @@ const PracticeAreas = () => {
       title: 'Employment and Labour Laws',
       description:
         'Employment policies, contracts for foreign nationals, disciplinary rules, union matters, and tribunal representation.',
-      delay: 350,
       serviceId: 6,
     },
     {
@@ -141,7 +90,6 @@ const PracticeAreas = () => {
       title: 'Intellectual Property',
       description:
         'IP ownership and disclosure compliance, disputes and appeals, trade mark and patent-related advice.',
-      delay: 400,
       serviceId: 7,
     },
     {
@@ -149,7 +97,6 @@ const PracticeAreas = () => {
       title: 'Corporate Crime and Anti-Money Laundering',
       description:
         'Corporate crime advisory and litigation, AML/CFT compliance, internal investigations, and regulatory enforcement.',
-      delay: 450,
       serviceId: 8,
     },
     {
@@ -157,24 +104,12 @@ const PracticeAreas = () => {
       title: 'Criminal Law',
       description:
         'Trials and bail, narcotics and serious offences, white-collar crime, and criminal appeals before higher courts.',
-      delay: 500,
       serviceId: 9,
     },
   ];
 
-  /** w-80 (320px) + space-x-8 (32px) per card; full horizontal scroll so last cards (e.g. Criminal Law) are reachable. */
-  const viewport = windowWidth > 0 ? windowWidth : 1280;
-  const cardStride = 352;
-  const marqueeMaxTranslate = Math.max(0, practiceAreas.length * cardStride - viewport * 0.88);
-
   return (
-    <section
-      ref={practiceAreaRef}
-      className="relative bg-gradient-to-br from-[#eef2f7] to-[#e2e8f0]"
-    >
-      {/* Scroll runway for horizontal marquee only — CTA follows in normal flow so it never washes out cards */}
-      <div className="relative h-[420vh]">
-      {/* Enhanced background pattern */}
+    <section className="relative bg-gradient-to-br from-[#eef2f7] to-[#e2e8f0] py-16 md:py-24">
       <div
         className="absolute inset-0 z-0 opacity-[0.35]"
         style={{
@@ -183,89 +118,55 @@ const PracticeAreas = () => {
         }}
       />
 
-      {/* Sticky Container for Marquee */}
-      <div className="sticky top-0 z-20 h-screen flex flex-col justify-center overflow-hidden bg-[#eef2f7]">
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            .marquee-container::-webkit-scrollbar {
-              display: none;
-            }
-            .marquee-container {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-          `
-        }} />
-        <div className="container mx-auto px-6 relative z-10">
-          {/* Header */}
-          <div className="mb-16 flex flex-col items-center text-center">
-            <div className="mb-4 flex justify-center">
-              <span className="inline-flex items-center justify-center rounded-full bg-[#1a2b3d]/10 px-4 py-2 text-center text-sm font-semibold text-[#1a2b3d]">
-                Our Expertise
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-6">
-              Legal Services We
-              <span className="block text-[#4a6789]">Provide</span>
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
-            <p className="text-[#334155] text-lg leading-relaxed max-w-3xl mx-auto font-medium">
-              Comprehensive legal solutions delivered by experienced advocates committed to your success.
-              Our specialized expertise spans across multiple practice areas.
-            </p>
+      <div className="container relative z-10 mx-auto px-6">
+        <div className="mb-12 flex flex-col items-center text-center md:mb-16">
+          <div className="mb-4 flex justify-center">
+            <span className="inline-flex items-center justify-center rounded-full bg-[#1a2b3d]/10 px-4 py-2 text-center text-sm font-semibold text-[#1a2b3d]">
+              Our Expertise
+            </span>
           </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b3d] mb-6">
+            Legal Services We
+            <span className="block text-[#4a6789]">Provide</span>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#4a6789] to-[#5a7a9b] mx-auto mb-6"></div>
+          <p className="text-[#334155] text-lg leading-relaxed max-w-3xl mx-auto font-medium">
+            Comprehensive legal solutions delivered by experienced advocates committed to your success.
+            Our specialized expertise spans across multiple practice areas.
+          </p>
+        </div>
 
-          {/* Horizontal Marquee Container */}
-          <div
-            ref={marqueeRef}
-            className="marquee-container relative w-full overflow-hidden"
-          >
-            <div
-              className="flex space-x-8 transition-transform duration-100 ease-linear"
-              style={{
-                transform: `translateX(-${scrollProgress * marqueeMaxTranslate}px)`,
-                width: `${practiceAreas.length * 320 + Math.max(windowWidth, 1280)}px`
-              }}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {practiceAreas.map((area) => (
+            <Link
+              key={area.serviceId}
+              href={`/services/${area.serviceId}`}
+              className="rounded-xl p-6 border-2 border-[#94a3b8] bg-white shadow-[0_6px_20px_-6px_rgba(15,23,42,0.28)] hover:shadow-[0_14px_32px_-10px_rgba(15,23,42,0.35)] hover:border-[#2c415e] transition-all duration-500 hover:-translate-y-2 group relative overflow-hidden block no-underline text-[#0f172a] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2c415e] focus-visible:ring-offset-2"
             >
-              {practiceAreas.map((area, index) => (
-                <Link
-                  key={index}
-                  href={`/services/${area.serviceId}`}
-                  className="flex-shrink-0 w-80 rounded-xl p-6 border-2 border-[#94a3b8] bg-white shadow-[0_6px_20px_-6px_rgba(15,23,42,0.28)] hover:shadow-[0_14px_32px_-10px_rgba(15,23,42,0.35)] hover:border-[#2c415e] transition-all duration-500 hover:-translate-y-2 group relative overflow-hidden block no-underline text-[#0f172a] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2c415e] focus-visible:ring-offset-2"
-                >
-                  {/* Gradient overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#1a2b3d]/[0.06] to-[#4a6789]/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                  {/* Content */}
-                  <div className="relative z-10">
-                    <div className="transform group-hover:scale-110 transition-transform duration-300">
-                      <Icon name={area.icon} />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#0f172a] mb-3 text-center group-hover:text-[#1a2b3d] transition-colors duration-300">
-                      {area.title}
-                    </h3>
-                    <p className="text-[#1e293b] text-sm leading-relaxed text-center font-semibold">
-                      {area.description}
-                    </p>
-
-                    <div className="flex justify-center items-center gap-1.5 mt-4 text-[#1a2b3d] text-sm font-bold">
-                      <span>View service</span>
-                      <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1a2b3d]/[0.06] to-[#4a6789]/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="relative z-10">
+                <div className="transform group-hover:scale-110 transition-transform duration-300">
+                  <Icon name={area.icon} />
+                </div>
+                <h3 className="text-lg font-bold text-[#0f172a] mb-3 text-center group-hover:text-[#1a2b3d] transition-colors duration-300">
+                  {area.title}
+                </h3>
+                <p className="text-[#1e293b] text-sm leading-relaxed text-center font-semibold">
+                  {area.description}
+                </p>
+                <div className="flex justify-center items-center gap-1.5 mt-4 text-[#1a2b3d] text-sm font-bold">
+                  <span>View service</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
-      </div>
 
-      {/* CTA: normal flow after marquee scroll — avoids translucent overlay on service cards */}
-      <div className="relative z-10 w-full py-16 md:py-20 bg-[#f8fafc] border-t border-[#cbd5e1]">
+      <div className="relative z-10 w-full py-16 md:py-20 bg-[#f8fafc] border-t border-[#cbd5e1] mt-16 md:mt-24">
         <div className="container mx-auto px-6">
           <div className="text-center bg-white rounded-2xl p-8 md:p-10 shadow-[0_8px_30px_-12px_rgba(26,43,61,0.25)] border-2 border-[#e2e8f0] max-w-4xl mx-auto">
             <h3 className="text-2xl font-bold text-[#1a2b3d] mb-4">

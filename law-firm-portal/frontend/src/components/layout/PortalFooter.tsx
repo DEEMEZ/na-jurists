@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { FIRM_TAGLINE } from "@site/constants/branding";
 const FOOTER_PATTERN =
   'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.06\'%3E%3Cpath d=\'M50 50m-40 0a40 40 0 1 1 80 0a40 40 0 1 1 -80 0M25 25l50 50M75 25l-50 50\'/%3E%3C/g%3E%3C/svg%3E")';
 
@@ -26,13 +28,7 @@ export function PortalFooter() {
       <div className="container relative z-10 mx-auto px-4 py-12 sm:px-6">
         <div className="grid gap-10 md:grid-cols-3">
           <div className="space-y-4">
-            <img
-              src="/text-logo.png"
-              alt="N&A Jurists"
-              className="h-11 w-auto max-w-[200px] opacity-90 brightness-0 invert"
-              width={200}
-              height={48}
-            />
+            <BrandLogo inverted />
             <p className="max-w-sm text-sm leading-relaxed text-blue-100/90">
               Secure access to your matters, documents, hearings, and firm
               communications.
@@ -117,7 +113,7 @@ export function PortalFooter() {
               Firm
             </h4>
             <p className="text-sm leading-relaxed text-blue-100/90">
-              N&amp;A Jurists — Advocates, Corporate &amp; Legal Consultants.
+              N&amp;A Jurists — {FIRM_TAGLINE}.
             </p>
           </div>
         </div>
@@ -128,7 +124,7 @@ export function PortalFooter() {
               © {year} N&A Jurists. All rights reserved.
             </p>
             <p className="text-xs text-blue-200/80">
-              Advocates, Corporate & Legal Consultants
+              {FIRM_TAGLINE}
             </p>
           </div>
         </div>

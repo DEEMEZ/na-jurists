@@ -1,6 +1,7 @@
 "use client";
 
-import Image from 'next/image';
+import { BrandLogo } from '@/components/Website/Global/BrandLogo';
+import { FIRM_TAGLINE } from '@/constants/branding';
 import Link from 'next/link';
 import {
   MapPin,
@@ -72,13 +73,7 @@ const Footer = () => {
             {/* Company Info */}
             <div className="lg:col-span-2 space-y-6 text-center md:text-left">
               <div className="flex justify-center md:justify-start">
-                <Image
-                  src="/text-logo.png"
-                  alt="N&A Jurists - Advocates, Corporate & Legal Consultants"
-                  width={200}
-                  height={80}
-                  className="brightness-0 invert opacity-90 max-w-[200px] h-auto"
-                />
+                <BrandLogo inverted />
               </div>
 
               <p className="text-blue-200 leading-relaxed max-w-md mx-auto md:mx-0">
@@ -204,7 +199,7 @@ const Footer = () => {
                 © {currentYear} N&A Jurists. All rights reserved.
               </p>
               <p className="text-blue-300 text-xs mt-1">
-                Advocates, Corporate & Legal Consultants
+                {FIRM_TAGLINE}
               </p>
             </div>
             <div className="text-center md:text-right">
