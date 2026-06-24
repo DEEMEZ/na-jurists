@@ -77,7 +77,7 @@ const Navbar = () => {
           <Link href="/team" className="text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Our Team
           </Link>
-          <Link href="/liquidation" className="font-semibold text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
+          <Link href="/liquidation" className="animate-nav-blink font-semibold text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300">
             Liquidation/Barwaqt
           </Link>
 
@@ -188,7 +188,7 @@ const Navbar = () => {
             </Link>
             <Link
               href="/liquidation"
-              className="font-semibold text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
+              className="animate-nav-blink font-semibold text-[#2c415e] hover:text-[#4a6789] transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Liquidation/Barwaqt
