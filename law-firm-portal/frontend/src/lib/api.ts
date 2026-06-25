@@ -1,5 +1,6 @@
 import {
   downloadCaseDocumentBlob,
+  getCaseDocumentSignedUrl,
   portalApiJson,
   portalApiUpload,
   type AuthUser,
@@ -89,6 +90,13 @@ export async function apiBlob(path: string): Promise<Blob> {
   const m = path.match(/^\/api\/v1\/cases\/([^/]+)\/documents\/([^/]+)\/file$/);
   if (!m) throw new Error("Invalid document path");
   return downloadCaseDocumentBlob(m[1], m[2]);
+}
+
+export async function apiOpenDocument(
+  caseId: string,
+  docId: string,
+): Promise<{ url: string; fileName: string }> {
+  return getCaseDocumentSignedUrl(caseId, docId);
 }
 
 if (import.meta.env.PROD && typeof window !== "undefined") {

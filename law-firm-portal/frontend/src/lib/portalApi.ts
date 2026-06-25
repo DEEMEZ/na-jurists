@@ -2183,25 +2183,35 @@ export async function portalApiJson(
   return withPortalLoading(() => portalApiJsonInner(method, pathWithQuery, body));
 }
 
+export async function getCaseDocumentSignedUrl(
+  caseId: string,
+  docId: string,
+): Promise<{ url: string; fileName: string }> {
+  await requireProfile();
+  const sb = getSupabase();
+  const { data: doc, error } = await sb
+    .from("documents")
+    .select("storage_path, original_name")
+    .eq("id", docId)
+    .eq("case_id", caseId)
+    .maybeSingle();
+  if (error || !doc) throw new Error("Not found");
+  const path = (doc as { storage_path: string }).storage_path;
+  const { data: signed, error: se } = await sb.storage
+    .from("case-files")
+    .createSignedUrl(path, 3600);
+  if (se || !signed?.signedUrl) throw new Error(se?.message ?? "Could not sign URL");
+  return {
+    url: signed.signedUrl,
+    fileName: String((doc as { original_name?: string }).original_name ?? "document"),
+  };
+}
+
 export async function downloadCaseDocumentBlob(caseId: string, docId: string): Promise<Blob> {
-  return withPortalLoading(async () => {
-    await requireProfile();
-    const sb = getSupabase();
-    const { data: doc, error } = await sb
-      .from("documents")
-      .select("storage_path")
-      .eq("id", docId)
-      .eq("case_id", caseId)
-      .maybeSingle();
-    if (error || !doc) throw new Error("Not found");
-    const { data: signed, error: se } = await sb.storage
-      .from("case-files")
-      .createSignedUrl((doc as { storage_path: string }).storage_path, 120);
-    if (se || !signed?.signedUrl) throw new Error(se?.message ?? "Could not sign URL");
-    const r = await fetch(signed.signedUrl);
-    if (!r.ok) throw new Error("Download failed");
-    return r.blob();
-  });
+  const { url } = await getCaseDocumentSignedUrl(caseId, docId);
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("Download failed");
+  return r.blob();
 }
 
 export async function uploadWebsiteTeamPhoto(file: File): Promise<{ photoStoragePath: string }> {

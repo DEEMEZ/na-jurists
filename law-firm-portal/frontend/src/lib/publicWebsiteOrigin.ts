@@ -72,15 +72,30 @@ export function resolvePublicWebsiteOrigin(): string | null {
   return null;
 }
 
-/** Portal sign-in URL for client notification emails. */
+/** Portal sign-in URL for client notification emails (public marketing-site path). */
 export function resolvePortalSignInUrl(): string | null {
-  if (typeof globalThis !== "undefined" && "location" in globalThis) {
-    const origin = (globalThis as { location?: { origin?: string } }).location?.origin?.replace(
-      /\/$/,
-      "",
-    );
-    if (origin) return `${origin}/login`;
+  const explicitLogin = import.meta.env.VITE_PORTAL_LOGIN_URL?.trim();
+  if (explicitLogin) {
+    const u = explicitLogin.replace(/\/$/, "");
+    return u;
   }
+
+  const website = resolvePublicWebsiteOrigin();
+  if (website) {
+    return `${website}/portal/login`;
+  }
+
+  if (typeof globalThis !== "undefined" && "location" in globalThis) {
+    const loc = (globalThis as { location?: { origin?: string; pathname?: string } }).location;
+    const origin = loc?.origin?.replace(/\/$/, "") ?? "";
+    if (!origin) return null;
+    const embedded =
+      (loc?.pathname ?? "").startsWith("/portal") ||
+      import.meta.env.BASE_URL === "/portal/" ||
+      import.meta.env.BASE_URL === "/portal";
+    return embedded ? `${origin}/portal/login` : `${origin}/login`;
+  }
+
   return null;
 }
 

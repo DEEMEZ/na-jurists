@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useToast } from "@/components/ui/ToastProvider";
-import { apiBlob, apiFetch, apiJson } from "@/lib/api";
+import { apiFetch, apiJson, apiOpenDocument } from "@/lib/api";
 import { invalidateHearingsCache } from "@/lib/hearingsListCache";
 import { formatCaseStatus } from "@/lib/formatCaseStatus";
 import {
@@ -265,15 +265,12 @@ export function CaseDetailPage() {
 
   async function downloadDoc(doc: DocRow) {
     if (!caseId) return;
-    const blob = await apiBlob(
-      `/api/v1/cases/${caseId}/documents/${doc.id}/file`,
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = doc.originalName;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const { url } = await apiOpenDocument(caseId, doc.id);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Could not open document.");
+    }
   }
 
   async function removeAssign(userId: string) {
