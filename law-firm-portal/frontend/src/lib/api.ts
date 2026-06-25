@@ -3,6 +3,7 @@ import {
   getCaseDocumentSignedUrl,
   portalApiJson,
   portalApiUpload,
+  prefetchCaseDocumentSignedUrls,
   type AuthUser,
 } from "./portalApi";
 
@@ -97,6 +98,13 @@ export async function apiOpenDocument(
   docId: string,
 ): Promise<{ url: string; fileName: string }> {
   return getCaseDocumentSignedUrl(caseId, docId);
+}
+
+export async function apiPrefetchCaseDocumentUrls(
+  caseId: string,
+  docIds: string[],
+): Promise<Record<string, string>> {
+  return prefetchCaseDocumentSignedUrls(caseId, docIds);
 }
 
 if (import.meta.env.PROD && typeof window !== "undefined") {

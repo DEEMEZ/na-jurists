@@ -2183,12 +2183,39 @@ export async function portalApiJson(
   return withPortalLoading(() => portalApiJsonInner(method, pathWithQuery, body));
 }
 
+export async function prefetchCaseDocumentSignedUrls(
+  caseId: string,
+  docIds: string[],
+): Promise<Record<string, string>> {
+  if (!docIds.length) return {};
+  const { sb } = await requireProfile();
+  const { data: docs, error } = await sb
+    .from("documents")
+    .select("id, storage_path")
+    .eq("case_id", caseId)
+    .in("id", docIds);
+  if (error || !docs?.length) return {};
+
+  const rows = docs as { id: string; storage_path: string }[];
+  const paths = rows.map((d) => d.storage_path);
+  const { data: signed, error: se } = await sb.storage
+    .from("case-files")
+    .createSignedUrls(paths, 3600);
+  if (se || !signed) return {};
+
+  const out: Record<string, string> = {};
+  for (let i = 0; i < rows.length; i++) {
+    const url = signed[i]?.signedUrl;
+    if (url) out[rows[i].id] = url;
+  }
+  return out;
+}
+
 export async function getCaseDocumentSignedUrl(
   caseId: string,
   docId: string,
 ): Promise<{ url: string; fileName: string }> {
-  await requireProfile();
-  const sb = getSupabase();
+  const { sb } = await requireProfile();
   const { data: doc, error } = await sb
     .from("documents")
     .select("storage_path, original_name")

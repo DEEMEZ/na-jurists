@@ -3,7 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { useToast } from "@/components/ui/ToastProvider";
-import { apiFetch, apiJson, apiOpenDocument } from "@/lib/api";
+import { apiFetch, apiJson, apiOpenDocument, apiPrefetchCaseDocumentUrls } from "@/lib/api";
+import { openCaseDocumentAfterSign, openCaseDocumentUrl } from "@/lib/openCaseDocument";
 import { invalidateHearingsCache } from "@/lib/hearingsListCache";
 import { formatCaseStatus } from "@/lib/formatCaseStatus";
 import {
@@ -93,6 +94,26 @@ export function CaseDetailPage() {
   const [docShareWithClient, setDocShareWithClient] = useState(true);
   const [noteBody, setNoteBody] = useState("");
   const [noteShareWithClient, setNoteShareWithClient] = useState(false);
+  const [docUrls, setDocUrls] = useState<Record<string, string>>({});
+
+  const prefetchDocUrls = useCallback(
+    async (docs: DocRow[]) => {
+      if (!caseId || docs.length === 0) {
+        setDocUrls({});
+        return;
+      }
+      try {
+        const urls = await apiPrefetchCaseDocumentUrls(
+          caseId,
+          docs.map((d) => d.id),
+        );
+        setDocUrls(urls);
+      } catch {
+        setDocUrls({});
+      }
+    },
+    [caseId],
+  );
 
   const loadCase = useCallback(async () => {
     if (!user?.id || !caseId) return;
@@ -114,7 +135,8 @@ export function CaseDetailPage() {
           .filter(Boolean)
       : [];
     setSelectedSubjects(subs);
-  }, [caseId, user?.id, user?.role]);
+    void prefetchDocUrls(data.case.documents);
+  }, [caseId, prefetchDocUrls, user?.id, user?.role]);
 
   const loadMessages = useCallback(async () => {
     if (!caseId) return;
@@ -263,14 +285,38 @@ export function CaseDetailPage() {
     showToast("File uploaded.");
   }
 
-  async function downloadDoc(doc: DocRow) {
+  async function openDoc(doc: DocRow) {
     if (!caseId) return;
-    try {
-      const { url } = await apiOpenDocument(caseId, doc.id);
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      showToast(e instanceof Error ? e.message : "Could not open document.");
+    const cached = docUrls[doc.id];
+    if (cached) {
+      openCaseDocumentUrl(cached);
+      return;
     }
+    try {
+      await openCaseDocumentAfterSign(async () => {
+        const { url } = await apiOpenDocument(caseId, doc.id);
+        setDocUrls((prev) => ({ ...prev, [doc.id]: url }));
+        return url;
+      });
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Could not open document.", "error");
+    }
+  }
+
+  function renderDocLink(doc: DocRow, className: string) {
+    const url = docUrls[doc.id];
+    if (url) {
+      return (
+        <a href={url} target="_blank" rel="noopener noreferrer" className={className}>
+          {doc.originalName}
+        </a>
+      );
+    }
+    return (
+      <button type="button" onClick={() => openDoc(doc)} className={className}>
+        {doc.originalName}
+      </button>
+    );
   }
 
   async function removeAssign(userId: string) {
@@ -604,13 +650,7 @@ export function CaseDetailPage() {
                 key={d.id}
                 className="flex flex-wrap items-center justify-between gap-2"
               >
-                <button
-                  type="button"
-                  onClick={() => downloadDoc(d)}
-                  className="text-left text-accent-blue hover:underline"
-                >
-                  {d.originalName}
-                </button>
+                {renderDocLink(d, "text-left text-accent-blue hover:underline")}
                 <span className="text-xs text-text-light">
                   {d.uploadedBy.email}
                   {user.role === "ADMIN" && d.visibleToClient === false ? (
@@ -638,13 +678,7 @@ export function CaseDetailPage() {
           <ul className="mt-4 space-y-2 text-sm">
             {c.documents.map((d) => (
               <li key={d.id}>
-                <button
-                  type="button"
-                  onClick={() => downloadDoc(d)}
-                  className="text-accent-blue hover:underline"
-                >
-                  {d.originalName}
-                </button>
+                {renderDocLink(d, "text-accent-blue hover:underline")}
               </li>
             ))}
           </ul>
