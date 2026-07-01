@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
+    /** Hold optimized copies (e.g. Supabase-hosted team photos) 30 days so Vercel serves them instead of re-pulling from Supabase (cached-egress quota). */
+    minimumCacheTTL: 2592000,
     remotePatterns: [
       {
         protocol: "https",

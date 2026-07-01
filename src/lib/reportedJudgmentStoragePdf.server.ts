@@ -39,3 +39,6 @@ export async function downloadReportedJudgmentFromStorage(
   }
   return Buffer.from(await data.arrayBuffer());
 }
+
+/** Generic alias: download any Supabase public-storage file server-side (any bucket) so it can be proxied + cached via Vercel. */
+export const downloadSupabaseStorageFile = downloadReportedJudgmentFromStorage;

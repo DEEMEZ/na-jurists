@@ -43,7 +43,8 @@ function pdfResponse(buf: Buffer, fileName: string, inline = true) {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `${disposition}; filename="${fileName}"`,
-      'Cache-Control': 'public, max-age=300, s-maxage=300',
+      /** PDFs are effectively immutable per id — cache hard so Vercel's CDN absorbs repeats and Supabase egress stays near-zero. */
+      'Cache-Control': 'public, max-age=86400, s-maxage=2592000, stale-while-revalidate=604800, immutable',
     },
   });
 }

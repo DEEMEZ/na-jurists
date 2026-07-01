@@ -144,7 +144,7 @@ export default function NewsDetailPage() {
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <a
-                        href={item.pdf_url}
+                        href={`/api/news-alerts/pdf?id=${encodeURIComponent(item.id)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded-lg bg-[#2c415e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#4a6789] transition-colors"
@@ -153,7 +153,7 @@ export default function NewsDetailPage() {
                         Open PDF
                       </a>
                       <a
-                        href={item.pdf_url}
+                        href={`/api/news-alerts/pdf?id=${encodeURIComponent(item.id)}&download=1`}
                         download
                         className="inline-flex items-center gap-2 rounded-lg border border-[#2c415e] px-4 py-2.5 text-sm font-semibold text-[#2c415e] hover:bg-[#2c415e]/5 transition-colors"
                       >
